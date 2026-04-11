@@ -1,6 +1,9 @@
 (function () {
   'use strict';
 
+  // DEV: clear all ponte_ cache keys on load so stale translations don't mask bugs
+  Object.keys(localStorage).filter(function(k){ return k.startsWith('ponte_'); }).forEach(function(k){ localStorage.removeItem(k); });
+
   const API_BASE    = 'http://localhost:3000';
   const CACHE_PREFIX = 'ponte_article_';
   const LS_TRANSL   = 'ponte_translation';
@@ -51,10 +54,7 @@
   const tooltipExample   = $('tooltip-example');
   const tooltipExampleIt = $('tooltip-example-it');
   const tooltipExampleEn = $('tooltip-example-en');
-  const tooltipRowTense  = $('tooltip-row-tense');
-  const tooltipTense     = $('tooltip-tense');
-  const tooltipRowRoot   = $('tooltip-row-root');
-  const tooltipRoot      = $('tooltip-root');
+  const tooltipRows      = document.querySelector('.tooltip-rows');
   const tooltipSaveBtn   = $('tooltip-save-btn');
   const backdrop         = $('tooltip-backdrop');
 
@@ -325,22 +325,26 @@
     tooltipES.textContent    = entry.spanish  || '';
     tooltipNote.textContent  = entry.note     || '';
 
-    // Tense row — guard against null, undefined, "", and the string "null"
-    const tenseVal = (entry.tense && entry.tense !== 'null') ? entry.tense.trim() : '';
+    // Remove any previously injected tense/root rows
+    tooltipRows.querySelectorAll('.tooltip-row-tense, .tooltip-row-root').forEach(function(el){ el.remove(); });
+
+    // Helper: reject null, undefined, "", whitespace-only, and the string "null"
+    function validVal(v) { return v && v !== 'null' && v.trim() !== '' ? v.trim() : ''; }
+
+    const tenseVal = validVal(entry.tense);
     if (tenseVal) {
-      tooltipTense.textContent = tenseVal;
-      tooltipRowTense.hidden   = false;
-    } else {
-      tooltipRowTense.hidden = true;
+      const row = document.createElement('div');
+      row.className = 'tooltip-row tooltip-row-tense';
+      row.innerHTML = '<span class="lang-tag">TENSE</span><span>' + tenseVal + '</span>';
+      tooltipRows.appendChild(row);
     }
 
-    // Root / infinitive row — same guard
-    const rootVal = (entry.root && entry.root !== 'null') ? entry.root.trim() : '';
+    const rootVal = validVal(entry.root);
     if (rootVal) {
-      tooltipRoot.textContent = rootVal;
-      tooltipRowRoot.hidden   = false;
-    } else {
-      tooltipRowRoot.hidden = true;
+      const row = document.createElement('div');
+      row.className = 'tooltip-row tooltip-row-root';
+      row.innerHTML = '<span class="lang-tag">INFINITIVE</span><span class="tooltip-root">' + rootVal + '</span>';
+      tooltipRows.appendChild(row);
     }
 
     if (entry.example) {
@@ -672,8 +676,7 @@
     tooltipEN.textContent    = 'Translating…';
     tooltipES.textContent    = '';
     tooltipNote.textContent  = '';
-    tooltipRowTense.hidden   = true;
-    tooltipRowRoot.hidden    = true;
+    tooltipRows.querySelectorAll('.tooltip-row-tense, .tooltip-row-root').forEach(function(el){ el.remove(); });
     tooltipExample.hidden    = true;
     tooltip.style.setProperty('--tooltip-accent', 'rgba(0, 194, 184, 0.3)');
 

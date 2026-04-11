@@ -30,7 +30,8 @@
       <strong>Install Ponte</strong> for offline reading —
       tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
     </span>
-    <button class="install-banner-dismiss" id="install-banner-dismiss" aria-label="Dismiss">✕</button>
+    <button class="install-banner-dismiss" id="banner-close" aria-label="Dismiss"
+      onclick="document.getElementById('install-banner').style.display='none'; localStorage.setItem('ponte_install_dismissed', '1');">✕</button>
   </div>
 
   <div class="app-wrapper" id="app-wrapper">
@@ -438,14 +439,7 @@
         <span class="lang-tag">ES</span>
         <span id="tooltip-spanish"></span>
       </div>
-      <div class="tooltip-row tooltip-row-tense" id="tooltip-row-tense" hidden>
-        <span class="lang-tag">TENSE</span>
-        <span id="tooltip-tense"></span>
-      </div>
-      <div class="tooltip-row tooltip-row-root" id="tooltip-row-root" hidden>
-        <span class="lang-tag">INFINITIVE</span>
-        <span class="tooltip-root" id="tooltip-root"></span>
-      </div>
+      <!-- TENSE and INFINITIVE rows injected dynamically by app.js when values exist -->
     </div>
     <p class="tooltip-note" id="tooltip-note"></p>
     <div class="tooltip-example" id="tooltip-example">
@@ -482,25 +476,15 @@
     }
 
     // Install banner: show once on iOS if not installed and not dismissed
+    // Dismiss is handled by inline onclick on the button — no JS listener needed here
     (function () {
       const LS_KEY  = 'ponte_install_dismissed';
-      const banner  = document.getElementById('install-banner');
-      const dismiss = document.getElementById('install-banner-dismiss');
-
-      // Wire dismiss button unconditionally — regardless of platform or detection logic
-      if (dismiss) {
-        dismiss.addEventListener('click', function () {
-          if (banner) banner.hidden = true;
-          localStorage.setItem(LS_KEY, '1');
-        });
-      }
-
-      // Show only on iOS Safari running in browser (not standalone) and not yet dismissed
       if (localStorage.getItem(LS_KEY)) return;
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
       const isStandalone = navigator.standalone === true ||
                            window.matchMedia('(display-mode: standalone)').matches;
       if (!isIOS || isStandalone) return;
+      const banner = document.getElementById('install-banner');
       if (banner) banner.hidden = false;
     })();
   </script>
