@@ -258,6 +258,23 @@ header {
   100% { background-position: -200% 0; }
 }
 
+/* Blinking cursor shown while Italian text is streaming */
+.stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.85em;
+  background: var(--text-mid);
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: cursor-blink 0.75s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 
 /* ─── Reader layout ─────────────────────────────────────────── */
 

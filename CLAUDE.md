@@ -35,9 +35,10 @@ python3 -m http.server 8080
 
 ## API
 - **Model:** `claude-sonnet-4-20250514`
-- **Endpoint:** `POST /api/generate-article`
-- **Body:** `{ topic: string, difficulty: "B1"|"B2" }`
-- **Returns:** article JSON matching the `articles` data format
+- **Streaming endpoint:** `GET /api/generate-article-stream?topic=...&difficulty=...`
+  - SSE stream: `data: {"token":"..."}` events as Claude generates, then `event: done` with full article JSON
+  - Frontend uses `EventSource`; parses `"italian"` field progressively for live rendering
+- **Fallback endpoint:** `POST /api/generate-article-full` — returns complete JSON in one shot
 
 ## Frontend caching
 Generated articles are cached in `localStorage` with key `ponte_article_{topic}_{difficulty}`. Clear localStorage to force re-generation.

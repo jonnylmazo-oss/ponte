@@ -51,7 +51,7 @@
     'new':          'New Word',
   };
 
-  // ── Wordmap builder (from article.words array) ─────────────────────────
+  // ── Wordmap builder ────────────────────────────────────────────────────
   function buildWordmap(words) {
     const map = {};
     (words || []).forEach(({ word, english, spanish, category, note }) => {
@@ -81,7 +81,6 @@
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
-  // wordmapOverride: use the pre-built static wordmap for the fallback article
   function renderArticle(article, wordmapOverride) {
     state.article      = article;
     state.activeWordmap = wordmapOverride || buildWordmap(article.words);
@@ -101,7 +100,7 @@
     translationText.textContent  = isEN ? state.article.english : state.article.spanish;
   }
 
-  // ── Loading / Error UI ─────────────────────────────────────────────────
+  // ── Loading UI ─────────────────────────────────────────────────────────
   function setLoading(on) {
     generateBtn.disabled = on;
     surpriseBtn.disabled = on;
@@ -110,6 +109,10 @@
       italianText.innerHTML = [90, 85, 93, 78, 88, 82]
         .map((w) => `<div class="skeleton-line" style="width:${w}%"></div>`)
         .join('');
+      translationText.textContent   = '';
+      articleTitle.textContent      = '';
+      articleDifficulty.textContent = '';
+      articleTopic.textContent      = '';
     }
   }
 
@@ -123,44 +126,122 @@
     generateError.hidden = true;
   }
 
-  // ── API call with localStorage cache ──────────────────────────────────
-  async function generateArticle(topic, difficulty) {
+  // ── Streaming helpers ──────────────────────────────────────────────────
+  function escapeHTML(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // Extract the value of "italian": "..." from a partial JSON buffer.
+  // Returns the raw text (with JSON escape sequences resolved), or null if not yet reached.
+  function extractStreamingItalian(buffer) {
+    const MARKER = '"italian":';
+    const markerIdx = buffer.indexOf(MARKER);
+    if (markerIdx === -1) return null;
+
+    // Find the opening quote of the value
+    let i = markerIdx + MARKER.length;
+    while (i < buffer.length && buffer[i] !== '"') i++;
+    if (i >= buffer.length) return null;
+    i++; // skip the opening quote
+
+    let text = '';
+    while (i < buffer.length) {
+      const ch = buffer[i];
+      if (ch === '\\' && i + 1 < buffer.length) {
+        const next = buffer[i + 1];
+        if      (next === 'n')  { text += '\n'; }
+        else if (next === '"')  { text += '"';  }
+        else if (next === '\\') { text += '\\'; }
+        else if (next === 't')  { text += '\t'; }
+        else                    { text += next; }
+        i += 2;
+      } else if (ch === '"') {
+        break; // reached closing quote
+      } else {
+        text += ch;
+        i++;
+      }
+    }
+
+    return text.length > 0 ? text : null;
+  }
+
+  // Render partial Italian text with a blinking cursor while streaming.
+  // Skeleton stays visible until the "italian" field begins arriving.
+  function renderStreamingText(buffer) {
+    const italian = extractStreamingItalian(buffer);
+    if (italian === null) return; // skeleton stays
+
+    italianText.innerHTML =
+      escapeHTML(italian) +
+      '<span class="stream-cursor" aria-hidden="true"></span>';
+
+    // Show title as soon as it's fully quoted in the buffer
+    const titleMatch = buffer.match(/"title"\s*:\s*"([^"\\]*)"/);
+    if (titleMatch) articleTitle.textContent = titleMatch[1];
+  }
+
+  // ── Generate — SSE streaming with localStorage cache ──────────────────
+  function generateArticle(topic, difficulty) {
     const cacheKey = CACHE_PREFIX + topic.toLowerCase().trim() + '_' + difficulty;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
         renderArticle(JSON.parse(cached));
         return;
-      } catch { /* corrupt entry — fall through to re-fetch */ }
+      } catch { /* corrupt entry — re-fetch */ }
     }
 
     setLoading(true);
     clearError();
 
-    try {
-      const res = await fetch(`${API_BASE}/api/generate-article`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ topic, difficulty }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Server error ${res.status}`);
+    const params = new URLSearchParams({ topic, difficulty });
+    const es = new EventSource(`${API_BASE}/api/generate-article-stream?${params}`);
+    let tokenBuffer = '';
+    let streamDone  = false;
+
+    es.onmessage = (e) => {
+      const { token } = JSON.parse(e.data);
+      tokenBuffer += token;
+      renderStreamingText(tokenBuffer);
+    };
+
+    es.addEventListener('done', (e) => {
+      streamDone = true;
+      es.close();
+      try {
+        const article = JSON.parse(e.data);
+        localStorage.setItem(cacheKey, JSON.stringify(article));
+        renderArticle(article);
+      } catch (err) {
+        showError('Received invalid article data');
+        if (!state.article) renderArticle(articles[0], window.wordmap);
+        else italianText.innerHTML = tokenizeItalian(state.article.italian);
       }
-      const article = await res.json();
-      localStorage.setItem(cacheKey, JSON.stringify(article));
-      renderArticle(article);
-    } catch (err) {
-      showError('Generation failed — ' + err.message);
-      // Restore: show fallback if nothing loaded yet, else re-render current article
-      if (!state.article) {
-        renderArticle(articles[0], window.wordmap);
-      } else {
-        italianText.innerHTML = tokenizeItalian(state.article.italian);
-      }
-    } finally {
       setLoading(false);
-    }
+    });
+
+    es.addEventListener('generation-error', (e) => {
+      streamDone = true;
+      es.close();
+      const { error } = JSON.parse(e.data);
+      showError('Generation failed — ' + error);
+      if (!state.article) renderArticle(articles[0], window.wordmap);
+      else italianText.innerHTML = tokenizeItalian(state.article.italian);
+      setLoading(false);
+    });
+
+    es.onerror = () => {
+      if (streamDone || es.readyState === EventSource.CLOSED) return;
+      es.close();
+      showError('Connection error — is the server running on :3000?');
+      if (!state.article) renderArticle(articles[0], window.wordmap);
+      else italianText.innerHTML = tokenizeItalian(state.article.italian);
+      setLoading(false);
+    };
   }
 
   // ── Tooltip ────────────────────────────────────────────────────────────
@@ -265,6 +346,5 @@
   });
 
   // ── Init ───────────────────────────────────────────────────────────────
-  // Use static wordmap.js for the fallback article (it has richer notes)
   renderArticle(articles[0], window.wordmap);
 })();
