@@ -453,6 +453,7 @@
   // Hover: show after 200ms delay, hide 100ms after leaving word/tooltip
   italianText.addEventListener('mouseover', (e) => {
     if (isMobile()) return;
+    if (state.translationMode) return; // selection tooltip is active — don't override with hover
     const wordEl = e.target.closest('[data-has-entry]');
     if (!wordEl) return;
     if (e.relatedTarget && wordEl.contains(e.relatedTarget)) return;
@@ -460,12 +461,13 @@
     if (state.pinnedByClick) return;
     clearTimeout(state.hoverTimer);
     state.hoverTimer = setTimeout(() => {
-      if (!state.pinnedByClick) showTooltip(wordEl);
+      if (!state.pinnedByClick && !state.translationMode) showTooltip(wordEl);
     }, 200);
   });
 
   italianText.addEventListener('mouseout', (e) => {
     if (isMobile()) return;
+    if (state.translationMode) return; // selection tooltip persists until selection clears
     const wordEl = e.target.closest('[data-has-entry]');
     if (!wordEl) return;
     if (wordEl.contains(e.relatedTarget)) return;
@@ -587,13 +589,15 @@
   document.addEventListener('selectionchange', () => {
     const sel = window.getSelection();
 
-    if (!sel || sel.isCollapsed || !sel.rangeCount) {
-      // Selection cleared — dismiss translation tooltip after a short grace period
+    if (!sel || !sel.toString().trim()) {
+      // Selection is genuinely empty — dismiss translation tooltip after a grace period
       // (allows clicking on the tooltip card without it immediately vanishing)
       if (activeXlatText !== null && !state.pinnedByClick) {
         clearTimeout(selectionDebounceTimer);
         selectionDebounceTimer = setTimeout(() => {
-          if (activeXlatText !== null && !state.pinnedByClick) {
+          // Re-confirm selection is still empty before dismissing
+          if (!window.getSelection()?.toString().trim() &&
+              activeXlatText !== null && !state.pinnedByClick) {
             hideTooltip();
             activeXlatText = null;
           }
