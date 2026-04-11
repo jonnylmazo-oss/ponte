@@ -11,62 +11,188 @@
 </head>
 <body>
 
-  <header>
-    <div class="header-left">
-      <div class="logo">Pon<span>te</span></div>
-      <div class="article-meta">
-        <span class="article-title" id="article-title"></span>
-        <span class="badge" id="article-difficulty"></span>
-        <span class="badge" id="article-topic"></span>
+  <div class="app-wrapper" id="app-wrapper">
+
+    <!-- ─── Sidebar ───────────────────────────────────────────────── -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="logo">Pon<span>te</span></div>
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Collapse sidebar">‹</button>
       </div>
-    </div>
-    <div class="header-right">
-      <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation">
-        <span class="transl-toggle-label">EN</span>
-        <span class="transl-toggle-icon" aria-hidden="true">▶</span>
-      </button>
-      <div class="lang-toggle" role="group" aria-label="Translation language">
-        <button class="toggle-btn active" data-lang="en">EN</button>
-        <button class="toggle-btn" data-lang="es">ES</button>
+      <div class="sidebar-nav">
+        <button class="nav-item active" data-tab="reader">
+          <span class="nav-icon">📖</span>
+          <span class="nav-label">Reader</span>
+        </button>
+        <button class="nav-item" data-tab="false-friends">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">False Friends</span>
+        </button>
+        <button class="nav-item" data-tab="grammar">
+          <span class="nav-icon">🧠</span>
+          <span class="nav-label">Grammar</span>
+        </button>
+        <button class="nav-item" data-tab="practice">
+          <span class="nav-icon">✍️</span>
+          <span class="nav-label">Practice</span>
+        </button>
+        <button class="nav-item" data-tab="shadowing">
+          <span class="nav-icon">🎙️</span>
+          <span class="nav-label">Shadowing</span>
+        </button>
+        <button class="nav-item" data-tab="progress">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Progress</span>
+        </button>
       </div>
-    </div>
-  </header>
+    </nav>
 
-  <!-- Generator bar -->
-  <div class="generator-bar">
-    <input
-      type="text"
-      id="topic-input"
-      class="topic-input"
-      placeholder="Enter a topic — calcio, mercato, vacanze…"
-    />
-    <select id="difficulty-select" class="difficulty-select">
-      <option value="B1">B1</option>
-      <option value="B2">B2</option>
-    </select>
-    <button id="generate-btn" class="gen-btn primary">Generate</button>
-    <button id="surprise-btn" class="gen-btn">Surprise me</button>
-    <span class="generate-error" id="generate-error" hidden></span>
-  </div>
+    <!-- ─── Main area ─────────────────────────────────────────────── -->
+    <div class="main-area">
 
-  <main class="reader" id="reader">
-    <div class="column column-translation">
-      <div class="column-label" id="translation-label">English</div>
-      <div class="column-body" id="translation-text"></div>
-    </div>
+      <!-- Tab: Reader -->
+      <div class="tab-panel active" id="tab-reader">
+        <header>
+          <div class="header-left">
+            <div class="logo logo-mobile">Pon<span>te</span></div>
+            <div class="article-meta">
+              <span class="article-title" id="article-title"></span>
+              <span class="badge" id="article-difficulty"></span>
+              <span class="badge" id="article-topic"></span>
+            </div>
+          </div>
+          <div class="header-right">
+            <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation">
+              <span class="transl-toggle-label">EN</span>
+              <span class="transl-toggle-icon" aria-hidden="true">▶</span>
+            </button>
+            <div class="lang-toggle" role="group" aria-label="Translation language">
+              <button class="toggle-btn active" data-lang="en">EN</button>
+              <button class="toggle-btn" data-lang="es">ES</button>
+            </div>
+          </div>
+        </header>
 
-    <div class="column column-italian">
-      <div class="column-label">
-        Italiano
-        <div class="legend">
-          <span class="legend-item cognate">Cognate</span>
-          <span class="legend-item false-friend">False Friend</span>
-          <span class="legend-item divergence">Divergence</span>
+        <div class="generator-bar">
+          <input
+            type="text"
+            id="topic-input"
+            class="topic-input"
+            placeholder="Enter a topic — calcio, mercato, vacanze…"
+          />
+          <select id="difficulty-select" class="difficulty-select">
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+          <button id="generate-btn" class="gen-btn primary">Generate</button>
+          <button id="surprise-btn" class="gen-btn">Surprise me</button>
+          <span class="generate-error" id="generate-error" hidden></span>
+        </div>
+
+        <main class="reader" id="reader">
+          <div class="column column-translation">
+            <div class="column-label" id="translation-label">English</div>
+            <div class="column-body" id="translation-text"></div>
+          </div>
+          <div class="column column-italian">
+            <div class="column-label">
+              Italiano
+              <div class="legend">
+                <span class="legend-item cognate">Cognate</span>
+                <span class="legend-item false-friend">False Friend</span>
+                <span class="legend-item divergence">Divergence</span>
+              </div>
+            </div>
+            <div class="column-body" id="italian-text"></div>
+          </div>
+        </main>
+      </div><!-- #tab-reader -->
+
+      <!-- Tab: False Friends -->
+      <div class="tab-panel" id="tab-false-friends">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="coming-soon">
+          <div class="coming-soon-icon">⚡</div>
+          <h2 class="coming-soon-title">False Friends</h2>
+          <p class="coming-soon-desc">Italian words that look like Spanish but mean something completely different. Drill the traps before they bite you.</p>
+          <span class="coming-soon-tag">On the roadmap</span>
         </div>
       </div>
-      <div class="column-body" id="italian-text"></div>
-    </div>
-  </main>
+
+      <!-- Tab: Grammar -->
+      <div class="tab-panel" id="tab-grammar">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="coming-soon">
+          <div class="coming-soon-icon">🧠</div>
+          <h2 class="coming-soon-title">Grammar</h2>
+          <p class="coming-soon-desc">Side-by-side contrast cards for where Italian grammar diverges from Spanish — reflexives, articles, prepositions, and more.</p>
+          <span class="coming-soon-tag">On the roadmap</span>
+        </div>
+      </div>
+
+      <!-- Tab: Practice -->
+      <div class="tab-panel" id="tab-practice">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="coming-soon">
+          <div class="coming-soon-icon">✍️</div>
+          <h2 class="coming-soon-title">Practice</h2>
+          <p class="coming-soon-desc">Fill in the blank with the right Italian word. Build recall, not just recognition.</p>
+          <span class="coming-soon-tag">On the roadmap</span>
+        </div>
+      </div>
+
+      <!-- Tab: Shadowing -->
+      <div class="tab-panel" id="tab-shadowing">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="coming-soon">
+          <div class="coming-soon-icon">🎙️</div>
+          <h2 class="coming-soon-title">Shadowing</h2>
+          <p class="coming-soon-desc">Listen to native Italian audio and shadow the speaker — train your ear and pronunciation simultaneously.</p>
+          <span class="coming-soon-tag">On the roadmap</span>
+        </div>
+      </div>
+
+      <!-- Tab: Progress -->
+      <div class="tab-panel" id="tab-progress">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="coming-soon">
+          <div class="coming-soon-icon">📊</div>
+          <h2 class="coming-soon-title">Progress</h2>
+          <p class="coming-soon-desc">Track words you've encountered, false friends you've mastered, and how far you've come.</p>
+          <span class="coming-soon-tag">On the roadmap</span>
+        </div>
+      </div>
+
+    </div><!-- .main-area -->
+  </div><!-- .app-wrapper -->
+
+  <!-- Mobile bottom nav -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-tab="reader">
+      <span class="bottom-nav-icon">📖</span>
+      <span class="bottom-nav-label">Reader</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="false-friends">
+      <span class="bottom-nav-icon">⚡</span>
+      <span class="bottom-nav-label">Decks</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="grammar">
+      <span class="bottom-nav-icon">🧠</span>
+      <span class="bottom-nav-label">Grammar</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="practice">
+      <span class="bottom-nav-icon">✍️</span>
+      <span class="bottom-nav-label">Practice</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="shadowing">
+      <span class="bottom-nav-icon">🎙️</span>
+      <span class="bottom-nav-label">Shadowing</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="progress">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">Progress</span>
+    </button>
+  </nav>
 
   <!-- Tooltip card -->
   <div class="tooltip" id="tooltip" aria-hidden="true" hidden>

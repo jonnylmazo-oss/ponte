@@ -4,6 +4,8 @@
   const API_BASE    = 'http://localhost:3000';
   const CACHE_PREFIX = 'ponte_article_';
   const LS_TRANSL   = 'ponte_translation';
+  const LS_TAB      = 'ponte_tab';
+  const LS_SIDEBAR  = 'ponte_sidebar';
 
   const SURPRISE_TOPICS = [
     'mercato', 'calcio', 'caffè', 'spiaggia', 'lavoro',
@@ -51,6 +53,9 @@
   const generateBtn      = $('generate-btn');
   const surpriseBtn      = $('surprise-btn');
   const generateError    = $('generate-error');
+
+  const appWrapper      = $('app-wrapper');
+  const sidebarToggleBtn = $('sidebar-toggle');
 
   // ── Categories ─────────────────────────────────────────────────────────
   const CATEGORY_LABELS = {
@@ -424,7 +429,57 @@
     if (e.key === 'Enter') generateBtn.click();
   });
 
+  // ── Tab navigation ─────────────────────────────────────────────────────
+  let currentTab = 'reader';
+
+  function switchTab(tabId) {
+    if (tabId === currentTab) return;
+
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+    const panel = $(`tab-${tabId}`);
+    if (panel) panel.classList.add('active');
+
+    document.querySelectorAll('[data-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    currentTab = tabId;
+    localStorage.setItem(LS_TAB, tabId);
+  }
+
+  function initTabs() {
+    const saved = localStorage.getItem(LS_TAB) || 'reader';
+
+    // Set initial state (no animation on load)
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+    const panel = $(`tab-${saved}`);
+    if (panel) panel.classList.add('active');
+    document.querySelectorAll('[data-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === saved);
+    });
+    currentTab = saved;
+
+    document.querySelectorAll('[data-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+  }
+
+  // ── Sidebar collapse ───────────────────────────────────────────────────
+  function initSidebar() {
+    const collapsed = localStorage.getItem(LS_SIDEBAR) === '1';
+    if (collapsed) appWrapper.classList.add('sidebar-collapsed');
+    sidebarToggleBtn.textContent = collapsed ? '›' : '‹';
+
+    sidebarToggleBtn.addEventListener('click', () => {
+      const isCollapsed = appWrapper.classList.toggle('sidebar-collapsed');
+      sidebarToggleBtn.textContent = isCollapsed ? '›' : '‹';
+      localStorage.setItem(LS_SIDEBAR, isCollapsed ? '1' : '0');
+    });
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────
+  initTabs();
+  initSidebar();
   initTranslationToggle();
   renderArticle(articles[0], window.wordmap);
 })();
