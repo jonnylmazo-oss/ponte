@@ -45,6 +45,12 @@ python3 -m http.server 8080
 ## Frontend caching
 Generated articles are cached in `localStorage` with key `ponte_article_{topic}_{difficulty}`. Clear localStorage to force re-generation.
 
+## False Friends tab (issue #5)
+- `data/false-friends.js`: 100 entries with fields: `id`, `italian`, `italianMeaning`, `spanishLookalike`, `spanishMeaning`, `englishMeaning`, `category`, `danger` (high/medium/low), `example`, `exampleEN`, `tip`
+- `false-friends.js`: vanilla JS IIFE — search, danger filter, card grid with expand/collapse (grid-template-rows animation), drill mode
+- Drill mode: CSS 3D flip, Got it / Tricky queue management, first-try score at end; respects active filter/search
+- Script load order: `data/false-friends.js` → `app.js` → `false-friends.js`
+
 ## Tab navigation
 - Left sidebar on desktop: logo at top, collapse toggle (‹/›), 6 nav tabs (icon + label)
 - Collapsed sidebar: 54px wide, icon-only; expanded: 200px; state in `localStorage` (`ponte_sidebar`)
