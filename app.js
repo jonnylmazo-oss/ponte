@@ -24,6 +24,7 @@
     pinnedByClick:   false,  // tooltip locked open by a click (not just hover)
     hoverTimer:      null,   // setTimeout for hover-show delay
     hoverHideTimer:  null,   // setTimeout for hover-leave hide delay
+    translationMode: false,  // tooltip is showing a dynamic translation (not a pre-annotated word)
   };
 
   // ── DOM refs ───────────────────────────────────────────────────────────
@@ -326,6 +327,7 @@
     const entry = state.activeWordmap[key];
     if (!entry) return;
 
+    state.translationMode = false;
     if (state.activeWordEl) state.activeWordEl.classList.remove('active');
     state.activeWordEl = wordEl;
     wordEl.classList.add('active');
@@ -349,7 +351,7 @@
 
     populateTooltip(entry.italian || '', entry);
     revealTooltip();
-    state.pinnedByClick = true;
+    state.translationMode = true;  // hover-leave won't dismiss; selection-clear will
 
     if (isMobile()) {
       backdrop.classList.add('visible');
@@ -379,6 +381,7 @@
   function hideTooltip() {
     clearTimeout(state.hoverTimer);
     clearTimeout(state.hoverHideTimer);
+    state.translationMode = false;
     if (state.activeWordEl) {
       state.activeWordEl.classList.remove('active');
       state.activeWordEl = null;
@@ -420,7 +423,7 @@
     if (wordEl) {
       clearTimeout(state.hoverTimer);
       clearTimeout(state.hoverHideTimer);
-      hideTranslateBtn();
+      activeXlatText = null;
       if (wordEl === state.activeWordEl && state.pinnedByClick) {
         state.pinnedByClick = false;
         hideTooltip();
@@ -430,10 +433,10 @@
       }
       return;
     }
-    if (e.target.closest('#tooltip') || e.target.id === 'translate-btn') return;
+    if (e.target.closest('#tooltip')) return;
     state.pinnedByClick = false;
+    activeXlatText = null;
     hideTooltip();
-    hideTranslateBtn();
   });
 
   // Hover: show after 200ms delay, hide 100ms after leaving word/tooltip
@@ -464,9 +467,11 @@
   // Keep tooltip open when mouse moves from word onto tooltip card
   tooltip.addEventListener('mouseenter', () => {
     clearTimeout(state.hoverHideTimer);
+    clearTimeout(selectionDebounceTimer); // prevent selection-clear from hiding while user reads
   });
   tooltip.addEventListener('mouseleave', () => {
-    if (!state.pinnedByClick) {
+    // Translation tooltips persist until selection clears — don't dismiss on hover-leave
+    if (!state.pinnedByClick && !state.translationMode) {
       state.hoverHideTimer = setTimeout(hideTooltip, 80);
     }
   });
@@ -479,8 +484,8 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       state.pinnedByClick = false;
+      activeXlatText = null;
       hideTooltip();
-      hideTranslateBtn();
     }
   });
 
@@ -561,98 +566,116 @@
   }
 
   // ── Dynamic translation (any selected text in Italian column) ──────────
-  const translateBtn  = $('translate-btn');
-  let pendingSelection = null;  // { text, context, rect }
+  const XLAT_CACHE_PREFIX  = 'ponte_xlat_';
+  let selectionDebounceTimer = null;
+  let xlatAbortCtrl        = null;  // AbortController for in-flight translate request
+  let activeXlatText       = null;  // text currently showing/loading in translation mode
 
-  const XLAT_CACHE_PREFIX = 'ponte_xlat_';
+  // selectionchange fires on every cursor/drag change — use it both to trigger
+  // translation (debounced) and to dismiss when selection is cleared.
+  document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
 
-  function showTranslateBtn(rect) {
-    const GAP  = 8;
-    const btnW = translateBtn.offsetWidth || 110;
-    let left   = rect.left + rect.width / 2 - btnW / 2;
-    let top    = rect.top - translateBtn.offsetHeight - GAP - 4;
-
-    if (left < 8)                          left = 8;
-    if (left + btnW > window.innerWidth - 8) left = window.innerWidth - btnW - 8;
-    if (top < 8)                           top  = rect.bottom + GAP;
-
-    translateBtn.style.left = `${left}px`;
-    translateBtn.style.top  = `${top}px`;
-    translateBtn.textContent = 'Translate ↗';
-    translateBtn.disabled    = false;
-    translateBtn.hidden      = false;
-  }
-
-  function hideTranslateBtn() {
-    translateBtn.hidden  = true;
-    translateBtn.textContent = 'Translate ↗';
-    translateBtn.disabled    = false;
-    pendingSelection         = null;
-  }
-
-  function handleSelectionChange() {
-    // Small delay so selection is finalised after mouseup/touchend
-    setTimeout(() => {
-      const sel = window.getSelection();
-      if (!sel || sel.isCollapsed || !sel.rangeCount) {
-        hideTranslateBtn();
-        return;
+    if (!sel || sel.isCollapsed || !sel.rangeCount) {
+      // Selection cleared — dismiss translation tooltip after a short grace period
+      // (allows clicking on the tooltip card without it immediately vanishing)
+      if (activeXlatText !== null && !state.pinnedByClick) {
+        clearTimeout(selectionDebounceTimer);
+        selectionDebounceTimer = setTimeout(() => {
+          if (activeXlatText !== null && !state.pinnedByClick) {
+            hideTooltip();
+            activeXlatText = null;
+          }
+        }, 200);
       }
+      return;
+    }
 
-      const range = sel.getRangeAt(0);
-      if (!italianText.contains(range.commonAncestorContainer)) {
-        hideTranslateBtn();
-        return;
-      }
+    const range = sel.getRangeAt(0);
+    if (!italianText.contains(range.commonAncestorContainer)) return;
 
-      const text = sel.toString().trim();
-      if (!text || text.length < 2) { hideTranslateBtn(); return; }
+    const text = sel.toString().trim();
+    if (!text || text.length < 2) return;
+    if (text === activeXlatText) return; // result for this exact text already showing
 
-      const rect = range.getBoundingClientRect();
-      pendingSelection = { text, context: italianText.innerText, rect };
-      showTranslateBtn(rect);
-    }, 30);
-  }
-
-  italianText.addEventListener('mouseup',  handleSelectionChange);
-  italianText.addEventListener('touchend', handleSelectionChange);
-
-  translateBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!pendingSelection) return;
-    doTranslate(pendingSelection.text, pendingSelection.context, pendingSelection.rect);
+    // Debounce: wait for selection to stabilise before firing the API call
+    clearTimeout(selectionDebounceTimer);
+    selectionDebounceTimer = setTimeout(() => {
+      const sel2 = window.getSelection();
+      if (!sel2 || sel2.isCollapsed || !sel2.rangeCount) return;
+      const range2 = sel2.getRangeAt(0);
+      if (!italianText.contains(range2.commonAncestorContainer)) return;
+      const text2 = sel2.toString().trim();
+      if (!text2 || text2.length < 2) return;
+      doTranslate(text2, italianText.innerText, range2.getBoundingClientRect());
+    }, 300);
   });
 
+  function showTooltipLoading(word, anchorRect) {
+    if (state.activeWordEl) {
+      state.activeWordEl.classList.remove('active');
+      state.activeWordEl = null;
+    }
+    tooltipWord.textContent  = word;
+    tooltipPron.hidden       = true;
+    tooltipBadge.textContent = '';
+    tooltipBadge.className   = 'tooltip-badge';
+    tooltipEN.textContent    = 'Translating…';
+    tooltipES.textContent    = '';
+    tooltipNote.textContent  = '';
+    tooltipExample.hidden    = true;
+    tooltip.style.setProperty('--tooltip-accent', 'rgba(0, 194, 184, 0.3)');
+
+    revealTooltip();
+    state.translationMode = true;
+
+    if (isMobile()) {
+      backdrop.classList.add('visible');
+    } else if (anchorRect) {
+      positionTooltipAt(anchorRect);
+    }
+  }
+
   async function doTranslate(text, context, anchorRect) {
+    // Cancel any previous in-flight request
+    if (xlatAbortCtrl) xlatAbortCtrl.abort();
+    xlatAbortCtrl = new AbortController();
+
     const cacheKey = XLAT_CACHE_PREFIX + text.toLowerCase().trim();
     const cached   = localStorage.getItem(cacheKey);
     if (cached) {
       try {
         const entry = JSON.parse(cached);
+        activeXlatText = text;
         showTooltipFromEntry(entry, anchorRect);
-        hideTranslateBtn();
         return;
-      } catch { /* stale */ }
+      } catch { /* stale — re-fetch */ }
     }
 
-    translateBtn.textContent = '…';
-    translateBtn.disabled    = true;
+    activeXlatText = text;
+    showTooltipLoading(text, anchorRect);
 
     try {
       const resp = await fetch(`${API_BASE}/api/translate`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ text, context }),
+        signal:  xlatAbortCtrl.signal,
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const entry = await resp.json();
       localStorage.setItem(cacheKey, JSON.stringify(entry));
-      showTooltipFromEntry(entry, anchorRect);
-      hideTranslateBtn();
+
+      // Only update if user hasn't moved to a different selection
+      if (activeXlatText === text) {
+        showTooltipFromEntry(entry, anchorRect);
+      }
     } catch (err) {
+      if (err.name === 'AbortError') return; // superseded by a newer selection
       console.error('Translation failed:', err.message);
-      translateBtn.textContent = 'Translate ↗';
-      translateBtn.disabled    = false;
+      if (activeXlatText === text) {
+        tooltipEN.textContent = 'Translation failed — try again';
+      }
     }
   }
 
