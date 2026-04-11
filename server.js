@@ -43,10 +43,10 @@ function buildPrompt(topic, difficulty, strict = false) {
   "english": "(natural English translation, not literal)",
   "spanish": "(natural Spanish translation)",
   "words": [
-    { "word": "...", "english": "...", "spanish": "...", "category": "cognate|false-friend|divergence|new", "note": "...", "pronunciation": "...", "example": "...", "exampleEN": "..." }
+    { "w": "italian word", "en": "english", "es": "spanish", "c": "cognate|false-friend|divergence|new", "n": "one short note", "p": "stress hint e.g. BUR-ro" }
   ]
 }
-The words array must include minimum 8 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish. The pronunciation field should be a simple stress-marked syllable hint (e.g. "kaf-FE", "BUR-ro"). The example field is a short natural Italian sentence using that word. The exampleEN field is the English translation of that sentence. Return only the JSON object, no markdown, no code fences.${strictNote}`;
+The words array must include minimum 6 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish. Return only the JSON object, no markdown, no code fences.${strictNote}`;
 }
 
 // Replace curly/smart quotes with straight ASCII equivalents so JSON.parse succeeds.
@@ -289,7 +289,15 @@ Category guide — "cognate": looks and means the same as Spanish; "false-friend
     res.json(result);
   } catch (err) {
     console.error('Translation error:', err.message);
-    res.status(500).json({ error: 'Translation failed', details: err.message });
+    console.error('Translation raw text:', err._rawText || '(not available)');
+    // Graceful fallback: return the raw model text as english so the UI shows something
+    res.json({
+      italian:  text.trim(),
+      english:  err._rawText || '(translation failed)',
+      spanish:  '',
+      note:     '',
+      category: 'new',
+    });
   }
 });
 

@@ -77,18 +77,29 @@
   };
 
   // ── Wordmap builder ────────────────────────────────────────────────────
+  // Accepts both the legacy long-key format (static wordmap.js fallback article)
+  // and the new short-key format { w, en, es, c, n, p } from generated articles.
   function buildWordmap(words) {
     const map = {};
-    (words || []).forEach(({ word, english, spanish, category, note, pronunciation, example, exampleEN }) => {
+    (words || []).forEach((entry) => {
+      const word         = entry.w        || entry.word        || '';
+      const english      = entry.en       || entry.english     || '';
+      const spanish      = entry.es       || entry.spanish     || '';
+      const category     = entry.c        || entry.category    || 'new';
+      const note         = entry.n        || entry.note        || null;
+      const pronunciation = entry.p       || entry.pronunciation || null;
+      const example      = entry.example  || null;
+      const exampleEN    = entry.exampleEN || null;
+      if (!word) return;
       map[word.toLowerCase()] = {
         english,
         spanish,
-        note:          note || null,
+        note,
         category,
         label:         CATEGORY_LABELS[category] || category,
-        pronunciation: pronunciation || null,
-        example:       example || null,
-        exampleEN:     exampleEN || null,
+        pronunciation,
+        example,
+        exampleEN,
       };
     });
     return map;
