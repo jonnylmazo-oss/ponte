@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ponte — Italian Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <div class="logo">Pon<span>te</span></div>
+      <div class="article-meta">
+        <span class="article-title" id="article-title"></span>
+        <span class="badge" id="article-difficulty"></span>
+        <span class="badge" id="article-topic"></span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="toggle-label">Translation</span>
+      <div class="lang-toggle" role="group" aria-label="Translation language">
+        <button class="toggle-btn active" data-lang="en">EN</button>
+        <button class="toggle-btn" data-lang="es">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="reader">
+    <div class="column column-translation">
+      <div class="column-label" id="translation-label">English</div>
+      <div class="column-body" id="translation-text"></div>
+    </div>
+
+    <div class="column column-italian">
+      <div class="column-label">
+        Italiano
+        <div class="legend">
+          <span class="legend-item cognate">Cognate</span>
+          <span class="legend-item false-friend">False Friend</span>
+          <span class="legend-item divergence">Divergence</span>
+        </div>
+      </div>
+      <div class="column-body" id="italian-text"></div>
+    </div>
+  </main>
+
+  <!-- Tooltip card -->
+  <div class="tooltip" id="tooltip" aria-hidden="true" hidden>
+    <div class="tooltip-header">
+      <span class="tooltip-word" id="tooltip-word"></span>
+      <span class="tooltip-badge" id="tooltip-badge"></span>
+    </div>
+    <div class="tooltip-rows">
+      <div class="tooltip-row">
+        <span class="lang-tag">EN</span>
+        <span id="tooltip-english"></span>
+      </div>
+      <div class="tooltip-row">
+        <span class="lang-tag">ES</span>
+        <span id="tooltip-spanish"></span>
+      </div>
+    </div>
+    <p class="tooltip-note" id="tooltip-note"></p>
+  </div>
+
+  <script src="data/articles.js"></script>
+  <script src="data/wordmap.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
