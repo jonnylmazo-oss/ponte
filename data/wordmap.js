@@ -6,7 +6,7 @@ const wordmap = {
     spanish:     "café",
     note:        null,
     category:    "cognate",
-    label:       "Cognate",
+    label:       "Same in Spanish",
     pronunciation: "kaf-FÈ",
     example:     "Ho preso un caffè al bar stamattina.",
     exampleEN:   "I had a coffee at the bar this morning."
@@ -16,7 +16,7 @@ const wordmap = {
     spanish:     "turista",
     note:        null,
     category:    "cognate",
-    label:       "Cognate",
+    label:       "Same in Spanish",
     pronunciation: "tu-RÌS-ta",
     example:     "Tanti turisti visitano Roma ogni anno.",
     exampleEN:   "Many tourists visit Rome every year."
@@ -26,7 +26,7 @@ const wordmap = {
     spanish:     "decente",
     note:        null,
     category:    "cognate",
-    label:       "Cognate",
+    label:       "Same in Spanish",
     pronunciation: "de-CHÈN-te",
     example:     "Il ristorante era decente, niente di speciale.",
     exampleEN:   "The restaurant was decent, nothing special."
@@ -36,7 +36,7 @@ const wordmap = {
     spanish:     "dirección",
     note:        null,
     category:    "cognate",
-    label:       "Cognate",
+    label:       "Same in Spanish",
     pronunciation: "di-ret-TSYÒ-ne",
     example:     "Sai indicarmi la direzione per il centro?",
     exampleEN:   "Can you point me toward the center?"
@@ -66,7 +66,7 @@ const wordmap = {
     spanish:     "ya",
     note:        "Italian uses 'già' more broadly than Spanish 'ya' — also for emphasis and as a conversational filler.",
     category:    "divergence",
-    label:       "Divergence",
+    label:       "Used differently",
     pronunciation: "JÀ",
     example:     "Hai già mangiato? È ancora presto.",
     exampleEN:   "Have you already eaten? It's still early."
@@ -76,7 +76,7 @@ const wordmap = {
     spanish:     "todavía / aún",
     note:        "Looks like 'ancla' (anchor) in Spanish — false visual cognate. Means still, yet, or again in Italian.",
     category:    "divergence",
-    label:       "Divergence",
+    label:       "Used differently",
     pronunciation: "an-KÒ-ra",
     example:     "Sei ancora sveglio? È tardissimo.",
     exampleEN:   "Are you still awake? It's very late."
@@ -86,7 +86,7 @@ const wordmap = {
     spanish:     "tomé / tomado",
     note:        "Italian uses 'prendere' (to take) where Spanish uses 'tomar' — same semantic slot, different verb.",
     category:    "new",
-    label:       "New Word",
+    label:       "New word",
     pronunciation: "PRÈ-zo",
     example:     "Ho preso un cappuccino e un cornetto.",
     exampleEN:   "I had a cappuccino and a croissant."
@@ -96,7 +96,7 @@ const wordmap = {
     spanish:     "despertado",
     note:        "From 'svegliarsi' — a reflexive verb. Its past tense is built with 'essere': mi sono svegliato.",
     category:    "new",
-    label:       "New Word",
+    label:       "New word",
     pronunciation: "zvel-YÀ-to",
     example:     "Mi sono svegliato tardi stamattina.",
     exampleEN:   "I woke up late this morning."

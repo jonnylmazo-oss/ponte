@@ -59,10 +59,10 @@
 
   // ── Categories ─────────────────────────────────────────────────────────
   const CATEGORY_LABELS = {
-    'cognate':      'Cognate',
+    'cognate':      'Same in Spanish',
     'false-friend': 'False Friend',
-    'divergence':   'Divergence',
-    'new':          'New Word',
+    'divergence':   'Used differently',
+    'new':          'New word',
   };
 
   const CATEGORY_COLORS = {
