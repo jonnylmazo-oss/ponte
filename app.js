@@ -6,6 +6,7 @@
   const LS_TRANSL   = 'ponte_translation';
   const LS_TAB      = 'ponte_tab';
   const LS_SIDEBAR  = 'ponte_sidebar';
+  const FC_KEY      = 'ponte_flashcards';
 
   const SURPRISE_TOPICS = [
     'mercato', 'calcio', 'caffè', 'spiaggia', 'lavoro',
@@ -50,6 +51,7 @@
   const tooltipExample   = $('tooltip-example');
   const tooltipExampleIt = $('tooltip-example-it');
   const tooltipExampleEn = $('tooltip-example-en');
+  const tooltipSaveBtn   = $('tooltip-save-btn');
   const backdrop         = $('tooltip-backdrop');
 
   const topicInput       = $('topic-input');
@@ -60,6 +62,10 @@
 
   const appWrapper      = $('app-wrapper');
   const sidebarToggleBtn = $('sidebar-toggle');
+
+  // Track the word/entry currently shown in the tooltip so save button can access it
+  let currentTooltipWord  = '';
+  let currentTooltipEntry = null;
 
   // ── Categories ─────────────────────────────────────────────────────────
   const CATEGORY_LABELS = {
@@ -303,6 +309,9 @@
   }
 
   function populateTooltip(word, entry) {
+    currentTooltipWord  = word;
+    currentTooltipEntry = entry;
+
     tooltipWord.textContent  = word;
     tooltipPron.textContent  = entry.pronunciation || '';
     tooltipPron.hidden       = !entry.pronunciation;
@@ -322,6 +331,9 @@
 
     const accent = CATEGORY_COLORS[entry.category] || CATEGORY_COLORS['new'];
     tooltip.style.setProperty('--tooltip-accent', accent);
+
+    // Update save button state
+    updateSaveBtn(word);
   }
 
   function revealTooltip() {
@@ -694,9 +706,81 @@
     }
   }
 
+  // ── Flashcards ─────────────────────────────────────────────────────────
+  function loadFlashcards() {
+    try { return JSON.parse(localStorage.getItem(FC_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function isFlashcardSaved(word) {
+    return loadFlashcards().some((c) => c.italian.toLowerCase() === word.toLowerCase());
+  }
+
+  function updateSaveBtn(word) {
+    if (!tooltipSaveBtn) return;
+    const saved = word && isFlashcardSaved(word);
+    tooltipSaveBtn.textContent = saved ? 'Saved ✓' : 'Save ★';
+    tooltipSaveBtn.classList.toggle('saved', !!saved);
+  }
+
+  function updateFlashcardBadge() {
+    const count = loadFlashcards().length;
+    ['fc-badge-sidebar', 'fc-badge-bottom'].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = count;
+      el.hidden = count === 0;
+    });
+  }
+
+  tooltipSaveBtn && tooltipSaveBtn.addEventListener('click', () => {
+    if (!currentTooltipEntry || !currentTooltipWord) return;
+    const cards = loadFlashcards();
+    const key   = currentTooltipWord.toLowerCase();
+
+    // Toggle: if already saved, remove it
+    const existingIdx = cards.findIndex((c) => c.italian.toLowerCase() === key);
+    if (existingIdx !== -1) {
+      cards.splice(existingIdx, 1);
+      localStorage.setItem(FC_KEY, JSON.stringify(cards));
+      updateSaveBtn(currentTooltipWord);
+      updateFlashcardBadge();
+      window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+      return;
+    }
+
+    const card = {
+      id:            Date.now(),
+      italian:       currentTooltipWord,
+      english:       currentTooltipEntry.english  || '',
+      spanish:       currentTooltipEntry.spanish  || '',
+      category:      currentTooltipEntry.category || 'new',
+      note:          currentTooltipEntry.note     || '',
+      savedAt:       new Date().toISOString(),
+      sourceArticle: state.article ? state.article.title : '',
+      timesCorrect:  0,
+      timesWrong:    0,
+      lastSeen:      null,
+    };
+    cards.push(card);
+    localStorage.setItem(FC_KEY, JSON.stringify(cards));
+
+    // Brief flash animation
+    tooltipSaveBtn.textContent = 'Saved!';
+    tooltipSaveBtn.classList.add('flash');
+    setTimeout(() => {
+      tooltipSaveBtn.classList.remove('flash');
+      updateSaveBtn(currentTooltipWord);
+    }, 800);
+
+    updateFlashcardBadge();
+    window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+  });
+
   // ── Init ───────────────────────────────────────────────────────────────
   initTabs();
   initSidebar();
   initTranslationToggle();
+  updateFlashcardBadge();
   renderArticle(articles[0], window.wordmap);
 })();

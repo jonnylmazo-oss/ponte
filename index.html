@@ -36,6 +36,10 @@
           <span class="nav-icon">✍️</span>
           <span class="nav-label">Practice</span>
         </button>
+        <button class="nav-item" data-tab="flashcards">
+          <span class="nav-icon">🃏</span>
+          <span class="nav-label">Flashcards <span class="fc-badge" id="fc-badge-sidebar" hidden></span></span>
+        </button>
         <button class="nav-item" data-tab="shadowing">
           <span class="nav-icon">🎙️</span>
           <span class="nav-label">Shadowing</span>
@@ -267,6 +271,76 @@
         </div>
       </div>
 
+      <!-- Tab: Flashcards -->
+      <div class="tab-panel" id="tab-flashcards">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+
+        <!-- Toolbar -->
+        <div class="fc-toolbar" id="fc-toolbar">
+          <div class="fc-toolbar-left">
+            <input type="text" id="fc-search" class="fc-search"
+              placeholder="Search Italian, English, or Spanish…" autocomplete="off" />
+            <div class="fc-filters">
+              <button class="fc-filter active" data-cat="all">All</button>
+              <button class="fc-filter" data-cat="cognate">Same in Spanish</button>
+              <button class="fc-filter" data-cat="false-friend">False Friend</button>
+              <button class="fc-filter" data-cat="divergence">Used differently</button>
+              <button class="fc-filter" data-cat="new">New word</button>
+            </div>
+            <span class="fc-count" id="fc-count"></span>
+          </div>
+          <button class="fc-drill-toggle" id="fc-drill-toggle">🃏 Drill mode</button>
+        </div>
+
+        <!-- Browse mode -->
+        <div class="fc-browse" id="fc-browse">
+          <div class="fc-grid" id="fc-grid"></div>
+          <div class="fc-empty" id="fc-empty" hidden>
+            <div class="fc-empty-icon">🃏</div>
+            <p class="fc-empty-title">No flashcards yet</p>
+            <p class="fc-empty-desc">Open an article in the Reader, hover a word or select a phrase, and tap <strong>Save ★</strong> to add it here.</p>
+          </div>
+        </div>
+
+        <!-- Drill mode -->
+        <div class="fc-drill" id="fc-drill" hidden>
+          <div class="fc-drill-topbar">
+            <span class="fc-drill-status" id="fc-drill-status"></span>
+            <button class="fc-exit-drill" id="fc-exit-drill">Exit</button>
+          </div>
+          <div class="fc-drill-arena">
+            <div class="fc-flip-card">
+              <div class="fc-flip-inner" id="fc-flip-inner">
+                <div class="fc-flip-face fc-flip-front">
+                  <div class="fc-flip-word" id="fc-flip-word"></div>
+                  <p class="fc-flip-source" id="fc-flip-source"></p>
+                  <p class="fc-flip-prompt">What does this mean?</p>
+                  <button class="fc-flip-btn" id="fc-flip-btn">Flip</button>
+                </div>
+                <div class="fc-flip-face fc-flip-back">
+                  <div class="fc-flip-word" id="fc-flip-word-back"></div>
+                  <div class="fc-flip-answer" id="fc-flip-answer"></div>
+                  <p class="fc-flip-note" id="fc-flip-note"></p>
+                  <div class="fc-drill-actions">
+                    <button class="fc-got-btn" id="fc-got-btn">✓ Got it</button>
+                    <button class="fc-tricky-btn" id="fc-tricky-btn">↺ Tricky</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drill complete -->
+        <div class="fc-drill-done" id="fc-drill-done" hidden>
+          <div class="fc-drill-done-icon">🎉</div>
+          <h2 class="fc-drill-done-title">Deck complete!</h2>
+          <p class="fc-drill-score" id="fc-drill-score"></p>
+          <div class="fc-tricky-list" id="fc-tricky-list"></div>
+          <button class="fc-drill-restart" id="fc-drill-restart">Drill again</button>
+        </div>
+      </div><!-- #tab-flashcards -->
+
       <!-- Tab: Shadowing -->
       <div class="tab-panel" id="tab-shadowing">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
@@ -310,6 +384,10 @@
       <span class="bottom-nav-icon">✍️</span>
       <span class="bottom-nav-label">Practice</span>
     </button>
+    <button class="bottom-nav-item" data-tab="flashcards">
+      <span class="bottom-nav-icon">🃏</span>
+      <span class="bottom-nav-label">Cards <span class="fc-badge" id="fc-badge-bottom" hidden></span></span>
+    </button>
     <button class="bottom-nav-item" data-tab="shadowing">
       <span class="bottom-nav-icon">🎙️</span>
       <span class="bottom-nav-label">Shadowing</span>
@@ -344,6 +422,9 @@
       <p class="tooltip-example-it" id="tooltip-example-it"></p>
       <p class="tooltip-example-en" id="tooltip-example-en"></p>
     </div>
+    <div class="tooltip-footer">
+      <button class="tooltip-save-btn" id="tooltip-save-btn">Save ★</button>
+    </div>
   </div>
 
   <!-- Mobile bottom-sheet backdrop -->
@@ -357,5 +438,6 @@
   <script src="app.js"></script>
   <script src="false-friends.js"></script>
   <script src="grammar.js"></script>
+  <script src="flashcards.js"></script>
 </body>
 </html>

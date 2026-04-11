@@ -800,6 +800,57 @@ header {
 }
 
 
+/* ─── Tooltip save button ────────────────────────────────────── */
+
+.tooltip-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-mid);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tooltip-save-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.tooltip-save-btn:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border-color: #444;
+}
+.tooltip-save-btn.saved {
+  color: #3dd68c;
+  border-color: rgba(61, 214, 140, 0.4);
+}
+.tooltip-save-btn.flash {
+  color: #3dd68c;
+  border-color: rgba(61, 214, 140, 0.4);
+  background: rgba(61, 214, 140, 0.08);
+}
+
+/* ─── Flashcard count badge ───────────────────────────────────── */
+
+.fc-badge {
+  display: inline-block;
+  background: rgba(74, 144, 217, 0.25);
+  color: #4A90D9;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 8px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 /* ─── Tooltip backdrop (mobile) ──────────────────────────────── */
 
 .tooltip-backdrop {
@@ -1900,4 +1951,407 @@ header {
   .gr-cat-btn, .gr-diff-btn, .gr-drill-cat-btn { padding: 4px 7px; font-size: 11px; }
   .gr-drill-sentence { font-size: 15px; }
   .gr-drill-options { grid-template-columns: 1fr; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Flashcards tab
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Toolbar ────────────────────────────────────────────────── */
+
+.fc-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fc-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fc-search {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 7px 12px;
+  width: 260px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.fc-search:focus { border-color: #444; }
+.fc-search::placeholder { color: var(--text-dim); }
+
+.fc-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fc-filter {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: 20px;
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.fc-filter:hover { background: var(--bg-card-hover); color: var(--text); }
+.fc-filter.active {
+  background: rgba(74, 144, 217, 0.12);
+  border-color: rgba(74, 144, 217, 0.4);
+  color: #4A90D9;
+}
+
+.fc-count {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.fc-drill-toggle {
+  align-self: flex-start;
+  background: rgba(74, 144, 217, 0.1);
+  border: 1px solid rgba(74, 144, 217, 0.3);
+  border-radius: var(--radius);
+  color: #4A90D9;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-drill-toggle:hover { background: rgba(74, 144, 217, 0.18); }
+.fc-drill-toggle:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ─── Browse ─────────────────────────────────────────────────── */
+
+.fc-browse {
+  padding: 24px 28px 40px;
+}
+
+.fc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.fc-empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+.fc-empty-icon { font-size: 40px; margin-bottom: 14px; }
+.fc-empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.fc-empty-desc { font-size: 13px; color: var(--text-mid); max-width: 320px; margin: 0 auto; line-height: 1.55; }
+
+/* ─── Card ───────────────────────────────────────────────────── */
+
+.fc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.12s, background 0.12s;
+}
+.fc-card:hover { background: #1e1e1e; }
+
+.fc-card-body { padding: 14px 16px 12px; }
+
+.fc-card-italian {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.fc-card-en {
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-bottom: 2px;
+}
+.fc-card-es {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 6px;
+}
+.fc-card-note {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.45;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+.fc-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.fc-card-source {
+  font-size: 11px;
+  color: var(--text-dim);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-cat-badge {
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.fc-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: color 0.1s, background 0.1s;
+  flex-shrink: 0;
+}
+.fc-delete-btn:hover { color: #e06c75; background: rgba(224, 108, 117, 0.1); }
+
+/* ─── Drill topbar ───────────────────────────────────────────── */
+
+.fc-drill-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.fc-drill-status {
+  font-size: 13px;
+  color: var(--text-mid);
+  font-variant-numeric: tabular-nums;
+}
+.fc-exit-drill {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s;
+}
+.fc-exit-drill:hover { color: var(--text); border-color: #444; }
+
+/* ─── Flip card ──────────────────────────────────────────────── */
+
+.fc-drill-arena {
+  display: flex;
+  justify-content: center;
+  padding: 36px 28px;
+}
+
+.fc-flip-card {
+  width: 100%;
+  max-width: 440px;
+  min-height: 280px;
+  perspective: 1200px;
+}
+
+.fc-flip-inner {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fc-flip-inner.flipped { transform: rotateY(180deg); }
+
+.fc-flip-face {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  min-height: 280px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 12px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 28px;
+  gap: 14px;
+  text-align: center;
+}
+.fc-flip-back {
+  transform: rotateY(180deg);
+  justify-content: flex-start;
+  padding-top: 28px;
+}
+
+.fc-flip-word {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.fc-flip-source {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.fc-flip-prompt {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.fc-flip-btn {
+  background: rgba(74, 144, 217, 0.1);
+  border: 1px solid rgba(74, 144, 217, 0.3);
+  border-radius: var(--radius);
+  color: #4A90D9;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 24px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-flip-btn:hover { background: rgba(74, 144, 217, 0.18); }
+.fc-flip-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.fc-flip-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.fc-flip-en {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.fc-flip-es {
+  font-size: 14px;
+  color: var(--text-mid);
+}
+.fc-flip-note {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 340px;
+}
+
+.fc-drill-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.fc-got-btn {
+  background: rgba(61, 214, 140, 0.1);
+  border: 1px solid rgba(61, 214, 140, 0.35);
+  border-radius: var(--radius);
+  color: #3dd68c;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-got-btn:hover { background: rgba(61, 214, 140, 0.18); }
+
+.fc-tricky-btn {
+  background: rgba(245, 200, 66, 0.08);
+  border: 1px solid rgba(245, 200, 66, 0.3);
+  border-radius: var(--radius);
+  color: var(--false-friend);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-tricky-btn:hover { background: rgba(245, 200, 66, 0.15); }
+
+/* ─── Drill done screen ──────────────────────────────────────── */
+
+.fc-drill-done {
+  text-align: center;
+  padding: 60px 28px;
+}
+.fc-drill-done-icon { font-size: 48px; margin-bottom: 16px; }
+.fc-drill-done-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+.fc-drill-score { font-size: 15px; color: var(--text-mid); margin-bottom: 20px; }
+
+.fc-tricky-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.fc-tricky-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.fc-tricky-item {
+  background: rgba(245, 200, 66, 0.1);
+  border: 1px solid rgba(245, 200, 66, 0.25);
+  border-radius: 4px;
+  color: var(--false-friend);
+  font-size: 13px;
+  padding: 3px 10px;
+}
+
+.fc-drill-restart {
+  background: rgba(74, 144, 217, 0.1);
+  border: 1px solid rgba(74, 144, 217, 0.3);
+  border-radius: var(--radius);
+  color: #4A90D9;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 28px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-drill-restart:hover { background: rgba(74, 144, 217, 0.18); }
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 820px) {
+  .fc-toolbar { padding: 14px 16px 10px; }
+  .fc-search { width: 100%; }
+  .fc-browse { padding: 16px 14px 80px; }
+  .fc-grid { grid-template-columns: 1fr; }
+  .fc-drill-arena { padding: 24px 16px; }
+  .fc-flip-face { padding: 24px 20px; }
+  .fc-flip-word { font-size: 28px; }
 }
