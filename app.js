@@ -51,6 +51,10 @@
   const tooltipExample   = $('tooltip-example');
   const tooltipExampleIt = $('tooltip-example-it');
   const tooltipExampleEn = $('tooltip-example-en');
+  const tooltipRowTense  = $('tooltip-row-tense');
+  const tooltipTense     = $('tooltip-tense');
+  const tooltipRowRoot   = $('tooltip-row-root');
+  const tooltipRoot      = $('tooltip-root');
   const tooltipSaveBtn   = $('tooltip-save-btn');
   const backdrop         = $('tooltip-backdrop');
 
@@ -320,6 +324,22 @@
     tooltipEN.textContent    = entry.english  || '';
     tooltipES.textContent    = entry.spanish  || '';
     tooltipNote.textContent  = entry.note     || '';
+
+    // Tense row
+    if (entry.tense) {
+      tooltipTense.textContent = entry.tense;
+      tooltipRowTense.hidden   = false;
+    } else {
+      tooltipRowTense.hidden = true;
+    }
+
+    // Root / infinitive row
+    if (entry.root) {
+      tooltipRoot.textContent = entry.root;
+      tooltipRowRoot.hidden   = false;
+    } else {
+      tooltipRowRoot.hidden = true;
+    }
 
     if (entry.example) {
       tooltipExampleIt.textContent = entry.example;
@@ -650,6 +670,8 @@
     tooltipEN.textContent    = 'Translating…';
     tooltipES.textContent    = '';
     tooltipNote.textContent  = '';
+    tooltipRowTense.hidden   = true;
+    tooltipRowRoot.hidden    = true;
     tooltipExample.hidden    = true;
     tooltip.style.setProperty('--tooltip-accent', 'rgba(0, 194, 184, 0.3)');
 

@@ -272,14 +272,17 @@ Return JSON only — no markdown, no code fences:
   "english": "English translation",
   "spanish": "Spanish equivalent or translation",
   "note": "One sentence for a Spanish speaker: is this a safe cognate, false friend, or does it diverge from Spanish usage?",
-  "category": "cognate or false-friend or divergence or new"
+  "category": "cognate or false-friend or divergence or new",
+  "tense": "if a conjugated verb, e.g. 'passato prossimo, 1st person singular' — otherwise null",
+  "root": "if a conjugated verb, the infinitive form e.g. 'svegliarsi' — otherwise null",
+  "pronunciation": "stress-marked syllable pronunciation e.g. 'TAR-di' or 'ka-FFÈ' — always include"
 }
 Category guide — "cognate": looks and means the same as Spanish; "false-friend": looks Spanish but means something different; "divergence": exists in Spanish but used differently in Italian; "new": no close Spanish equivalent.`;
 
   try {
     const message = await client.messages.create({
       model:       'claude-sonnet-4-20250514',
-      max_tokens:  300,
+      max_tokens:  400,
       temperature: 0.2,
       messages:    [{ role: 'user', content: prompt }],
     });

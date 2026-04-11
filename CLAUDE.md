@@ -99,7 +99,12 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `state.translationMode = true` while translation tooltip is showing — prevents hover-leave from dismissing it
 - `activeXlatText` guards against stale results from superseded requests
 - Results cached in `localStorage` under key `ponte_xlat_{text}`
-- `server.js`: `POST /api/translate` endpoint, `max_tokens: 300`, `temperature: 0.2`
+- `server.js`: `POST /api/translate` endpoint, `max_tokens: 400`, `temperature: 0.2`
+- Response fields: `{italian, english, spanish, note, category, tense, root, pronunciation}`
+  - `tense`: conjugated verb description e.g. `"passato prossimo, 1st person singular"`, or null
+  - `root`: infinitive form e.g. `"svegliarsi"`, or null — displayed in cyan, reserved for future tap-to-look-up
+  - `pronunciation`: always present, stress-marked e.g. `"TAR-di"`
+- Tooltip shows TENSE row and INFINITIVE row (hidden when null); pronunciation already shown under word via `tooltipPron`
 
 ## Translation column toggle
 - Toggle button in header (▶/◀) collapses/shows the English column

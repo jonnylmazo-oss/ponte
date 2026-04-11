@@ -765,6 +765,24 @@ header {
   color: var(--text);
 }
 
+/* Tense + root rows are more compact */
+.tooltip-row-tense,
+.tooltip-row-root {
+  font-size: 12px;
+  gap: 8px;
+}
+
+.tooltip-row-tense span:last-child {
+  color: var(--text-mid);
+}
+
+/* Root is cyan — styled for a future "look up infinitive" tap */
+.tooltip-root {
+  color: #00C2B8 !important;
+  font-style: italic;
+  cursor: default;
+}
+
 .tooltip-note {
   padding: 0 16px 10px;
   font-size: 12px;
