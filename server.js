@@ -3,14 +3,19 @@
 require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
+const fs       = require('fs');
+const path     = require('path');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+const FLASHCARDS_PATH = process.env.FLASHCARDS_PATH || path.join(__dirname, 'data', 'flashcards.json');
+
 const ALLOWED_ORIGINS = [
   'http://localhost:8080',
   'http://127.0.0.1:8080',
+  'http://198.199.88.229',
   'https://ponte.market',
 ];
 
@@ -301,6 +306,37 @@ Category guide — "cognate": looks and means the same as Spanish; "false-friend
       note:     '',
       category: 'new',
     });
+  }
+});
+
+// ── Flashcard persistence — GET /api/flashcards
+app.get('/api/flashcards', (req, res) => {
+  try {
+    if (!fs.existsSync(FLASHCARDS_PATH)) return res.json([]);
+    const data = fs.readFileSync(FLASHCARDS_PATH, 'utf8');
+    res.json(JSON.parse(data));
+  } catch (err) {
+    console.error('Error reading flashcards:', err.message);
+    res.json([]);
+  }
+});
+
+// ── Flashcard persistence — POST /api/flashcards
+// Body: full cards array — written atomically via temp file
+app.post('/api/flashcards', (req, res) => {
+  const cards = req.body;
+  if (!Array.isArray(cards)) {
+    return res.status(400).json({ error: 'Expected array' });
+  }
+  try {
+    fs.mkdirSync(path.dirname(FLASHCARDS_PATH), { recursive: true });
+    const tmp = FLASHCARDS_PATH + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(cards, null, 2), 'utf8');
+    fs.renameSync(tmp, FLASHCARDS_PATH);
+    res.json({ ok: true, count: cards.length });
+  } catch (err) {
+    console.error('Error writing flashcards:', err.message);
+    res.status(500).json({ error: 'Failed to save flashcards' });
   }
 });
 

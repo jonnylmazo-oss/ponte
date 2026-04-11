@@ -1,7 +1,11 @@
 (function () {
   'use strict';
 
-  const FC_KEY = 'ponte_flashcards';
+  const FC_KEY  = 'ponte_flashcards';
+  const API_BASE = (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) ? 'http://localhost:3000' : '';
 
   const CATEGORY_LABELS = {
     'cognate':      'Same in Spanish',
@@ -27,6 +31,11 @@
 
   function saveCards(cards) {
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
+    fetch(API_BASE + '/api/flashcards', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(cards),
+    }).catch(function(err) { console.warn('Flashcard sync failed:', err.message); });
   }
 
   // ── DOM refs ─────────────────────────────────────────────────────────────

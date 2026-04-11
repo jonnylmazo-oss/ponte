@@ -1,10 +1,11 @@
 (function () {
   'use strict';
 
-  // DEV: clear all ponte_ cache keys on load so stale translations don't mask bugs
-  Object.keys(localStorage).filter(function(k){ return k.startsWith('ponte_'); }).forEach(function(k){ localStorage.removeItem(k); });
-
-  const API_BASE    = 'http://localhost:3000';
+  // Use relative path on production (nginx proxies /api/); explicit localhost for dev
+  const API_BASE = (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) ? 'http://localhost:3000' : '';
   const CACHE_PREFIX = 'ponte_article_';
   const LS_TRANSL   = 'ponte_translation';
   const LS_TAB      = 'ponte_tab';
@@ -760,6 +761,42 @@
     });
   }
 
+  // Push full cards array to server (fire-and-forget; localStorage is the source of truth offline)
+  function persistFlashcardsToServer(cards) {
+    fetch(API_BASE + '/api/flashcards', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(cards),
+    }).catch((err) => console.warn('Flashcard sync to server failed:', err.message));
+  }
+
+  // On load: pull server cards, merge with localStorage (server wins on id conflicts),
+  // push any local-only cards back, then re-render badge.
+  async function syncFlashcardsFromServer() {
+    try {
+      const resp = await fetch(API_BASE + '/api/flashcards');
+      if (!resp.ok) return;
+      const serverCards = await resp.json();
+      if (!Array.isArray(serverCards)) return;
+
+      const localCards = loadFlashcards();
+      // Union: start from server list, append local cards that server doesn't have
+      const merged = [...serverCards];
+      localCards.forEach((lc) => {
+        if (!merged.find((sc) => sc.id === lc.id)) merged.push(lc);
+      });
+
+      // If there were local-only cards, push the merged set back to server
+      if (merged.length > serverCards.length) persistFlashcardsToServer(merged);
+
+      localStorage.setItem(FC_KEY, JSON.stringify(merged));
+      updateFlashcardBadge();
+      window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+    } catch (err) {
+      console.warn('Flashcard initial sync failed (offline?):', err.message);
+    }
+  }
+
   tooltipSaveBtn && tooltipSaveBtn.addEventListener('click', () => {
     if (!currentTooltipEntry || !currentTooltipWord) return;
     const cards = loadFlashcards();
@@ -770,6 +807,7 @@
     if (existingIdx !== -1) {
       cards.splice(existingIdx, 1);
       localStorage.setItem(FC_KEY, JSON.stringify(cards));
+      persistFlashcardsToServer(cards);
       updateSaveBtn(currentTooltipWord);
       updateFlashcardBadge();
       window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
@@ -791,6 +829,7 @@
     };
     cards.push(card);
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
+    persistFlashcardsToServer(cards);
 
     // Brief flash animation
     tooltipSaveBtn.textContent = 'Saved!';
@@ -809,5 +848,6 @@
   initSidebar();
   initTranslationToggle();
   updateFlashcardBadge();
+  syncFlashcardsFromServer(); // async; localStorage badge already shown above
   renderArticle(articles[0], window.wordmap);
 })();
