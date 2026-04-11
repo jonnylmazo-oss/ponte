@@ -21,7 +21,10 @@
       </div>
     </div>
     <div class="header-right">
-      <span class="toggle-label">Translation</span>
+      <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation">
+        <span class="transl-toggle-label">EN</span>
+        <span class="transl-toggle-icon" aria-hidden="true">▶</span>
+      </button>
       <div class="lang-toggle" role="group" aria-label="Translation language">
         <button class="toggle-btn active" data-lang="en">EN</button>
         <button class="toggle-btn" data-lang="es">ES</button>
@@ -46,7 +49,7 @@
     <span class="generate-error" id="generate-error" hidden></span>
   </div>
 
-  <main class="reader">
+  <main class="reader" id="reader">
     <div class="column column-translation">
       <div class="column-label" id="translation-label">English</div>
       <div class="column-body" id="translation-text"></div>
@@ -68,7 +71,10 @@
   <!-- Tooltip card -->
   <div class="tooltip" id="tooltip" aria-hidden="true" hidden>
     <div class="tooltip-header">
-      <span class="tooltip-word" id="tooltip-word"></span>
+      <div class="tooltip-word-group">
+        <span class="tooltip-word" id="tooltip-word"></span>
+        <span class="tooltip-pron" id="tooltip-pron"></span>
+      </div>
       <span class="tooltip-badge" id="tooltip-badge"></span>
     </div>
     <div class="tooltip-rows">
@@ -82,7 +88,14 @@
       </div>
     </div>
     <p class="tooltip-note" id="tooltip-note"></p>
+    <div class="tooltip-example" id="tooltip-example">
+      <p class="tooltip-example-it" id="tooltip-example-it"></p>
+      <p class="tooltip-example-en" id="tooltip-example-en"></p>
+    </div>
   </div>
+
+  <!-- Mobile bottom-sheet backdrop -->
+  <div class="tooltip-backdrop" id="tooltip-backdrop"></div>
 
   <script src="data/articles.js"></script>
   <script src="data/wordmap.js"></script>

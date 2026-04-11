@@ -40,10 +40,10 @@ function buildPrompt(topic, difficulty) {
   "english": "(natural English translation, not literal)",
   "spanish": "(natural Spanish translation)",
   "words": [
-    { "word": "...", "english": "...", "spanish": "...", "category": "cognate|false-friend|divergence|new", "note": "...", "example": "..." }
+    { "word": "...", "english": "...", "spanish": "...", "category": "cognate|false-friend|divergence|new", "note": "...", "pronunciation": "...", "example": "...", "exampleEN": "..." }
   ]
 }
-The words array must include minimum 8 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish. Return only the JSON object, no markdown, no code fences.`;
+The words array must include minimum 8 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish. The pronunciation field should be a simple stress-marked syllable hint (e.g. "kaf-FÈ", "BUR-ro"). The example field is a short natural Italian sentence using that word. The exampleEN field is the English translation of that sentence. Return only the JSON object, no markdown, no code fences.`;
 }
 
 // ── SSE streaming endpoint — GET /api/generate-article-stream?topic=...&difficulty=...

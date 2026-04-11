@@ -115,11 +115,33 @@ header {
   flex-shrink: 0;
 }
 
-.toggle-label {
-  font-size: 12px;
-  font-weight: 500;
+/* ─── Translation column toggle ──────────────────────────────── */
+
+.transl-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
   color: var(--text-dim);
-  letter-spacing: 0.2px;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.transl-toggle:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-mid);
+}
+
+.transl-toggle-icon {
+  font-size: 9px;
+  opacity: 0.6;
 }
 
 .lang-toggle {
@@ -284,6 +306,15 @@ header {
   min-height: calc(100vh - var(--header-h));
 }
 
+/* Collapsed translation column */
+.reader.translation-collapsed {
+  grid-template-columns: 1fr;
+}
+
+.reader.translation-collapsed .column-translation {
+  display: none;
+}
+
 .column {
   padding: 40px 44px;
 }
@@ -297,6 +328,10 @@ header {
   background: var(--bg-italian);
   /* Subtle inner glow on the left edge to reinforce "active side" */
   box-shadow: inset 4px 0 24px rgba(0, 0, 0, 0.25);
+}
+
+.reader.translation-collapsed .column-italian {
+  box-shadow: none;
 }
 
 .column-label {
@@ -372,7 +407,6 @@ header {
 .word {
   cursor: default;
   border-radius: 3px;
-  /* slight padding so the hover bg doesn't feel cramped */
   padding: 0 1px;
   margin: 0 -1px;
 }
@@ -396,19 +430,21 @@ header {
 /* ─── Tooltip ────────────────────────────────────────────────── */
 
 .tooltip {
+  --tooltip-accent: rgba(136, 136, 136, 0.25);
+
   position: fixed;
   z-index: 100;
-  min-width: 230px;
-  max-width: 310px;
-  background: #1C1C1C;
-  border: 1px solid var(--border-mid);
-  border-radius: 9px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+  min-width: 260px;
+  max-width: 320px;
+  background: #1A1A2E;
+  border: 1px solid var(--tooltip-accent);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 2px 8px rgba(0, 0, 0, 0.4);
   overflow: hidden;
   /* transitions */
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.12s ease, transform 0.12s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
   pointer-events: none;
 }
 
@@ -419,20 +455,38 @@ header {
 }
 
 .tooltip-header {
-  padding: 13px 15px 11px;
+  padding: 14px 16px 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tooltip-word-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .tooltip-word {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.4px;
+  line-height: 1.2;
 }
+
+.tooltip-pron {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-mid);
+  letter-spacing: 0.3px;
+  font-style: italic;
+}
+
+.tooltip-pron[hidden] { display: none; }
 
 .tooltip-badge {
   font-size: 9.5px;
@@ -442,6 +496,7 @@ header {
   padding: 3px 8px;
   border-radius: 4px;
   flex-shrink: 0;
+  margin-top: 3px;
 }
 
 .tooltip-badge.cognate {
@@ -462,7 +517,7 @@ header {
 }
 
 .tooltip-rows {
-  padding: 11px 15px 9px;
+  padding: 11px 16px 9px;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -481,7 +536,7 @@ header {
   font-weight: 700;
   letter-spacing: 0.7px;
   color: var(--text-dim);
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-mid);
   padding: 1px 5px;
   border-radius: 3px;
@@ -495,13 +550,55 @@ header {
 }
 
 .tooltip-note {
-  padding: 0 15px 12px;
+  padding: 0 16px 10px;
   font-size: 12px;
   color: var(--text-mid);
   line-height: 1.55;
 }
 
 .tooltip-note:empty { display: none; }
+
+/* ─── Example sentence ───────────────────────────────────────── */
+
+.tooltip-example {
+  margin: 0 16px 13px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--tooltip-accent);
+  border-radius: 5px;
+}
+
+.tooltip-example[hidden] { display: none; }
+
+.tooltip-example-it {
+  font-size: 13px;
+  color: #C8C8DC;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.tooltip-example-en {
+  font-size: 11.5px;
+  color: var(--text-mid);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+
+/* ─── Tooltip backdrop (mobile) ──────────────────────────────── */
+
+.tooltip-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.tooltip-backdrop.visible {
+  display: block;
+}
 
 
 /* ─── Responsive ─────────────────────────────────────────────── */
@@ -524,6 +621,15 @@ header {
     min-height: unset;
   }
 
+  /* Translation-collapsed has no effect on mobile — both columns always stack */
+  .reader.translation-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .reader.translation-collapsed .column-translation {
+    display: block;
+  }
+
   .column {
     padding: 28px 22px;
   }
@@ -538,11 +644,33 @@ header {
   }
 
   .column-body { font-size: 16px; }
+
+  /* ── Tooltip bottom sheet on mobile ── */
+  .tooltip {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    /* Override desktop fade-up — slide up from bottom */
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 480px) {
   .article-title { display: none; }
-  .toggle-label  { display: none; }
   .logo          { font-size: 19px; }
   .column-label  { gap: 8px; }
   .legend        { gap: 10px; }

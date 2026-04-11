@@ -3,6 +3,7 @@
 
   const API_BASE    = 'http://localhost:3000';
   const CACHE_PREFIX = 'ponte_article_';
+  const LS_TRANSL   = 'ponte_translation';
 
   const SURPRISE_TOPICS = [
     'mercato', 'calcio', 'caffè', 'spiaggia', 'lavoro',
@@ -13,10 +14,11 @@
 
   // ── State ──────────────────────────────────────────────────────────────
   const state = {
-    article:      null,
-    lang:         'en',   // 'en' | 'es'
-    activeWordEl: null,
-    activeWordmap: {},
+    article:         null,
+    lang:            'en',   // 'en' | 'es'
+    activeWordEl:    null,
+    activeWordmap:   {},
+    translationOpen: false,  // default: collapsed
   };
 
   // ── DOM refs ───────────────────────────────────────────────────────────
@@ -29,13 +31,20 @@
   const translationText   = $('translation-text');
   const italianText       = $('italian-text');
   const toggleBtns        = document.querySelectorAll('.toggle-btn');
+  const readerEl          = $('reader');
+  const translToggleBtn   = $('transl-toggle');
 
-  const tooltip      = $('tooltip');
-  const tooltipWord  = $('tooltip-word');
-  const tooltipBadge = $('tooltip-badge');
-  const tooltipEN    = $('tooltip-english');
-  const tooltipES    = $('tooltip-spanish');
-  const tooltipNote  = $('tooltip-note');
+  const tooltip          = $('tooltip');
+  const tooltipWord      = $('tooltip-word');
+  const tooltipPron      = $('tooltip-pron');
+  const tooltipBadge     = $('tooltip-badge');
+  const tooltipEN        = $('tooltip-english');
+  const tooltipES        = $('tooltip-spanish');
+  const tooltipNote      = $('tooltip-note');
+  const tooltipExample   = $('tooltip-example');
+  const tooltipExampleIt = $('tooltip-example-it');
+  const tooltipExampleEn = $('tooltip-example-en');
+  const backdrop         = $('tooltip-backdrop');
 
   const topicInput       = $('topic-input');
   const difficultySelect = $('difficulty-select');
@@ -51,16 +60,26 @@
     'new':          'New Word',
   };
 
+  const CATEGORY_COLORS = {
+    'cognate':      'rgba(74, 144, 217, 0.45)',
+    'false-friend': 'rgba(245, 200, 66, 0.45)',
+    'divergence':   'rgba(245, 137, 74, 0.45)',
+    'new':          'rgba(136, 136, 136, 0.25)',
+  };
+
   // ── Wordmap builder ────────────────────────────────────────────────────
   function buildWordmap(words) {
     const map = {};
-    (words || []).forEach(({ word, english, spanish, category, note }) => {
+    (words || []).forEach(({ word, english, spanish, category, note, pronunciation, example, exampleEN }) => {
       map[word.toLowerCase()] = {
         english,
         spanish,
-        note:     note || null,
+        note:          note || null,
         category,
-        label:    CATEGORY_LABELS[category] || category,
+        label:         CATEGORY_LABELS[category] || category,
+        pronunciation: pronunciation || null,
+        example:       example || null,
+        exampleEN:     exampleEN || null,
       };
     });
     return map;
@@ -135,13 +154,11 @@
   }
 
   // Extract the value of "italian": "..." from a partial JSON buffer.
-  // Returns the raw text (with JSON escape sequences resolved), or null if not yet reached.
   function extractStreamingItalian(buffer) {
     const MARKER = '"italian":';
     const markerIdx = buffer.indexOf(MARKER);
     if (markerIdx === -1) return null;
 
-    // Find the opening quote of the value
     let i = markerIdx + MARKER.length;
     while (i < buffer.length && buffer[i] !== '"') i++;
     if (i >= buffer.length) return null;
@@ -159,7 +176,7 @@
         else                    { text += next; }
         i += 2;
       } else if (ch === '"') {
-        break; // reached closing quote
+        break;
       } else {
         text += ch;
         i++;
@@ -169,17 +186,14 @@
     return text.length > 0 ? text : null;
   }
 
-  // Render partial Italian text with a blinking cursor while streaming.
-  // Skeleton stays visible until the "italian" field begins arriving.
   function renderStreamingText(buffer) {
     const italian = extractStreamingItalian(buffer);
-    if (italian === null) return; // skeleton stays
+    if (italian === null) return;
 
     italianText.innerHTML =
       escapeHTML(italian) +
       '<span class="stream-cursor" aria-hidden="true"></span>';
 
-    // Show title as soon as it's fully quoted in the buffer
     const titleMatch = buffer.match(/"title"\s*:\s*"([^"\\]*)"/);
     if (titleMatch) articleTitle.textContent = titleMatch[1];
   }
@@ -245,6 +259,10 @@
   }
 
   // ── Tooltip ────────────────────────────────────────────────────────────
+  function isMobile() {
+    return window.innerWidth <= 820;
+  }
+
   function showTooltip(wordEl) {
     const key   = wordEl.dataset.word;
     const entry = state.activeWordmap[key];
@@ -255,11 +273,25 @@
     wordEl.classList.add('active');
 
     tooltipWord.textContent  = key;
+    tooltipPron.textContent  = entry.pronunciation || '';
+    tooltipPron.hidden       = !entry.pronunciation;
     tooltipBadge.textContent = CATEGORY_LABELS[entry.category] || entry.category;
     tooltipBadge.className   = `tooltip-badge ${entry.category}`;
     tooltipEN.textContent    = entry.english;
     tooltipES.textContent    = entry.spanish;
     tooltipNote.textContent  = entry.note || '';
+
+    if (entry.example) {
+      tooltipExampleIt.textContent = entry.example;
+      tooltipExampleEn.textContent = entry.exampleEN || '';
+      tooltipExample.hidden = false;
+    } else {
+      tooltipExample.hidden = true;
+    }
+
+    // Category-colored border accent
+    const accent = CATEGORY_COLORS[entry.category] || CATEGORY_COLORS['new'];
+    tooltip.style.setProperty('--tooltip-accent', accent);
 
     tooltip.hidden = false;
     tooltip.removeAttribute('aria-hidden');
@@ -267,7 +299,12 @@
     // eslint-disable-next-line no-unused-expressions
     tooltip.offsetHeight; // trigger reflow so transition fires
     tooltip.classList.add('visible');
-    positionTooltip(wordEl);
+
+    if (isMobile()) {
+      backdrop.classList.add('visible');
+    } else {
+      positionTooltip(wordEl);
+    }
   }
 
   function positionTooltip(wordEl) {
@@ -296,9 +333,31 @@
     }
     tooltip.classList.remove('visible');
     tooltip.setAttribute('aria-hidden', 'true');
+    backdrop.classList.remove('visible');
     setTimeout(() => {
       if (!tooltip.classList.contains('visible')) tooltip.hidden = true;
-    }, 140);
+    }, 280);
+  }
+
+  // ── Translation column toggle ──────────────────────────────────────────
+  function applyTranslationState(open, save) {
+    state.translationOpen = open;
+    readerEl.classList.toggle('translation-collapsed', !open);
+    const icon = translToggleBtn.querySelector('.transl-toggle-icon');
+    if (icon) icon.textContent = open ? '◀' : '▶';
+    translToggleBtn.setAttribute('aria-pressed', String(open));
+    if (save) localStorage.setItem(LS_TRANSL, open ? '1' : '0');
+  }
+
+  function initTranslationToggle() {
+    const saved = localStorage.getItem(LS_TRANSL);
+    // Default: collapsed (false). Only open if explicitly saved as '1'.
+    const open = saved === '1';
+    applyTranslationState(open, false);
+
+    translToggleBtn.addEventListener('click', () => {
+      applyTranslationState(!state.translationOpen, true);
+    });
   }
 
   // ── Events ─────────────────────────────────────────────────────────────
@@ -312,6 +371,8 @@
     if (e.target.closest('#tooltip')) return;
     hideTooltip();
   });
+
+  backdrop.addEventListener('click', hideTooltip);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideTooltip();
@@ -346,5 +407,6 @@
   });
 
   // ── Init ───────────────────────────────────────────────────────────────
+  initTranslationToggle();
   renderArticle(articles[0], window.wordmap);
 })();
