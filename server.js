@@ -64,6 +64,98 @@ function extractAndSanitize(raw) {
   return sanitizeJSON(stripped);
 }
 
+// If the JSON is truncated (response cut off before closing brace), attempt to
+// close it so JSON.parse has a chance. Strategy: walk backwards from the end,
+// close any open string, then close open arrays and objects in reverse order.
+function repairTruncatedJSON(str) {
+  // Walk forward tracking open structures so we can close them.
+  // This is intentionally simple: handles the common truncation-at-words-array case.
+  let inString = false;
+  let escaped  = false;
+  const stack  = []; // 'o' = object, 'a' = array
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (escaped) { escaped = false; continue; }
+    if (ch === '\\' && inString) { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') stack.push('o');
+    else if (ch === '[') stack.push('a');
+    else if (ch === '}') stack.pop();
+    else if (ch === ']') stack.pop();
+  }
+
+  let repaired = str;
+
+  // If we ended mid-string, close it
+  if (inString) repaired += '"';
+
+  // Close any trailing comma before we start closing brackets
+  repaired = repaired.replace(/,\s*$/, '');
+
+  // Close open structures in reverse order
+  for (let i = stack.length - 1; i >= 0; i--) {
+    repaired += stack[i] === 'a' ? ']' : '}';
+  }
+
+  return repaired;
+}
+
+// Last-resort regex extraction: pull the four core text fields and return a
+// minimal article object so the reader can still render something.
+function extractFieldsViaRegex(str) {
+  function extractField(src, field) {
+    // Match "field": "value" — value may span multiple lines and contain escapes
+    const re = new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`);
+    const m = src.match(re);
+    return m ? m[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null;
+  }
+
+  const title      = extractField(str, 'title');
+  const italian    = extractField(str, 'italian');
+  const english    = extractField(str, 'english');
+  const spanish    = extractField(str, 'spanish');
+  const difficulty = extractField(str, 'difficulty');
+  const topic      = extractField(str, 'topic');
+
+  if (!italian) return null; // can't render anything useful without the main text
+
+  return {
+    id:         0,
+    title:      title      || '(untitled)',
+    difficulty: difficulty || '—',
+    topic:      topic      || '—',
+    italian,
+    english:    english    || '',
+    spanish:    spanish    || '',
+    words:      [],  // no annotations — truncation ate the words array
+  };
+}
+
+// Full parse pipeline: sanitize → try parse → try repair+parse → regex fallback
+function parseArticleJSON(raw) {
+  const sanitized = extractAndSanitize(raw);
+
+  // Attempt 1: clean parse after sanitization
+  try {
+    return JSON.parse(sanitized);
+  } catch (e1) {
+    // Attempt 2: repair truncated JSON then parse
+    try {
+      return JSON.parse(repairTruncatedJSON(sanitized));
+    } catch (e2) {
+      // Attempt 3: regex field extraction — renders without word annotations
+      const partial = extractFieldsViaRegex(sanitized);
+      if (partial) {
+        console.warn('Serving partial article (regex fallback) — no word annotations.');
+        return partial;
+      }
+      throw e1; // nothing worked; surface original error
+    }
+  }
+}
+
 // ── SSE streaming endpoint — GET /api/generate-article-stream?topic=...&difficulty=...
 app.get('/api/generate-article-stream', async (req, res) => {
   const { topic, difficulty } = req.query;
@@ -82,7 +174,7 @@ app.get('/api/generate-article-stream', async (req, res) => {
   try {
     const stream = await client.messages.create({
       model:       'claude-sonnet-4-20250514',
-      max_tokens:  800,
+      max_tokens:  1200,
       temperature: 0.8,
       stream:      true,
       messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
@@ -99,9 +191,9 @@ app.get('/api/generate-article-stream', async (req, res) => {
     // Parse the complete accumulated JSON and emit the done event
     let article;
     try {
-      article = JSON.parse(extractAndSanitize(accumulated));
+      article = parseArticleJSON(accumulated);
     } catch (parseErr) {
-      console.error('JSON parse failed (attempt 1):', parseErr.message);
+      console.error('All local parse attempts failed:', parseErr.message);
       console.error('Raw response length:', accumulated.length);
       console.error('Raw response (first 300 chars):', accumulated.slice(0, 300));
       const errPos = parseErr.message.match(/position (\d+)/);
@@ -115,15 +207,14 @@ app.get('/api/generate-article-stream', async (req, res) => {
       try {
         const retry = await client.messages.create({
           model:       'claude-sonnet-4-20250514',
-          max_tokens:  900,
+          max_tokens:  1200,
           temperature: 0.4,
           messages:    [{ role: 'user', content: buildPrompt(topic, difficulty, true) }],
         });
-        const retryRaw = retry.content[0].text;
-        article = JSON.parse(extractAndSanitize(retryRaw));
+        article = parseArticleJSON(retry.content[0].text);
         console.log('Retry succeeded.');
       } catch (retryErr) {
-        console.error('JSON parse failed (retry):', retryErr.message);
+        console.error('Retry also failed:', retryErr.message);
         throw parseErr; // surface original error to the outer catch
       }
     }
@@ -148,12 +239,12 @@ app.post('/api/generate-article-full', async (req, res) => {
   try {
     const message = await client.messages.create({
       model:       'claude-sonnet-4-20250514',
-      max_tokens:  800,
+      max_tokens:  1200,
       temperature: 0.8,
       messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
     });
 
-    const article = JSON.parse(extractAndSanitize(message.content[0].text));
+    const article = parseArticleJSON(message.content[0].text);
     res.json(article);
   } catch (err) {
     console.error('Generation error:', err.message);
