@@ -80,11 +80,15 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Claude prompt requests these fields for generated articles
 
 ## Dynamic translation
-- Selecting any text in the Italian column shows a cyan "Translate ↗" pill button 8px above the selection
-- Button calls `POST /api/translate { text, context }` (context = full Italian article text)
-- Claude returns `{ italian, english, spanish, note, category }` — renders in the same tooltip card
+- Selecting any text in the Italian column immediately triggers translation — no button click required
+- `selectionchange` event (debounced 300ms) detects stable selections; fires `doTranslate` automatically
+- `showTooltipLoading(word, anchorRect)`: tooltip appears instantly with "Translating…", positioned at the selection rect
+- When API responds: `showTooltipFromEntry(entry, anchorRect)` updates in place
+- `AbortController` cancels in-flight requests when the user changes selection mid-flight
+- Selection cleared → tooltip dismisses after 200ms grace period; mousing onto tooltip cancels that timer
+- `state.translationMode = true` while translation tooltip is showing — prevents hover-leave from dismissing it
+- `activeXlatText` guards against stale results from superseded requests
 - Results cached in `localStorage` under key `ponte_xlat_{text}`
-- Loading state: button shows "…" and disables during the API call
 - `server.js`: `POST /api/translate` endpoint, `max_tokens: 300`, `temperature: 0.2`
 
 ## Translation column toggle
