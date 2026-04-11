@@ -325,17 +325,19 @@
     tooltipES.textContent    = entry.spanish  || '';
     tooltipNote.textContent  = entry.note     || '';
 
-    // Tense row
-    if (entry.tense) {
-      tooltipTense.textContent = entry.tense;
+    // Tense row — guard against null, undefined, "", and the string "null"
+    const tenseVal = (entry.tense && entry.tense !== 'null') ? entry.tense.trim() : '';
+    if (tenseVal) {
+      tooltipTense.textContent = tenseVal;
       tooltipRowTense.hidden   = false;
     } else {
       tooltipRowTense.hidden = true;
     }
 
-    // Root / infinitive row
-    if (entry.root) {
-      tooltipRoot.textContent = entry.root;
+    // Root / infinitive row — same guard
+    const rootVal = (entry.root && entry.root !== 'null') ? entry.root.trim() : '';
+    if (rootVal) {
+      tooltipRoot.textContent = rootVal;
       tooltipRowRoot.hidden   = false;
     } else {
       tooltipRowRoot.hidden = true;

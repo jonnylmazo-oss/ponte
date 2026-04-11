@@ -483,24 +483,25 @@
 
     // Install banner: show once on iOS if not installed and not dismissed
     (function () {
-      const LS_KEY = 'ponte_install_dismissed';
-      if (localStorage.getItem(LS_KEY)) return;
+      const LS_KEY  = 'ponte_install_dismissed';
+      const banner  = document.getElementById('install-banner');
+      const dismiss = document.getElementById('install-banner-dismiss');
 
-      // Detect iOS Safari running in browser (not standalone)
+      // Wire dismiss button unconditionally — regardless of platform or detection logic
+      if (dismiss) {
+        dismiss.addEventListener('click', function () {
+          if (banner) banner.hidden = true;
+          localStorage.setItem(LS_KEY, '1');
+        });
+      }
+
+      // Show only on iOS Safari running in browser (not standalone) and not yet dismissed
+      if (localStorage.getItem(LS_KEY)) return;
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
       const isStandalone = navigator.standalone === true ||
                            window.matchMedia('(display-mode: standalone)').matches;
       if (!isIOS || isStandalone) return;
-
-      const banner  = document.getElementById('install-banner');
-      const dismiss = document.getElementById('install-banner-dismiss');
-      if (!banner) return;
-
-      banner.hidden = false;
-      dismiss.addEventListener('click', () => {
-        banner.hidden = true;
-        localStorage.setItem(LS_KEY, '1');
-      });
+      if (banner) banner.hidden = false;
     })();
   </script>
 </body>
