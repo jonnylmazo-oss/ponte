@@ -254,7 +254,8 @@
         localStorage.setItem(cacheKey, JSON.stringify(article));
         renderArticle(article);
       } catch (err) {
-        showError('Received invalid article data');
+        console.error('Failed to parse article from done event:', err.message);
+        showError('Article generation failed — please try again.');
         if (!state.article) renderArticle(articles[0], window.wordmap);
         else italianText.innerHTML = tokenizeItalian(state.article.italian);
       }
