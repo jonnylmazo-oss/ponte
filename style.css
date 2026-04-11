@@ -997,6 +997,14 @@ header {
   flex-wrap: wrap;
 }
 
+.ff-danger-legend {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: #555;
+  margin: 0;
+  padding-top: 2px;
+}
+
 .ff-search {
   flex: 1;
   min-width: 180px;
@@ -1109,42 +1117,33 @@ header {
   padding: 14px 16px 12px;
 }
 
-.ff-card-words {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
 .ff-it-word {
   font-size: 18px;
   font-weight: 700;
   color: var(--false-friend);
   letter-spacing: -0.3px;
+  margin-bottom: 3px;
 }
 
-.ff-sep {
-  font-size: 14px;
-  color: var(--text-dim);
-  font-weight: 600;
-}
-
-.ff-es-word {
-  font-size: 14px;
-  color: var(--text-mid);
-  text-decoration: line-through;
-  text-decoration-color: rgba(136, 136, 136, 0.4);
-  transition: color 0.12s;
-}
-.ff-card:hover .ff-es-word {
+.ff-card-es-line {
+  font-size: 12px;
   color: #666;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.ff-es-inline {
+  color: #888;
+  font-weight: 500;
 }
 
-.ff-card-meaning {
+.ff-card-it-line {
   font-size: 13px;
   color: var(--text);
   margin-bottom: 10px;
   line-height: 1.4;
+}
+.ff-it-inline {
+  font-weight: 500;
 }
 
 .ff-card-foot {

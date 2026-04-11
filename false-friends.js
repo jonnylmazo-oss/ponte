@@ -95,12 +95,9 @@
     ffGrid.innerHTML = cards.map((c) => `
       <div class="ff-card" data-id="${c.id}">
         <div class="ff-card-main">
-          <div class="ff-card-words">
-            <span class="ff-it-word">${esc(c.italian)}</span>
-            <span class="ff-sep">≠</span>
-            <span class="ff-es-word">${esc(c.spanishLookalike)}</span>
-          </div>
-          <div class="ff-card-meaning">${esc(c.italianMeaning)}</div>
+          <div class="ff-it-word">${esc(c.italian)}</div>
+          <div class="ff-card-es-line">in Spanish: <span class="ff-es-inline">${esc(c.spanishLookalike)}</span> — ${esc(c.spanishMeaning)}</div>
+          <div class="ff-card-it-line">in Italian: <span class="ff-it-inline">${esc(c.italianMeaning)}</span></div>
           <div class="ff-card-foot">
             <span class="ff-danger-badge ff-danger-${c.danger}">${dangerIcon(c.danger)} ${cap(c.danger)}</span>
             <span class="ff-chevron" aria-hidden="true">›</span>
