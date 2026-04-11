@@ -2,14 +2,36 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Ponte — Italian Reader</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- iOS PWA meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ponte">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+  <!-- Theme colour for Android Chrome -->
+  <meta name="theme-color" content="#00C2B8">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- PWA install banner (iOS: shown once, dismissable) -->
+  <div class="install-banner" id="install-banner" hidden>
+    <span class="install-banner-text">
+      <strong>Install Ponte</strong> for offline reading —
+      tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+    </span>
+    <button class="install-banner-dismiss" id="install-banner-dismiss" aria-label="Dismiss">✕</button>
+  </div>
 
   <div class="app-wrapper" id="app-wrapper">
 
@@ -439,5 +461,39 @@
   <script src="false-friends.js"></script>
   <script src="grammar.js"></script>
   <script src="flashcards.js"></script>
+
+  <!-- Service worker registration + install banner logic -->
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+
+    // Install banner: show once on iOS if not installed and not dismissed
+    (function () {
+      const LS_KEY = 'ponte_install_dismissed';
+      if (localStorage.getItem(LS_KEY)) return;
+
+      // Detect iOS Safari running in browser (not standalone)
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isStandalone = navigator.standalone === true ||
+                           window.matchMedia('(display-mode: standalone)').matches;
+      if (!isIOS || isStandalone) return;
+
+      const banner  = document.getElementById('install-banner');
+      const dismiss = document.getElementById('install-banner-dismiss');
+      if (!banner) return;
+
+      banner.hidden = false;
+      dismiss.addEventListener('click', () => {
+        banner.hidden = true;
+        localStorage.setItem(LS_KEY, '1');
+      });
+    })();
+  </script>
 </body>
 </html>

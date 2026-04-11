@@ -7,9 +7,10 @@ Ponte is a vanilla HTML/CSS/JS Italian reading web app for intermediate English 
 ```
 ponte/
 ├── index.html          — single-page reader UI
-├── app.js              — reader logic: tokenizer, tooltips, generator UI, API calls
+├── app.js              — reader logic: tokenizer, tooltips, generator UI, API calls, flashcard save
 ├── false-friends.js    — False Friends tab UI IIFE
 ├── grammar.js          — Grammar tab UI IIFE
+├── flashcards.js       — Flashcards tab UI IIFE (library + drill)
 ├── style.css           — dark-theme design system
 ├── data/
 │   ├── articles.js     — fallback article (articles[0] = "Una mattina a Roma")
@@ -61,12 +62,21 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `grammar.js`: vanilla JS IIFE — sub-tab switching (Verb Deltas / Pattern Drills / From Your Reading), category+difficulty filters, expand/collapse card grid (grid-template-rows animation), drill engine with shuffled queue + 4-option MCQ + immediate feedback + progress bar + first-try score
 - Script load order: `data/grammar.js` → `app.js` → `grammar.js` (grammar.js loads after app.js)
 
+## Flashcard system
+- `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
+- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, timesCorrect, timesWrong, lastSeen}`
+- Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
+- Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
+- Cross-module sync: `app.js` fires `window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'))` on save/delete; `flashcards.js` listens to re-render
+- `flashcards.js` IIFE: library view (search, category filter, card grid, delete), drill mode (3D CSS flip, Got it/Tricky, score + tricky list)
+- Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
+
 ## Tab navigation
-- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 6 nav tabs (icon + label)
+- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 7 nav tabs (icon + label)
 - Collapsed sidebar: 54px wide, icon-only; expanded: 200px; state in `localStorage` (`ponte_sidebar`)
 - Bottom tab bar on mobile (≤820px): icons + short labels, fixed to bottom (58px)
 - Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
-- Non-reader tabs show a coming-soon placeholder; Reader tab contains all existing reader UI
+- Non-reader tabs (except False Friends, Grammar, Flashcards) show a coming-soon placeholder
 - `[data-tab]` attribute on all nav items drives both sidebar and bottom nav; `switchTab(id)` syncs both
 
 ## Tooltip system (issue #16)
@@ -96,6 +106,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Default state: **collapsed** (Italian-only view)
 - State persisted in `localStorage` under key `ponte_translation`
 - On mobile, collapse has no effect — both columns always stack
+
+## PWA (Progressive Web App)
+- `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
+- `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
+- `sw.js`: cache name `ponte-v1`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
+- Service worker registered in inline `<script>` at bottom of `index.html`
+- Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
+- `viewport-fit=cover` on viewport meta for edge-to-edge on notched iPhones
+- Safe-area CSS: `env(safe-area-inset-bottom)` applied to `.bottom-nav` height + `.main-area` padding + `.tooltip` bottom offset
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal

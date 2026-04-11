@@ -895,6 +895,7 @@ header {
 
   .bottom-nav-item {
     flex: 1;
+    min-height: 44px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -957,8 +958,22 @@ header {
     padding-bottom: 12px;
   }
 
-  .generator-bar { padding: 10px 18px; }
-  .topic-input   { min-width: 0; }
+  /* Generator bar stacks vertically on mobile */
+  .generator-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 18px;
+  }
+  .topic-input {
+    min-width: 0;
+    width: 100%;
+    font-size: 16px; /* prevent iOS zoom on focus */
+    padding: 11px 12px;
+  }
+  .difficulty-select { width: 100%; padding: 11px 12px; font-size: 14px; }
+  .gen-btn           { width: 100%; padding: 11px 12px; font-size: 15px; min-height: 44px; }
+  .generate-error    { width: 100%; }
 
   .reader {
     grid-template-columns: 1fr;
@@ -986,7 +1001,7 @@ header {
     box-shadow: none;
   }
 
-  .column-body { font-size: 16px; }
+  .column-body { font-size: 18px; }
 
   /* Tooltip bottom sheet */
   .tooltip {
@@ -2354,4 +2369,80 @@ header {
   .fc-drill-arena { padding: 24px 16px; }
   .fc-flip-face { padding: 24px 20px; }
   .fc-flip-word { font-size: 28px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PWA — install banner + safe-area insets
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Install banner ─────────────────────────────────────────── */
+
+.install-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: #00C2B8;
+  color: #0A0A0A;
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.4;
+  /* Push content down when banner shows */
+}
+
+.install-banner-text { flex: 1; }
+
+.install-banner-dismiss {
+  background: transparent;
+  border: none;
+  color: rgba(0,0,0,0.55);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: color 0.1s;
+}
+.install-banner-dismiss:hover { color: rgba(0,0,0,0.85); }
+
+/* Shift app content below banner */
+body:has(.install-banner:not([hidden])) .app-wrapper {
+  margin-top: 48px;
+}
+body:has(.install-banner:not([hidden])) .bottom-nav {
+  /* bottom nav stays at bottom, no change needed */
+}
+
+/* ─── iOS safe-area insets ───────────────────────────────────── */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  /* Bottom nav sits above home bar */
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+
+  /* Main area pad accounts for taller bottom nav */
+  @media (max-width: 820px) {
+    .main-area {
+      padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+    }
+
+    /* Tooltip bottom sheet clears home bar */
+    .tooltip {
+      bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+    }
+  }
 }
