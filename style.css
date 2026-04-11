@@ -151,6 +151,114 @@ header {
 }
 
 
+/* ─── Generator bar ─────────────────────────────────────────── */
+
+.generator-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 28px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.topic-input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  padding: 7px 12px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.topic-input::placeholder { color: var(--text-dim); }
+.topic-input:focus         { border-color: #3a3a3a; }
+
+.difficulty-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 7px 10px;
+  cursor: pointer;
+  outline: none;
+}
+
+.gen-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.gen-btn:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+
+.gen-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gen-btn.primary {
+  background: #1a3450;
+  border-color: #2a5278;
+  color: var(--cognate);
+}
+
+.gen-btn.primary:hover:not(:disabled) {
+  background: #1f3e60;
+  color: #8ec8f8;
+}
+
+.generate-error {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: #e07070;
+  padding-top: 2px;
+}
+
+
+/* ─── Skeleton loader ────────────────────────────────────────── */
+
+.skeleton-line {
+  height: 1.1em;
+  background: linear-gradient(
+    90deg,
+    var(--bg-card) 25%,
+    var(--bg-card-hover) 50%,
+    var(--bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 0.7em;
+}
+
+@keyframes skeleton-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+
 /* ─── Reader layout ─────────────────────────────────────────── */
 
 .reader {
@@ -382,6 +490,9 @@ header {
 /* ─── Responsive ─────────────────────────────────────────────── */
 
 @media (max-width: 820px) {
+  .generator-bar { padding: 10px 18px; }
+  .topic-input   { min-width: 0; }
+
   header {
     padding: 0 18px;
     gap: 10px;
