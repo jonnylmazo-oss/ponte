@@ -122,11 +122,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `viewport-fit=cover` on viewport meta for edge-to-edge on notched iPhones
 - Safe-area CSS: `env(safe-area-inset-bottom)` applied to `.bottom-nav` height + `.main-area` padding + `.tooltip` bottom offset
 
-## Deployment (when ready)
-- Server IP: `198.199.121.81` (DigitalOcean)
-- HTTPS via Let's Encrypt required for PWA installability in production
-- When deploying: update `ALLOWED_ORIGINS` in `server.js` to include production domain
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) to force cache refresh on all clients
+## Deployment
+- **Live at:** `http://198.199.88.229` (DigitalOcean droplet)
+- nginx serves static files from `/home/ponte`; proxies `/api/` → `localhost:3001`
+- API managed by PM2 (`pm2 list`, `pm2 logs ponte-api`)
+- To deploy latest: `ssh root@198.199.88.229 /home/ponte/deploy.sh`
+- `.env` on server at `/home/ponte/.env` — set `ANTHROPIC_API_KEY` manually after first deploy
+- `FLASHCARDS_PATH=/home/ponte/data/flashcards.json` (persisted across deploys)
+- `PORT=3001` in `.env` (nginx proxies to this port)
+- HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes
 - See issue #17 for full mobile testing checklist
 
 ## Key design decisions
