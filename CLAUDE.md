@@ -8,10 +8,14 @@ Ponte is a vanilla HTML/CSS/JS Italian reading web app for intermediate English 
 ponte/
 ├── index.html          — single-page reader UI
 ├── app.js              — reader logic: tokenizer, tooltips, generator UI, API calls
+├── false-friends.js    — False Friends tab UI IIFE
+├── grammar.js          — Grammar tab UI IIFE
 ├── style.css           — dark-theme design system
 ├── data/
 │   ├── articles.js     — fallback article (articles[0] = "Una mattina a Roma")
-│   └── wordmap.js      — static wordmap for the fallback article
+│   ├── wordmap.js      — static wordmap for the fallback article
+│   ├── false-friends.js — 100 false friend entries
+│   └── grammar.js      — 40 delta cards + 30 pattern drills
 ├── server.js           — Express backend calling Claude API
 ├── package.json        — Node.js dependencies
 └── .env                — API key (never commit — in .gitignore)
@@ -50,6 +54,12 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `false-friends.js`: vanilla JS IIFE — search, danger filter, card grid with expand/collapse (grid-template-rows animation), drill mode
 - Drill mode: CSS 3D flip, Got it / Tricky queue management, first-try score at end; respects active filter/search
 - Script load order: `data/false-friends.js` → `app.js` → `false-friends.js`
+
+## Grammar tab (issue #4)
+- `data/grammar.js`: 40 delta cards with fields: `{id, title, category, difficulty, spanish: {label, example, note}, italian: {label, example, note}, trap, tip}`; 30 pattern drills with fields: `{id, grammarCardId, sentence (contains ___), answer, distractors[3], explanation}`
+- Categories: tense(10), pronoun(8), subjunctive(6), reflexive(4), preposition(5), geminate(3), modal(4)
+- `grammar.js`: vanilla JS IIFE — sub-tab switching (Verb Deltas / Pattern Drills / From Your Reading), category+difficulty filters, expand/collapse card grid (grid-template-rows animation), drill engine with shuffled queue + 4-option MCQ + immediate feedback + progress bar + first-try score
+- Script load order: `data/grammar.js` → `app.js` → `grammar.js` (grammar.js loads after app.js)
 
 ## Tab navigation
 - Left sidebar on desktop: logo at top, collapse toggle (‹/›), 6 nav tabs (icon + label)
