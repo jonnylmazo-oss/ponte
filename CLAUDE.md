@@ -37,11 +37,34 @@ python3 -m http.server 8080
 - **Model:** `claude-sonnet-4-20250514`
 - **Streaming endpoint:** `GET /api/generate-article-stream?topic=...&difficulty=...`
   - SSE stream: `data: {"token":"..."}` events as Claude generates, then `event: done` with full article JSON
-  - Frontend uses `EventSource`; parses `"italian"` field progressively for live rendering
+  - Frontend uses `EventSource`; `extractStreamingField(buffer, field)` extracts any JSON string field progressively from the partial buffer
+  - Both Italian and translation columns render simultaneously as tokens arrive; title/difficulty/topic badges also update live
+  - `max_tokens: 800`, `temperature: 0.8`
 - **Fallback endpoint:** `POST /api/generate-article-full` — returns complete JSON in one shot
 
 ## Frontend caching
 Generated articles are cached in `localStorage` with key `ponte_article_{topic}_{difficulty}`. Clear localStorage to force re-generation.
+
+## Tab navigation
+- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 6 nav tabs (icon + label)
+- Collapsed sidebar: 54px wide, icon-only; expanded: 200px; state in `localStorage` (`ponte_sidebar`)
+- Bottom tab bar on mobile (≤820px): icons + short labels, fixed to bottom (58px)
+- Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
+- Non-reader tabs show a coming-soon placeholder; Reader tab contains all existing reader UI
+- `[data-tab]` attribute on all nav items drives both sidebar and bottom nav; `switchTab(id)` syncs both
+
+## Tooltip system (issue #16)
+- Clicking an annotated word shows a tooltip card: word + phonetic pronunciation hint, EN/ES meanings, category badge, usage note, example sentence (IT + EN)
+- Tooltip border color is category-matched via `--tooltip-accent` CSS variable set inline by JS
+- **Mobile (≤820px):** tooltip is a bottom sheet (slides up, backdrop overlay); tapping backdrop closes it
+- Wordmap entries include `pronunciation`, `example`, `exampleEN` fields
+- Claude prompt requests these fields for generated articles
+
+## Translation column toggle
+- Toggle button in header (▶/◀) collapses/shows the English column
+- Default state: **collapsed** (Italian-only view)
+- State persisted in `localStorage` under key `ponte_translation`
+- On mobile, collapse has no effect — both columns always stack
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal

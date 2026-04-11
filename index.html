@@ -111,11 +111,62 @@
       <!-- Tab: False Friends -->
       <div class="tab-panel" id="tab-false-friends">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
-        <div class="coming-soon">
-          <div class="coming-soon-icon">⚡</div>
-          <h2 class="coming-soon-title">False Friends</h2>
-          <p class="coming-soon-desc">Italian words that look like Spanish but mean something completely different. Drill the traps before they bite you.</p>
-          <span class="coming-soon-tag">On the roadmap</span>
+
+        <!-- Toolbar -->
+        <div class="ff-toolbar" id="ff-toolbar">
+          <div class="ff-toolbar-left">
+            <input type="text" id="ff-search" class="ff-search"
+              placeholder="Search Italian, Spanish, or English…" autocomplete="off" />
+            <div class="ff-filters">
+              <button class="ff-filter active" data-danger="all">All</button>
+              <button class="ff-filter" data-danger="high">🔴 High</button>
+              <button class="ff-filter" data-danger="medium">🟡 Medium</button>
+              <button class="ff-filter" data-danger="low">⚪ Low</button>
+            </div>
+            <span class="ff-count" id="ff-count"></span>
+          </div>
+          <button class="ff-drill-toggle" id="ff-drill-toggle">⚡ Drill mode</button>
+        </div>
+
+        <!-- Browse mode -->
+        <div class="ff-browse" id="ff-browse">
+          <div class="ff-grid" id="ff-grid"></div>
+        </div>
+
+        <!-- Drill mode -->
+        <div class="ff-drill" id="ff-drill" hidden>
+          <div class="ff-drill-topbar">
+            <span class="ff-drill-status" id="ff-drill-status"></span>
+            <button class="ff-exit-drill" id="ff-exit-drill">Exit</button>
+          </div>
+          <div class="ff-drill-arena">
+            <div class="ff-flip-card">
+              <div class="ff-flip-inner" id="ff-flip-inner">
+                <div class="ff-flip-face ff-flip-front">
+                  <div class="ff-flip-word" id="ff-flip-word"></div>
+                  <p class="ff-flip-prompt">What does this mean in Italian?</p>
+                  <button class="ff-flip-btn" id="ff-flip-btn">Flip</button>
+                </div>
+                <div class="ff-flip-face ff-flip-back">
+                  <div class="ff-flip-word" id="ff-flip-word-back"></div>
+                  <div class="ff-flip-answer" id="ff-flip-answer"></div>
+                  <p class="ff-flip-tip" id="ff-flip-tip"></p>
+                  <div class="ff-drill-actions">
+                    <button class="ff-got-btn" id="ff-got-btn">✓ Got it</button>
+                    <button class="ff-tricky-btn" id="ff-tricky-btn">↺ Tricky</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drill complete -->
+        <div class="ff-drill-done" id="ff-drill-done" hidden>
+          <div class="ff-drill-done-icon">🎉</div>
+          <h2 class="ff-drill-done-title">Deck complete!</h2>
+          <p class="ff-drill-score" id="ff-drill-score"></p>
+          <button class="ff-drill-restart" id="ff-drill-restart">Drill again</button>
         </div>
       </div>
 
@@ -225,6 +276,8 @@
 
   <script src="data/articles.js"></script>
   <script src="data/wordmap.js"></script>
+  <script src="data/false-friends.js"></script>
   <script src="app.js"></script>
+  <script src="false-friends.js"></script>
 </body>
 </html>
