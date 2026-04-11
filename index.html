@@ -174,13 +174,87 @@
       <!-- Tab: Grammar -->
       <div class="tab-panel" id="tab-grammar">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
-        <div class="coming-soon">
-          <div class="coming-soon-icon">🧠</div>
-          <h2 class="coming-soon-title">Grammar</h2>
-          <p class="coming-soon-desc">Side-by-side contrast cards for where Italian grammar diverges from Spanish — reflexives, articles, prepositions, and more.</p>
-          <span class="coming-soon-tag">On the roadmap</span>
+
+        <!-- Sub-tab bar -->
+        <div class="grammar-subtabs">
+          <button class="grammar-subtab active" data-panel="delta">Verb Deltas</button>
+          <button class="grammar-subtab" data-panel="drills">Pattern Drills</button>
+          <button class="grammar-subtab" data-panel="reading">From Your Reading</button>
         </div>
-      </div>
+
+        <!-- Panel: Verb Deltas -->
+        <div id="grammar-panel-delta">
+          <div class="gr-toolbar">
+            <div class="gr-filters">
+              <div class="gr-filter-group">
+                <button class="gr-cat-btn active" data-cat="all">All</button>
+                <button class="gr-cat-btn" data-cat="tense">Tense</button>
+                <button class="gr-cat-btn" data-cat="pronoun">Pronoun</button>
+                <button class="gr-cat-btn" data-cat="subjunctive">Subjunctive</button>
+                <button class="gr-cat-btn" data-cat="reflexive">Reflexive</button>
+                <button class="gr-cat-btn" data-cat="preposition">Preposition</button>
+                <button class="gr-cat-btn" data-cat="geminate">Geminate</button>
+                <button class="gr-cat-btn" data-cat="modal">Modal</button>
+              </div>
+              <div class="gr-filter-group">
+                <button class="gr-diff-btn active" data-diff="all">All levels</button>
+                <button class="gr-diff-btn" data-diff="B1">B1</button>
+                <button class="gr-diff-btn" data-diff="B2">B2</button>
+              </div>
+            </div>
+            <span class="gr-count" id="gr-delta-count"></span>
+          </div>
+          <div class="gr-delta-grid" id="gr-delta-grid"></div>
+        </div>
+
+        <!-- Panel: Pattern Drills -->
+        <div id="grammar-panel-drills" hidden>
+          <div class="gr-toolbar">
+            <div class="gr-filter-group">
+              <button class="gr-drill-cat-btn active" data-cat="all">All</button>
+              <button class="gr-drill-cat-btn" data-cat="tense">Tense</button>
+              <button class="gr-drill-cat-btn" data-cat="pronoun">Pronoun</button>
+              <button class="gr-drill-cat-btn" data-cat="subjunctive">Subjunctive</button>
+              <button class="gr-drill-cat-btn" data-cat="reflexive">Reflexive</button>
+              <button class="gr-drill-cat-btn" data-cat="preposition">Preposition</button>
+              <button class="gr-drill-cat-btn" data-cat="geminate">Geminate</button>
+              <button class="gr-drill-cat-btn" data-cat="modal">Modal</button>
+            </div>
+            <span class="gr-count" id="gr-drill-count"></span>
+          </div>
+          <div class="gr-drill-progressbar">
+            <div class="gr-drill-progressbar-inner" id="gr-drill-progress-bar"></div>
+          </div>
+          <div class="gr-drill-status">
+            <span id="gr-drill-progress"></span>
+          </div>
+          <!-- Drill card -->
+          <div id="gr-drill-card">
+            <div class="gr-drill-sentence" id="gr-drill-sentence"></div>
+            <div class="gr-drill-options" id="gr-drill-options"></div>
+            <div class="gr-drill-feedback" id="gr-drill-feedback" hidden></div>
+            <button class="gr-drill-next" id="gr-drill-next" hidden>Next →</button>
+          </div>
+          <!-- Complete screen -->
+          <div id="gr-drill-done" hidden>
+            <div class="gr-drill-done-icon">🎉</div>
+            <h2 class="gr-drill-done-title">Drills complete!</h2>
+            <p class="gr-drill-score" id="gr-drill-score"></p>
+            <button class="gr-drill-restart" id="gr-drill-restart">Drill again</button>
+          </div>
+        </div>
+
+        <!-- Panel: From Your Reading (coming soon) -->
+        <div id="grammar-panel-reading" hidden>
+          <div class="coming-soon">
+            <div class="coming-soon-icon">📖</div>
+            <h2 class="coming-soon-title">From Your Reading</h2>
+            <p class="coming-soon-desc">Grammar patterns detected in the articles you've read — review them in context, not out of the blue.</p>
+            <span class="coming-soon-tag">On the roadmap</span>
+          </div>
+        </div>
+
+      </div><!-- #tab-grammar -->
 
       <!-- Tab: Practice -->
       <div class="tab-panel" id="tab-practice">
@@ -278,7 +352,9 @@
   <script src="data/articles.js"></script>
   <script src="data/wordmap.js"></script>
   <script src="data/false-friends.js"></script>
+  <script src="data/grammar.js"></script>
   <script src="app.js"></script>
   <script src="false-friends.js"></script>
+  <script src="grammar.js"></script>
 </body>
 </html>
