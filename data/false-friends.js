@@ -1,8 +1,10 @@
 // false-friends.js — 100 Italian false friends for English/Spanish speakers
 // Exported as a global for use in Ponte without a build step.
+// Data quality pass: entries verified for Italian-Spanish accuracy.
+// Distribution: 22 high / 48 medium / 30 low
 
 const falseFriends = [
-  // ── HIGH DANGER (25) ─────────────────────────────────────────────────────
+  // ── HIGH DANGER (22) ─────────────────────────────────────────────────────
 
   {
     id: 1,
@@ -59,15 +61,15 @@ const falseFriends = [
   {
     id: 5,
     italian: "molestare",
-    italianMeaning: "to harass, to bother",
+    italianMeaning: "to harass; to bother (in informal or mild contexts)",
     spanishLookalike: "molestar",
     spanishMeaning: "to bother, to annoy",
-    englishMeaning: "to harass (often sexually)",
+    englishMeaning: "to harass; to bother",
     category: "false-friend",
     danger: "high",
     example: "Ha denunciato chi la molestava sul lavoro.",
     exampleEN: "She reported the person who was harassing her at work.",
-    tip: "Italian molestare is much stronger than Spanish molestar — it implies harassment."
+    tip: "Italian molestare overlaps with Spanish molestar at the mild end (to bother), but in formal or legal contexts it strongly implies harassment. When in doubt, say disturbare for mild annoyance."
   },
   {
     id: 6,
@@ -93,7 +95,7 @@ const falseFriends = [
     danger: "high",
     example: "È una decisione sensata.",
     exampleEN: "It is a sensible decision.",
-    tip: "Italian sensato = has good sense; Spanish sensible = feels things deeply."
+    tip: "Italian sensato = has good sense; Spanish sensible = feels things deeply. (Italian sensibile = Spanish sensible.)"
   },
   {
     id: 8,
@@ -107,32 +109,6 @@ const falseFriends = [
     example: "Metti la tua firma in fondo al documento.",
     exampleEN: "Put your signature at the bottom of the document.",
     tip: "Italian firma = your name signed; Spanish firma = the company you work for."
-  },
-  {
-    id: 9,
-    italian: "libreria",
-    italianMeaning: "bookshop / bookcase",
-    spanishLookalike: "librería",
-    spanishMeaning: "bookshop (same — but also library in some regions)",
-    englishMeaning: "bookshop; bookcase",
-    category: "false-friend",
-    danger: "high",
-    example: "Ho comprato il romanzo in libreria.",
-    exampleEN: "I bought the novel at the bookshop.",
-    tip: "Italian biblioteca = library; libreria = the shop or shelf where books are sold/kept."
-  },
-  {
-    id: 10,
-    italian: "preservativo",
-    italianMeaning: "condom",
-    spanishLookalike: "preservativo",
-    spanishMeaning: "preservative (food additive)",
-    englishMeaning: "condom",
-    category: "false-friend",
-    danger: "high",
-    example: "Il preservativo è un metodo contraccettivo.",
-    exampleEN: "The condom is a contraceptive method.",
-    tip: "Ask for a 'conservante' if you mean a food preservative in Italian."
   },
   {
     id: 11,
@@ -174,19 +150,6 @@ const falseFriends = [
     tip: "Italian pretendere = high expectations or demands, not a polite attempt."
   },
   {
-    id: 14,
-    italian: "sopportare",
-    italianMeaning: "to tolerate, to put up with",
-    spanishLookalike: "soportar",
-    spanishMeaning: "to bear, to support (structurally or emotionally)",
-    englishMeaning: "to tolerate, to endure",
-    category: "false-friend",
-    danger: "high",
-    example: "Non sopporto il rumore del traffico.",
-    exampleEN: "I can't stand the noise of the traffic.",
-    tip: "Close in meaning but Italian sopportare skews toward tolerating something unpleasant."
-  },
-  {
     id: 15,
     italian: "accidente",
     italianMeaning: "darn! / damn! (exclamation); also: stroke (medical)",
@@ -226,19 +189,6 @@ const falseFriends = [
     tip: "Italian educato = good manners only; for 'educated' (degree) say istruito."
   },
   {
-    id: 18,
-    italian: "attuale",
-    italianMeaning: "current, present-day",
-    spanishLookalike: "actual",
-    spanishMeaning: "current / real (ES actual = current)",
-    englishMeaning: "current, present",
-    category: "false-friend",
-    danger: "high",
-    example: "La situazione attuale è complessa.",
-    exampleEN: "The current situation is complex.",
-    tip: "Italian attuale = what's happening now; 'actual' (real) in Italian is reale or vero."
-  },
-  {
     id: 19,
     italian: "eventuale",
     italianMeaning: "possible, potential (if it happens)",
@@ -253,16 +203,16 @@ const falseFriends = [
   },
   {
     id: 20,
-    italian: "fabbrica",
-    italianMeaning: "factory",
-    spanishLookalike: "fábrica",
-    spanishMeaning: "factory (same!) — but also 'fabric' to English ears",
-    englishMeaning: "factory",
+    italian: "tenere",
+    italianMeaning: "to hold, to keep",
+    spanishLookalike: "tener",
+    spanishMeaning: "to have",
+    englishMeaning: "to hold, to keep",
     category: "false-friend",
     danger: "high",
-    example: "Lavora in una fabbrica di automobili.",
-    exampleEN: "He works in a car factory.",
-    tip: "English 'fabric' = tessuto in Italian; fabbrica is where things are manufactured."
+    example: "Tiene il bambino per mano.",
+    exampleEN: "He holds the child by the hand.",
+    tip: "Italian tenere = to hold or keep; 'to have' is avere. 'Tieni!' means 'hold this!' or 'catch!' — not 'you have.'"
   },
   {
     id: 21,
@@ -329,9 +279,48 @@ const falseFriends = [
     exampleEN: "The children were bored during the lesson.",
     tip: "Italian annoiato = bored, not angry; if something bothers you, say mi dà fastidio."
   },
+  {
+    id: 99,
+    italian: "folla",
+    italianMeaning: "crowd, throng",
+    spanishLookalike: "folla",
+    spanishMeaning: "vulgar: third-person singular of follar",
+    englishMeaning: "crowd",
+    category: "false-friend",
+    danger: "high",
+    example: "C'era una folla enorme in piazza.",
+    exampleEN: "There was an enormous crowd in the square.",
+    tip: "Italian folla is a perfectly ordinary word for a crowd. In Spanish, folla is a vulgar verb form — a jarring collision for Spanish speakers reading Italian news or event coverage."
+  },
 
-  // ── MEDIUM DANGER (50) ───────────────────────────────────────────────────
+  // ── MEDIUM DANGER (48) ───────────────────────────────────────────────────
 
+  {
+    id: 10,
+    italian: "preservativo",
+    italianMeaning: "condom (never used for food preservatives)",
+    spanishLookalike: "preservativo",
+    spanishMeaning: "condom (in Spain, same as Italian); food preservative (in some Latin American varieties)",
+    englishMeaning: "condom",
+    category: "false-friend",
+    danger: "medium",
+    example: "Il preservativo è un metodo contraccettivo.",
+    exampleEN: "The condom is a contraceptive method.",
+    tip: "Italian preservativo = condom only — never a food additive (use conservante for that). Spanish speakers from Spain already know this meaning; in parts of Latin America where 'preservativo' means food preservative, the Italian usage may surprise."
+  },
+  {
+    id: 14,
+    italian: "sopportare",
+    italianMeaning: "to tolerate, to put up with",
+    spanishLookalike: "soportar",
+    spanishMeaning: "to bear, to support (structurally or emotionally)",
+    englishMeaning: "to tolerate, to endure",
+    category: "false-friend",
+    danger: "medium",
+    example: "Non sopporto il rumore del traffico.",
+    exampleEN: "I can't stand the noise of the traffic.",
+    tip: "Meanings largely overlap — both express bearing something. Italian sopportare skews toward enduring something unpleasant; Spanish soportar covers structural support too. Close enough to read safely, but not interchangeable in production."
+  },
   {
     id: 26,
     italian: "bravo",
@@ -567,19 +556,6 @@ const falseFriends = [
     tip: "Italian fissare adds 'to book/schedule' and 'to stare' — broader than Spanish fijar."
   },
   {
-    id: 44,
-    italian: "tardi",
-    italianMeaning: "late (time of day or lateness)",
-    spanishLookalike: "tarde",
-    spanishMeaning: "afternoon; late",
-    englishMeaning: "late",
-    category: "false-friend",
-    danger: "medium",
-    example: "Sono arrivato tardi alla riunione.",
-    exampleEN: "I arrived late to the meeting.",
-    tip: "Italian tardi = late only; afternoon is pomeriggio."
-  },
-  {
     id: 45,
     italian: "giornale",
     italianMeaning: "newspaper",
@@ -662,13 +638,13 @@ const falseFriends = [
     italian: "famiglia",
     italianMeaning: "family",
     spanishLookalike: "familiar",
-    spanishMeaning: "familiar, well-known (English); family member (ES)",
+    spanishMeaning: "family member (ES); familiar, well-known (EN)",
     englishMeaning: "family",
     category: "false-friend",
     danger: "medium",
     example: "La mia famiglia è numerosa.",
     exampleEN: "My family is large.",
-    tip: "Italian famiglia sounds like English 'familiar' but means the whole family unit."
+    tip: "Italian famiglia sounds like English 'familiar' but means the whole family unit. Spanish speakers: your familia = Italian famiglia — safe cognate. The trap is English."
   },
   {
     id: 52,
@@ -684,30 +660,17 @@ const falseFriends = [
     tip: "Italian annoiante = makes you yawn, not makes you angry."
   },
   {
-    id: 53,
-    italian: "spettacolo",
-    italianMeaning: "show, performance, spectacle",
-    spanishLookalike: "espectáculo",
-    spanishMeaning: "spectacle, show",
-    englishMeaning: "show, performance",
-    category: "false-friend",
-    danger: "medium",
-    example: "Lo spettacolo inizia alle otto.",
-    exampleEN: "The show starts at eight.",
-    tip: "Very close, but Italian spettacolo is everyday for any live show or event."
-  },
-  {
     id: 54,
     italian: "liceo",
     italianMeaning: "high school (upper secondary, ages 14–19)",
     spanishLookalike: "liceo",
-    spanishMeaning: "lycée / high school (varies by country)",
+    spanishMeaning: "lycée / high school (varies by country); also cultural club",
     englishMeaning: "high school",
     category: "false-friend",
     danger: "medium",
     example: "Ho frequentato il liceo classico.",
     exampleEN: "I attended a classical high school.",
-    tip: "Italian liceo is a specific academic track; university is università."
+    tip: "Italian liceo is a specific academic track (not university). In some Spanish-speaking countries liceo is a cultural club, not a school — context matters."
   },
   {
     id: 55,
@@ -720,20 +683,7 @@ const falseFriends = [
     danger: "medium",
     example: "Il corso è affollato di negozi.",
     exampleEN: "The main street is full of shops.",
-    tip: "Italian corso doubles as the high street name in many Italian towns."
-  },
-  {
-    id: 56,
-    italian: "sensibile",
-    italianMeaning: "sensitive",
-    spanishLookalike: "sensible",
-    spanishMeaning: "sensible, reasonable (English); sensitive (ES sensible)",
-    englishMeaning: "sensitive",
-    category: "false-friend",
-    danger: "medium",
-    example: "È una persona molto sensibile.",
-    exampleEN: "She is a very sensitive person.",
-    tip: "Italian sensibile = emotional sensitivity; for reasonable say ragionevole."
+    tip: "Italian corso doubles as the high street name in many Italian towns — a meaning Spanish curso never has."
   },
   {
     id: 57,
@@ -750,16 +700,16 @@ const falseFriends = [
   },
   {
     id: 58,
-    italian: "testa",
-    italianMeaning: "head; stubbornness (figurative)",
-    spanishLookalike: "testa",
-    spanishMeaning: "not standard Spanish; testa (Italian only)",
-    englishMeaning: "head",
+    italian: "busta",
+    italianMeaning: "envelope; bag; pay packet (busta paga)",
+    spanishLookalike: "busto",
+    spanishMeaning: "bust (sculpture of head and shoulders); upper body",
+    englishMeaning: "envelope; bag",
     category: "false-friend",
     danger: "medium",
-    example: "Mi fa male la testa.",
-    exampleEN: "I have a headache.",
-    tip: "Italian testa = head; the false friend is with English 'test' — for exam say esame."
+    example: "Metti la lettera nella busta.",
+    exampleEN: "Put the letter in the envelope.",
+    tip: "Italian busta = what you seal and mail; Spanish busto = the marble torso in a museum."
   },
   {
     id: 59,
@@ -786,19 +736,6 @@ const falseFriends = [
     example: "Ho appena preso la patente.",
     exampleEN: "I just got my driver's license.",
     tip: "Italian patente = the card that lets you drive; obvious in Italian is ovvio."
-  },
-  {
-    id: 61,
-    italian: "divertire",
-    italianMeaning: "to amuse, to entertain",
-    spanishLookalike: "divertir",
-    spanishMeaning: "to amuse, to have fun",
-    englishMeaning: "to amuse, to entertain",
-    category: "false-friend",
-    danger: "medium",
-    example: "Il clown divertiva i bambini.",
-    exampleEN: "The clown was entertaining the children.",
-    tip: "Very close — but the reflexive divertirsi = to enjoy oneself, which is slightly more active."
   },
   {
     id: 62,
@@ -828,16 +765,16 @@ const falseFriends = [
   },
   {
     id: 64,
-    italian: "geloso",
-    italianMeaning: "jealous",
-    spanishLookalike: "celoso",
-    spanishMeaning: "jealous",
-    englishMeaning: "jealous",
+    italian: "senso",
+    italianMeaning: "direction, sense, meaning",
+    spanishLookalike: "seno",
+    spanishMeaning: "breast, bosom; bay (geography)",
+    englishMeaning: "direction; sense; meaning",
     category: "false-friend",
     danger: "medium",
-    example: "È molto geloso della sua fidanzata.",
-    exampleEN: "He is very jealous of his girlfriend.",
-    tip: "Meanings align, but Italian geloso also means 'overprotective of possessions'."
+    example: "Questa strada è a senso unico.",
+    exampleEN: "This street is one-way.",
+    tip: "Italian senso = direction or meaning ('senso unico' = one-way, 'non ha senso' = it doesn't make sense). Spanish seno is anatomical or geographic — one letter apart, worlds apart."
   },
   {
     id: 65,
@@ -850,7 +787,7 @@ const falseFriends = [
     danger: "medium",
     example: "Dove sei finito?",
     exampleEN: "Where did you end up?",
-    tip: "Italian finire is everyday 'to finish'; the 'end up' usage has no Spanish equivalent."
+    tip: "Italian finire is everyday 'to finish'; the 'end up somewhere' usage (dove sei finito?) has no clean Spanish equivalent."
   },
   {
     id: 66,
@@ -876,46 +813,33 @@ const falseFriends = [
     danger: "medium",
     example: "Ho dimenticato il portafoglio a casa.",
     exampleEN: "I forgot my wallet at home.",
-    tip: "Italian dimenticare sounds a little like Spanish 'desmentir' but means the opposite direction of memory."
-  },
-  {
-    id: 68,
-    italian: "orario",
-    italianMeaning: "timetable, schedule, opening hours",
-    spanishLookalike: "horario",
-    spanishMeaning: "timetable, schedule",
-    englishMeaning: "timetable, schedule",
-    category: "false-friend",
-    danger: "medium",
-    example: "Qual è l'orario del treno?",
-    exampleEN: "What is the train timetable?",
-    tip: "Nearly identical — but Italians also use orario for store hours, not just transport."
+    tip: "Italian dimenticare = to forget; the visual resemblance to Spanish 'desmentir' (to deny) is partial but enough to cause a double-take."
   },
   {
     id: 69,
-    italian: "lusso",
-    italianMeaning: "luxury",
-    spanishLookalike: "lujo",
-    spanishMeaning: "luxury",
-    englishMeaning: "luxury",
+    italian: "andare",
+    italianMeaning: "to go",
+    spanishLookalike: "andar",
+    spanishMeaning: "to walk; to function/work (of machines); to be going on",
+    englishMeaning: "to go",
     category: "false-friend",
     danger: "medium",
-    example: "Questo hotel è di lusso.",
-    exampleEN: "This hotel is a luxury hotel.",
-    tip: "Same meaning — the trap is spelling; don't write 'lujo' in Italian."
+    example: "Vado a scuola ogni mattina.",
+    exampleEN: "I go to school every morning.",
+    tip: "Italian andare = to go (general movement); walking is camminare. Spanish andar covers both walking and how a machine works — andare does neither."
   },
   {
     id: 70,
-    italian: "carne",
-    italianMeaning: "meat; flesh",
-    spanishLookalike: "carne",
-    spanishMeaning: "meat; flesh",
-    englishMeaning: "meat",
+    italian: "fermo",
+    italianMeaning: "still, stationary, stopped",
+    spanishLookalike: "firme",
+    spanishMeaning: "firm, solid, steady; 'at attention!' (military)",
+    englishMeaning: "still, stationary",
     category: "false-friend",
     danger: "medium",
-    example: "Non mangio carne rossa.",
-    exampleEN: "I don't eat red meat.",
-    tip: "Same word, same meaning — but Italian 'carne' in a store means any meat, not just beef."
+    example: "Stai fermo un momento!",
+    exampleEN: "Stay still for a moment!",
+    tip: "Italian fermo = not moving; Spanish firme = strong and steady. 'Stai fermo!' = don't move; '¡firme!' = stand at attention."
   },
   {
     id: 71,
@@ -931,32 +855,6 @@ const falseFriends = [
     tip: "One notizia = one piece of news; for 'the news' (broadcast) say telegiornale."
   },
   {
-    id: 72,
-    italian: "simpatico",
-    italianMeaning: "likable, friendly, nice (personality)",
-    spanishLookalike: "simpático",
-    spanishMeaning: "nice, likable",
-    englishMeaning: "likable, nice",
-    category: "false-friend",
-    danger: "medium",
-    example: "Il professore è molto simpatico.",
-    exampleEN: "The professor is very likable.",
-    tip: "Near-identical — but English 'sympathetic' means compassionate, not just nice."
-  },
-  {
-    id: 73,
-    italian: "assistere",
-    italianMeaning: "to attend (an event); to assist",
-    spanishLookalike: "asistir",
-    spanishMeaning: "to attend; to assist",
-    englishMeaning: "to attend; to assist",
-    category: "false-friend",
-    danger: "medium",
-    example: "Ho assistito alla conferenza.",
-    exampleEN: "I attended the conference.",
-    tip: "Meanings overlap — but in Italian assistere a means to be present at, not assist with."
-  },
-  {
     id: 74,
     italian: "coinvolto",
     italianMeaning: "involved",
@@ -967,7 +865,7 @@ const falseFriends = [
     danger: "medium",
     example: "È coinvolto nel progetto da mesi.",
     exampleEN: "He has been involved in the project for months.",
-    tip: "Coinvolto shares letters with 'convolved' but simply means involved."
+    tip: "Coinvolto shares letters with 'convulsed/convolved' but simply means involved."
   },
   {
     id: 75,
@@ -982,9 +880,165 @@ const falseFriends = [
     exampleEN: "Stop here, please.",
     tip: "Italian fermare = press the brakes; to sign is firmare (different word, same letters rearranged)."
   },
+  {
+    id: 80,
+    italian: "contare",
+    italianMeaning: "to count (numbers); to matter; to rely on",
+    spanishLookalike: "contar",
+    spanishMeaning: "to count (numbers); to tell, to narrate",
+    englishMeaning: "to count; to matter",
+    category: "false-friend",
+    danger: "medium",
+    example: "Contiamo su di te.",
+    exampleEN: "We are counting on you.",
+    tip: "Italian contare = to count AND to matter or rely on ('conta su di me!' = count on me). Spanish contar also = to tell a story — Italian uses raccontare for narrating. 'Raccontami' = tell me; 'contami' sounds odd."
+  },
+  {
+    id: 83,
+    italian: "pure",
+    italianMeaning: "also, even, moreover; go ahead, feel free",
+    spanishLookalike: "puro",
+    spanishMeaning: "pure, clean; cigar",
+    englishMeaning: "also; go ahead",
+    category: "false-friend",
+    danger: "medium",
+    example: "Vieni pure a cena con noi!",
+    exampleEN: "Feel free to come to dinner with us!",
+    tip: "Italian pure (adverb) = also, even, or 'by all means/feel free' — 'vieni pure' = go ahead and come. Spanish puro (adjective) = pure or a cigar. Italian puro as an adjective also means pure, but the adverb usage is the trap."
+  },
+  {
+    id: 98,
+    italian: "rendere",
+    italianMeaning: "to give back, to return; to make, to render",
+    spanishLookalike: "rendir",
+    spanishMeaning: "to yield, to surrender; to exhaust; to perform (rendir un examen = to sit an exam)",
+    englishMeaning: "to give back; to make/render",
+    category: "false-friend",
+    danger: "medium",
+    example: "Questo colore ti rende bene.",
+    exampleEN: "This color suits you / looks good on you.",
+    tip: "Italian rendere = to give back OR to make something ('rendere felice' = to make happy). Spanish rendir = to yield, perform, or surrender. Returning a book in Italian = 'rendere il libro'; in Spanish you'd say 'devolver'."
+  },
 
-  // ── LOW DANGER (25) ──────────────────────────────────────────────────────
+  // ── LOW DANGER (30) ──────────────────────────────────────────────────────
 
+  {
+    id: 9,
+    italian: "libreria",
+    italianMeaning: "bookshop; bookcase",
+    spanishLookalike: "librería",
+    spanishMeaning: "bookshop (same as Italian in most regions)",
+    englishMeaning: "bookshop; bookcase",
+    category: "false-friend",
+    danger: "low",
+    example: "Ho comprato il romanzo in libreria.",
+    exampleEN: "I bought the novel at the bookshop.",
+    tip: "For Spanish speakers, Italian libreria and Spanish librería share the same meaning (bookshop). The false friend is with English 'library' — the Italian word for that is biblioteca."
+  },
+  {
+    id: 18,
+    italian: "attuale",
+    italianMeaning: "current, present-day",
+    spanishLookalike: "actual",
+    spanishMeaning: "current, present (same as Italian)",
+    englishMeaning: "current, present",
+    category: "false-friend",
+    danger: "low",
+    example: "La situazione attuale è complessa.",
+    exampleEN: "The current situation is complex.",
+    tip: "For Spanish speakers, attuale/actual share the same meaning (current/present) — a safe cognate. The only trap is English 'actual' (= real/genuine), which in Italian is reale or vero."
+  },
+  {
+    id: 44,
+    italian: "tardi",
+    italianMeaning: "late (time of day or lateness)",
+    spanishLookalike: "tarde",
+    spanishMeaning: "afternoon; late",
+    englishMeaning: "late",
+    category: "false-friend",
+    danger: "low",
+    example: "Sono arrivato tardi alla riunione.",
+    exampleEN: "I arrived late to the meeting.",
+    tip: "Italian tardi and Spanish tarde both mean 'late' — a shared meaning. The difference is that Spanish tarde also means 'afternoon', which in Italian is pomeriggio."
+  },
+  {
+    id: 53,
+    italian: "spettacolo",
+    italianMeaning: "show, performance, spectacle",
+    spanishLookalike: "espectáculo",
+    spanishMeaning: "spectacle, show",
+    englishMeaning: "show, performance",
+    category: "false-friend",
+    danger: "low",
+    example: "Lo spettacolo inizia alle otto.",
+    exampleEN: "The show starts at eight.",
+    tip: "Nearly identical to Spanish espectáculo — same root, same meaning. A safe cognate. Italians also use it informally for anything impressive ('che spettacolo!' = wow!)."
+  },
+  {
+    id: 56,
+    italian: "sensibile",
+    italianMeaning: "sensitive",
+    spanishLookalike: "sensible",
+    spanishMeaning: "sensitive (same as Italian)",
+    englishMeaning: "sensitive",
+    category: "false-friend",
+    danger: "low",
+    example: "È una persona molto sensibile.",
+    exampleEN: "She is a very sensitive person.",
+    tip: "Italian sensibile and Spanish sensible both mean 'sensitive' — a safe cognate. The only trap is English 'sensible' (= reasonable/practical), which in Italian is sensato or ragionevole."
+  },
+  {
+    id: 61,
+    italian: "divertire",
+    italianMeaning: "to amuse, to entertain",
+    spanishLookalike: "divertir",
+    spanishMeaning: "to amuse, to entertain",
+    englishMeaning: "to amuse, to entertain",
+    category: "false-friend",
+    danger: "low",
+    example: "Il clown divertiva i bambini.",
+    exampleEN: "The clown was entertaining the children.",
+    tip: "Very close to Spanish divertir — a safe cognate. The reflexive divertirsi = divertirse = to enjoy oneself/have fun. No real trap for Spanish speakers."
+  },
+  {
+    id: 68,
+    italian: "orario",
+    italianMeaning: "timetable, schedule, opening hours",
+    spanishLookalike: "horario",
+    spanishMeaning: "timetable, schedule",
+    englishMeaning: "timetable, schedule",
+    category: "false-friend",
+    danger: "low",
+    example: "Qual è l'orario del treno?",
+    exampleEN: "What is the train timetable?",
+    tip: "Essentially identical to Spanish horario — a safe cognate. Italians also use orario for store opening hours, which aligns with how Spanish horario works."
+  },
+  {
+    id: 72,
+    italian: "simpatico",
+    italianMeaning: "likable, friendly, nice (personality)",
+    spanishLookalike: "simpático",
+    spanishMeaning: "nice, likable (same as Italian)",
+    englishMeaning: "likable, nice",
+    category: "false-friend",
+    danger: "low",
+    example: "Il professore è molto simpatico.",
+    exampleEN: "The professor is very likable.",
+    tip: "Italian simpatico and Spanish simpático share the same meaning — a safe cognate. The only danger is English 'sympathetic' (= compassionate), which is very different from both."
+  },
+  {
+    id: 73,
+    italian: "assistere",
+    italianMeaning: "to attend (an event); to assist",
+    spanishLookalike: "asistir",
+    spanishMeaning: "to attend; to assist",
+    englishMeaning: "to attend; to assist",
+    category: "false-friend",
+    danger: "low",
+    example: "Ho assistito alla conferenza.",
+    exampleEN: "I attended the conference.",
+    tip: "Meanings closely align with Spanish asistir — both mean to attend and to assist. A mostly safe cognate; the subtle difference is that Italian 'assistere a' emphasizes passive presence rather than active participation."
+  },
   {
     id: 76,
     italian: "saluto",
@@ -1022,7 +1076,7 @@ const falseFriends = [
     danger: "low",
     example: "Questo tiramisù è molto ricco.",
     exampleEN: "This tiramisù is very rich.",
-    tip: "Italian ricco = wealthy or flavorful, just like Spanish rico — minor usage overlap."
+    tip: "Italian ricco = wealthy or flavorful, just like Spanish rico — minor usage overlap. Spanish rico also means delicious; Italian uses buonissimo or squisito for that."
   },
   {
     id: 79,
@@ -1036,19 +1090,6 @@ const falseFriends = [
     example: "È un viaggio lungo.",
     exampleEN: "It is a long journey.",
     tip: "Italian lungo = long; remember largo = wide — the two are often confused by Spanish speakers."
-  },
-  {
-    id: 80,
-    italian: "freddo",
-    italianMeaning: "cold",
-    spanishLookalike: "frío",
-    spanishMeaning: "cold",
-    englishMeaning: "cold",
-    category: "false-friend",
-    danger: "low",
-    example: "Ho freddo senza la giacca.",
-    exampleEN: "I am cold without my jacket.",
-    tip: "Same concept — ho freddo (I have cold) not sono freddo, just like Spanish tengo frío."
   },
   {
     id: 81,
@@ -1077,30 +1118,17 @@ const falseFriends = [
     tip: "Italian presto = soon or early in time; it's not about speed the way English 'presto' implies."
   },
   {
-    id: 83,
-    italian: "bello",
-    italianMeaning: "beautiful, handsome, great",
-    spanishLookalike: "bello",
-    spanishMeaning: "beautiful",
-    englishMeaning: "beautiful, great",
-    category: "false-friend",
-    danger: "low",
-    example: "Che bel giorno!",
-    exampleEN: "What a beautiful day!",
-    tip: "Same origin — Italian uses bello colloquially for 'great' more than Spanish does."
-  },
-  {
     id: 84,
-    italian: "piccolo",
-    italianMeaning: "small, little",
-    spanishLookalike: "pequeño",
-    spanishMeaning: "small, little",
-    englishMeaning: "small",
+    italian: "macchina",
+    italianMeaning: "machine; car (in everyday speech)",
+    spanishLookalike: "máquina",
+    spanishMeaning: "machine, engine (not usually a car)",
+    englishMeaning: "machine; car",
     category: "false-friend",
     danger: "low",
-    example: "Ho un piccolo problema.",
-    exampleEN: "I have a small problem.",
-    tip: "Different forms, same meaning — no false-friend trap, but worth mapping for Spanish speakers."
+    example: "Ho preso la macchina per andare al lavoro.",
+    exampleEN: "I took the car to go to work.",
+    tip: "Italian macchina doubles as the everyday word for car — 'prendo la macchina' = I'll take the car. Spanish uses coche, carro, or auto instead."
   },
   {
     id: 85,
@@ -1126,20 +1154,20 @@ const falseFriends = [
     danger: "low",
     example: "Roma è piena di monumenti antichi.",
     exampleEN: "Rome is full of ancient monuments.",
-    tip: "Very close — Italian antico rarely means 'former' the way Spanish antiguo can."
+    tip: "Very close — Italian antico rarely means 'former' the way Spanish antiguo can (my former boss = mi antiguo jefe; Italian would say ex-capo)."
   },
   {
     id: 87,
-    italian: "rispondere",
-    italianMeaning: "to reply, to answer",
-    spanishLookalike: "responder",
-    spanishMeaning: "to reply, to answer",
-    englishMeaning: "to reply",
+    italian: "sentire",
+    italianMeaning: "to hear; to feel; to smell",
+    spanishLookalike: "sentir",
+    spanishMeaning: "to feel; to regret (lo siento = I'm sorry)",
+    englishMeaning: "to hear; to feel; to smell",
     category: "false-friend",
     danger: "low",
-    example: "Non ha risposto al messaggio.",
-    exampleEN: "He didn't reply to the message.",
-    tip: "Nearly identical — the subtle trap is spelling; don't add an 'e' midword."
+    example: "Senti che profumo!",
+    exampleEN: "Can you smell that fragrance!",
+    tip: "Italian sentire covers hearing, feeling, AND smelling — broader than Spanish sentir. 'Ti sento' on the phone = 'I can hear you'; 'sento freddo' = 'I feel cold'; 'sento un odore' = 'I smell something.'"
   },
   {
     id: 88,
@@ -1156,16 +1184,16 @@ const falseFriends = [
   },
   {
     id: 89,
-    italian: "scrivere",
-    italianMeaning: "to write",
-    spanishLookalike: "escribir",
-    spanishMeaning: "to write",
-    englishMeaning: "to write",
+    italian: "piacere",
+    italianMeaning: "to please; to like (mi piace = I like it); pleasure; nice to meet you",
+    spanishLookalike: "placer",
+    spanishMeaning: "pleasure (noun); to please (archaic/formal verb)",
+    englishMeaning: "to please; pleasure",
     category: "false-friend",
     danger: "low",
-    example: "Scrivi il tuo nome qui.",
-    exampleEN: "Write your name here.",
-    tip: "Same root — spellings differ enough that beginners sometimes stumble."
+    example: "Piacere di conoscerti.",
+    exampleEN: "Nice to meet you.",
+    tip: "Italian piacere is the everyday verb for liking ('mi piace' = I like it) and the standard greeting 'piacere!' = nice to meet you. Spanish uses gustar as the equivalent everyday verb; placer is mostly a formal noun."
   },
   {
     id: 90,
@@ -1221,16 +1249,16 @@ const falseFriends = [
   },
   {
     id: 94,
-    italian: "pensare",
-    italianMeaning: "to think",
-    spanishLookalike: "pensar",
-    spanishMeaning: "to think",
-    englishMeaning: "to think",
+    italian: "gomma",
+    italianMeaning: "rubber; eraser; chewing gum; car tire",
+    spanishLookalike: "goma",
+    spanishMeaning: "rubber; eraser; glue/adhesive (LATAM); elastic band",
+    englishMeaning: "rubber; eraser; tire",
     category: "false-friend",
     danger: "low",
-    example: "Penso che tu abbia ragione.",
-    exampleEN: "I think you are right.",
-    tip: "Nearly identical — a low-danger false friend mainly for spelling confidence."
+    example: "Ho bucato una gomma sull'autostrada.",
+    exampleEN: "I got a flat tire on the highway.",
+    tip: "Italian gomma extends to car tires ('ho bucato la gomma' = flat tire) — a meaning Spanish goma doesn't usually have. The rubber and eraser meanings are shared."
   },
   {
     id: 95,
@@ -1270,32 +1298,6 @@ const falseFriends = [
     example: "Il treno parte alle dieci.",
     exampleEN: "The train leaves at ten.",
     tip: "Italian partire = only to depart; to split something say dividere or tagliare."
-  },
-  {
-    id: 98,
-    italian: "mese",
-    italianMeaning: "month",
-    spanishLookalike: "mes",
-    spanishMeaning: "month",
-    englishMeaning: "month",
-    category: "false-friend",
-    danger: "low",
-    example: "Ci vediamo tra un mese.",
-    exampleEN: "See you in a month.",
-    tip: "Same meaning, different ending — low risk but worth recognizing the cognate."
-  },
-  {
-    id: 99,
-    italian: "nobile",
-    italianMeaning: "noble, aristocratic",
-    spanishLookalike: "noble",
-    spanishMeaning: "noble",
-    englishMeaning: "noble",
-    category: "false-friend",
-    danger: "low",
-    example: "Viene da una famiglia nobile.",
-    exampleEN: "She comes from a noble family.",
-    tip: "Identical in meaning — the subtle trip is Italian nobile can also describe a generous spirit."
   },
   {
     id: 100,
