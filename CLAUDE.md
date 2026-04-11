@@ -70,11 +70,22 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `[data-tab]` attribute on all nav items drives both sidebar and bottom nav; `switchTab(id)` syncs both
 
 ## Tooltip system (issue #16)
-- Clicking an annotated word shows a tooltip card: word + phonetic pronunciation hint, EN/ES meanings, category badge, usage note, example sentence (IT + EN)
+- **Desktop:** hover on annotated word → tooltip after 200ms; mouse path word→tooltip keeps it open; click pins tooltip (second click unpins); `state.pinnedByClick` flag
+- **Mobile:** tap to open, tap backdrop to close (unchanged)
+- Tooltip card: word + phonetic pronunciation hint, EN/ES meanings, category badge, usage note, example sentence (IT + EN)
 - Tooltip border color is category-matched via `--tooltip-accent` CSS variable set inline by JS
-- **Mobile (≤820px):** tooltip is a bottom sheet (slides up, backdrop overlay); tapping backdrop closes it
+- `populateTooltip(word, entry)` + `revealTooltip()` shared by annotated-word and dynamic-translate paths
+- `showTooltipFromEntry(entry, anchorRect)` used by dynamic translation result
 - Wordmap entries include `pronunciation`, `example`, `exampleEN` fields
 - Claude prompt requests these fields for generated articles
+
+## Dynamic translation
+- Selecting any text in the Italian column shows a cyan "Translate ↗" pill button 8px above the selection
+- Button calls `POST /api/translate { text, context }` (context = full Italian article text)
+- Claude returns `{ italian, english, spanish, note, category }` — renders in the same tooltip card
+- Results cached in `localStorage` under key `ponte_xlat_{text}`
+- Loading state: button shows "…" and disables during the API call
+- `server.js`: `POST /api/translate` endpoint, `max_tokens: 300`, `temperature: 0.2`
 
 ## Translation column toggle
 - Toggle button in header (▶/◀) collapses/shows the English column
