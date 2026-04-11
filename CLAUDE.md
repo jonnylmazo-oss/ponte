@@ -117,6 +117,13 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `viewport-fit=cover` on viewport meta for edge-to-edge on notched iPhones
 - Safe-area CSS: `env(safe-area-inset-bottom)` applied to `.bottom-nav` height + `.main-area` padding + `.tooltip` bottom offset
 
+## Deployment (when ready)
+- Server IP: `198.199.121.81` (DigitalOcean)
+- HTTPS via Let's Encrypt required for PWA installability in production
+- When deploying: update `ALLOWED_ORIGINS` in `server.js` to include production domain
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) to force cache refresh on all clients
+- See issue #17 for full mobile testing checklist
+
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
 - Fallback: if backend is unreachable, `articles[0]` (hardcoded) is shown
