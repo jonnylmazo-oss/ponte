@@ -153,16 +153,17 @@
       .replace(/>/g, '&gt;');
   }
 
-  // Extract the value of "italian": "..." from a partial JSON buffer.
-  function extractStreamingItalian(buffer) {
-    const MARKER = '"italian":';
-    const markerIdx = buffer.indexOf(MARKER);
+  // Extract the (possibly partial) value of a JSON string field from a streaming buffer.
+  // Returns whatever text has arrived so far, or null if the field hasn't started yet.
+  function extractStreamingField(buffer, fieldName) {
+    const marker = `"${fieldName}":`;
+    const markerIdx = buffer.indexOf(marker);
     if (markerIdx === -1) return null;
 
-    let i = markerIdx + MARKER.length;
+    let i = markerIdx + marker.length;
     while (i < buffer.length && buffer[i] !== '"') i++;
     if (i >= buffer.length) return null;
-    i++; // skip the opening quote
+    i++; // skip opening quote
 
     let text = '';
     while (i < buffer.length) {
@@ -176,7 +177,7 @@
         else                    { text += next; }
         i += 2;
       } else if (ch === '"') {
-        break;
+        break; // closing quote — field complete
       } else {
         text += ch;
         i++;
@@ -187,15 +188,28 @@
   }
 
   function renderStreamingText(buffer) {
-    const italian = extractStreamingItalian(buffer);
-    if (italian === null) return;
+    // Italian — main reading column
+    const italian = extractStreamingField(buffer, 'italian');
+    if (italian !== null) {
+      italianText.innerHTML =
+        escapeHTML(italian) +
+        '<span class="stream-cursor" aria-hidden="true"></span>';
+    }
 
-    italianText.innerHTML =
-      escapeHTML(italian) +
-      '<span class="stream-cursor" aria-hidden="true"></span>';
+    // Translation — whichever language is selected
+    const translField = state.lang === 'en' ? 'english' : 'spanish';
+    const translation = extractStreamingField(buffer, translField);
+    if (translation !== null) {
+      translationText.textContent = translation;
+    }
 
-    const titleMatch = buffer.match(/"title"\s*:\s*"([^"\\]*)"/);
-    if (titleMatch) articleTitle.textContent = titleMatch[1];
+    // Meta fields — arrive early in the JSON, appear as soon as streamed
+    const title      = extractStreamingField(buffer, 'title');
+    const difficulty = extractStreamingField(buffer, 'difficulty');
+    const topic      = extractStreamingField(buffer, 'topic');
+    if (title)      articleTitle.textContent      = title;
+    if (difficulty) articleDifficulty.textContent = difficulty;
+    if (topic)      articleTopic.textContent      = topic;
   }
 
   // ── Generate — SSE streaming with localStorage cache ──────────────────
@@ -211,6 +225,10 @@
 
     setLoading(true);
     clearError();
+
+    // Show known meta immediately — no need to wait for stream
+    articleDifficulty.textContent = difficulty;
+    articleTopic.textContent      = topic;
 
     const params = new URLSearchParams({ topic, difficulty });
     const es = new EventSource(`${API_BASE}/api/generate-article-stream?${params}`);

@@ -63,10 +63,11 @@ app.get('/api/generate-article-stream', async (req, res) => {
 
   try {
     const stream = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
-      max_tokens: 2048,
-      stream:     true,
-      messages:   [{ role: 'user', content: buildPrompt(topic, difficulty) }],
+      model:       'claude-sonnet-4-20250514',
+      max_tokens:  800,
+      temperature: 0.8,
+      stream:      true,
+      messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
     });
 
     for await (const event of stream) {
@@ -100,9 +101,10 @@ app.post('/api/generate-article-full', async (req, res) => {
 
   try {
     const message = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
-      max_tokens: 2048,
-      messages:   [{ role: 'user', content: buildPrompt(topic, difficulty) }],
+      model:       'claude-sonnet-4-20250514',
+      max_tokens:  800,
+      temperature: 0.8,
+      messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
     });
 
     const raw     = message.content[0].text.trim();
