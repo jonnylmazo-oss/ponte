@@ -800,6 +800,30 @@ header {
 }
 
 
+/* ─── Translate button (selection) ──────────────────────────── */
+
+.translate-btn {
+  position: fixed;
+  z-index: 200;
+  background: #00C2B8;
+  color: #000;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 13px;
+  font: 600 12px var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(0, 194, 184, 0.4);
+  transition: background 0.12s, transform 0.1s;
+  pointer-events: auto;
+}
+
+.translate-btn:hover  { background: #00d4c9; }
+.translate-btn:active { transform: scale(0.96); }
+.translate-btn[hidden] { display: none; }
+.translate-btn:disabled { opacity: 0.65; cursor: wait; }
+
+
 /* ─── Tooltip backdrop (mobile) ──────────────────────────────── */
 
 .tooltip-backdrop {

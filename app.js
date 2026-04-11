@@ -21,6 +21,9 @@
     activeWordEl:    null,
     activeWordmap:   {},
     translationOpen: false,  // default: collapsed
+    pinnedByClick:   false,  // tooltip locked open by a click (not just hover)
+    hoverTimer:      null,   // setTimeout for hover-show delay
+    hoverHideTimer:  null,   // setTimeout for hover-leave hide delay
   };
 
   // ── DOM refs ───────────────────────────────────────────────────────────
@@ -287,23 +290,15 @@
     return window.innerWidth <= 820;
   }
 
-  function showTooltip(wordEl) {
-    const key   = wordEl.dataset.word;
-    const entry = state.activeWordmap[key];
-    if (!entry) return;
-
-    if (state.activeWordEl) state.activeWordEl.classList.remove('active');
-    state.activeWordEl = wordEl;
-    wordEl.classList.add('active');
-
-    tooltipWord.textContent  = key;
+  function populateTooltip(word, entry) {
+    tooltipWord.textContent  = word;
     tooltipPron.textContent  = entry.pronunciation || '';
     tooltipPron.hidden       = !entry.pronunciation;
     tooltipBadge.textContent = CATEGORY_LABELS[entry.category] || entry.category;
-    tooltipBadge.className   = `tooltip-badge ${entry.category}`;
-    tooltipEN.textContent    = entry.english;
-    tooltipES.textContent    = entry.spanish;
-    tooltipNote.textContent  = entry.note || '';
+    tooltipBadge.className   = `tooltip-badge ${entry.category || 'new'}`;
+    tooltipEN.textContent    = entry.english  || '';
+    tooltipES.textContent    = entry.spanish  || '';
+    tooltipNote.textContent  = entry.note     || '';
 
     if (entry.example) {
       tooltipExampleIt.textContent = entry.example;
@@ -313,36 +308,67 @@
       tooltipExample.hidden = true;
     }
 
-    // Category-colored border accent
     const accent = CATEGORY_COLORS[entry.category] || CATEGORY_COLORS['new'];
     tooltip.style.setProperty('--tooltip-accent', accent);
+  }
 
+  function revealTooltip() {
     tooltip.hidden = false;
     tooltip.removeAttribute('aria-hidden');
     tooltip.classList.remove('visible');
     // eslint-disable-next-line no-unused-expressions
     tooltip.offsetHeight; // trigger reflow so transition fires
     tooltip.classList.add('visible');
+  }
+
+  function showTooltip(wordEl) {
+    const key   = wordEl.dataset.word;
+    const entry = state.activeWordmap[key];
+    if (!entry) return;
+
+    if (state.activeWordEl) state.activeWordEl.classList.remove('active');
+    state.activeWordEl = wordEl;
+    wordEl.classList.add('active');
+
+    populateTooltip(key, entry);
+    revealTooltip();
 
     if (isMobile()) {
       backdrop.classList.add('visible');
     } else {
-      positionTooltip(wordEl);
+      positionTooltipAt(wordEl.getBoundingClientRect());
     }
   }
 
-  function positionTooltip(wordEl) {
+  // Show tooltip for a dynamically translated entry, anchored to a selection rect.
+  function showTooltipFromEntry(entry, anchorRect) {
+    if (state.activeWordEl) {
+      state.activeWordEl.classList.remove('active');
+      state.activeWordEl = null;
+    }
+
+    populateTooltip(entry.italian || '', entry);
+    revealTooltip();
+    state.pinnedByClick = true;
+
+    if (isMobile()) {
+      backdrop.classList.add('visible');
+    } else if (anchorRect) {
+      positionTooltipAt(anchorRect);
+    }
+  }
+
+  function positionTooltipAt(anchorRect) {
     const GAP  = 10;
-    const rect = wordEl.getBoundingClientRect();
     const tipW = tooltip.offsetWidth;
     const tipH = tooltip.offsetHeight;
     const vw   = window.innerWidth;
     const vh   = window.innerHeight;
 
-    let top  = rect.bottom + GAP;
-    let left = rect.left;
+    let top  = anchorRect.bottom + GAP;
+    let left = anchorRect.left;
 
-    if (top + tipH > vh - GAP) top = rect.top - tipH - GAP;
+    if (top + tipH > vh - GAP) top = anchorRect.top - tipH - GAP;
     if (left + tipW > vw - GAP) left = vw - tipW - GAP;
     if (left < GAP)             left = GAP;
 
@@ -351,6 +377,8 @@
   }
 
   function hideTooltip() {
+    clearTimeout(state.hoverTimer);
+    clearTimeout(state.hoverHideTimer);
     if (state.activeWordEl) {
       state.activeWordEl.classList.remove('active');
       state.activeWordEl = null;
@@ -385,21 +413,75 @@
   }
 
   // ── Events ─────────────────────────────────────────────────────────────
+
+  // Click: pins tooltip open; second click on same word unpins and closes
   document.addEventListener('click', (e) => {
     const wordEl = e.target.closest('[data-has-entry]');
     if (wordEl) {
-      if (wordEl === state.activeWordEl) hideTooltip();
-      else showTooltip(wordEl);
+      clearTimeout(state.hoverTimer);
+      clearTimeout(state.hoverHideTimer);
+      hideTranslateBtn();
+      if (wordEl === state.activeWordEl && state.pinnedByClick) {
+        state.pinnedByClick = false;
+        hideTooltip();
+      } else {
+        state.pinnedByClick = true;
+        showTooltip(wordEl);
+      }
       return;
     }
-    if (e.target.closest('#tooltip')) return;
+    if (e.target.closest('#tooltip') || e.target.id === 'translate-btn') return;
+    state.pinnedByClick = false;
+    hideTooltip();
+    hideTranslateBtn();
+  });
+
+  // Hover: show after 200ms delay, hide 100ms after leaving word/tooltip
+  italianText.addEventListener('mouseover', (e) => {
+    if (isMobile()) return;
+    const wordEl = e.target.closest('[data-has-entry]');
+    if (!wordEl) return;
+    if (e.relatedTarget && wordEl.contains(e.relatedTarget)) return;
+    clearTimeout(state.hoverHideTimer);
+    if (state.pinnedByClick) return;
+    clearTimeout(state.hoverTimer);
+    state.hoverTimer = setTimeout(() => {
+      if (!state.pinnedByClick) showTooltip(wordEl);
+    }, 200);
+  });
+
+  italianText.addEventListener('mouseout', (e) => {
+    if (isMobile()) return;
+    const wordEl = e.target.closest('[data-has-entry]');
+    if (!wordEl) return;
+    if (wordEl.contains(e.relatedTarget)) return;
+    clearTimeout(state.hoverTimer);
+    if (!state.pinnedByClick) {
+      state.hoverHideTimer = setTimeout(hideTooltip, 100);
+    }
+  });
+
+  // Keep tooltip open when mouse moves from word onto tooltip card
+  tooltip.addEventListener('mouseenter', () => {
+    clearTimeout(state.hoverHideTimer);
+  });
+  tooltip.addEventListener('mouseleave', () => {
+    if (!state.pinnedByClick) {
+      state.hoverHideTimer = setTimeout(hideTooltip, 80);
+    }
+  });
+
+  backdrop.addEventListener('click', () => {
+    state.pinnedByClick = false;
     hideTooltip();
   });
 
-  backdrop.addEventListener('click', hideTooltip);
-
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideTooltip();
+    if (e.key === 'Escape') {
+      state.pinnedByClick = false;
+      hideTooltip();
+      hideTranslateBtn();
+    }
   });
 
   // EN / ES toggle
@@ -476,6 +558,102 @@
       sidebarToggleBtn.textContent = isCollapsed ? '›' : '‹';
       localStorage.setItem(LS_SIDEBAR, isCollapsed ? '1' : '0');
     });
+  }
+
+  // ── Dynamic translation (any selected text in Italian column) ──────────
+  const translateBtn  = $('translate-btn');
+  let pendingSelection = null;  // { text, context, rect }
+
+  const XLAT_CACHE_PREFIX = 'ponte_xlat_';
+
+  function showTranslateBtn(rect) {
+    const GAP  = 8;
+    const btnW = translateBtn.offsetWidth || 110;
+    let left   = rect.left + rect.width / 2 - btnW / 2;
+    let top    = rect.top - translateBtn.offsetHeight - GAP - 4;
+
+    if (left < 8)                          left = 8;
+    if (left + btnW > window.innerWidth - 8) left = window.innerWidth - btnW - 8;
+    if (top < 8)                           top  = rect.bottom + GAP;
+
+    translateBtn.style.left = `${left}px`;
+    translateBtn.style.top  = `${top}px`;
+    translateBtn.textContent = 'Translate ↗';
+    translateBtn.disabled    = false;
+    translateBtn.hidden      = false;
+  }
+
+  function hideTranslateBtn() {
+    translateBtn.hidden  = true;
+    translateBtn.textContent = 'Translate ↗';
+    translateBtn.disabled    = false;
+    pendingSelection         = null;
+  }
+
+  function handleSelectionChange() {
+    // Small delay so selection is finalised after mouseup/touchend
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) {
+        hideTranslateBtn();
+        return;
+      }
+
+      const range = sel.getRangeAt(0);
+      if (!italianText.contains(range.commonAncestorContainer)) {
+        hideTranslateBtn();
+        return;
+      }
+
+      const text = sel.toString().trim();
+      if (!text || text.length < 2) { hideTranslateBtn(); return; }
+
+      const rect = range.getBoundingClientRect();
+      pendingSelection = { text, context: italianText.innerText, rect };
+      showTranslateBtn(rect);
+    }, 30);
+  }
+
+  italianText.addEventListener('mouseup',  handleSelectionChange);
+  italianText.addEventListener('touchend', handleSelectionChange);
+
+  translateBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!pendingSelection) return;
+    doTranslate(pendingSelection.text, pendingSelection.context, pendingSelection.rect);
+  });
+
+  async function doTranslate(text, context, anchorRect) {
+    const cacheKey = XLAT_CACHE_PREFIX + text.toLowerCase().trim();
+    const cached   = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const entry = JSON.parse(cached);
+        showTooltipFromEntry(entry, anchorRect);
+        hideTranslateBtn();
+        return;
+      } catch { /* stale */ }
+    }
+
+    translateBtn.textContent = '…';
+    translateBtn.disabled    = true;
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/translate`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text, context }),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const entry = await resp.json();
+      localStorage.setItem(cacheKey, JSON.stringify(entry));
+      showTooltipFromEntry(entry, anchorRect);
+      hideTranslateBtn();
+    } catch (err) {
+      console.error('Translation failed:', err.message);
+      translateBtn.textContent = 'Translate ↗';
+      translateBtn.disabled    = false;
+    }
   }
 
   // ── Init ───────────────────────────────────────────────────────────────

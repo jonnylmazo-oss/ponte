@@ -255,6 +255,44 @@ app.post('/api/generate-article-full', async (req, res) => {
   }
 });
 
+// ── On-demand translation — POST /api/translate
+// Body: { text: string, context?: string }
+app.post('/api/translate', async (req, res) => {
+  const { text, context } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'text is required' });
+  }
+
+  const prompt = `The user is learning Italian and selected this text: "${text}"
+Full Italian context (the article being read): "${(context || text).slice(0, 600)}"
+Return JSON only — no markdown, no code fences:
+{
+  "italian": "${text}",
+  "english": "English translation",
+  "spanish": "Spanish equivalent or translation",
+  "note": "One sentence for a Spanish speaker: is this a safe cognate, false friend, or does it diverge from Spanish usage?",
+  "category": "cognate or false-friend or divergence or new"
+}
+Category guide — "cognate": looks and means the same as Spanish; "false-friend": looks Spanish but means something different; "divergence": exists in Spanish but used differently in Italian; "new": no close Spanish equivalent.`;
+
+  try {
+    const message = await client.messages.create({
+      model:       'claude-sonnet-4-20250514',
+      max_tokens:  300,
+      temperature: 0.2,
+      messages:    [{ role: 'user', content: prompt }],
+    });
+
+    const result = parseArticleJSON(message.content[0].text);
+    if (!result.italian) result.italian = text.trim();
+    res.json(result);
+  } catch (err) {
+    console.error('Translation error:', err.message);
+    res.status(500).json({ error: 'Translation failed', details: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Ponte server running on http://localhost:${PORT}`);
 });
