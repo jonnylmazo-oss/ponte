@@ -17,6 +17,14 @@
     'famiglia', 'treno', 'weekend', 'cucina italiana', 'aperitivo',
     'vacanze', 'musica', 'città', 'amici', 'università',
     'estate', 'inverno', 'viaggio', 'tecnologia', 'cinema',
+    'una scena dall\'Odissea con Ulisse',
+    'Ulisse e il Ciclope in italiano',
+    'Ettore e Achille dall\'Iliade',
+    'una scena dalla Divina Commedia',
+    'una favola di Esopo in italiano',
+    'una storia dal Decameron di Boccaccio',
+    'Romolo e Remo — la fondazione di Roma',
+    'Giulio Cesare — una scena storica',
   ];
 
   // ── State ──────────────────────────────────────────────────────────────
