@@ -123,15 +123,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Safe-area CSS: `env(safe-area-inset-bottom)` applied to `.bottom-nav` height + `.main-area` padding + `.tooltip` bottom offset
 
 ## Deployment
-- **Live at:** `http://198.199.88.229` (DigitalOcean droplet)
-- nginx serves static files from `/home/ponte`; proxies `/api/` → `localhost:3001`
-- API managed by PM2 (`pm2 list`, `pm2 logs ponte-api`)
-- To deploy latest: `ssh root@198.199.88.229 /home/ponte/deploy.sh`
-- `.env` on server at `/home/ponte/.env` — set `ANTHROPIC_API_KEY` manually after first deploy
-- `FLASHCARDS_PATH=/home/ponte/data/flashcards.json` (persisted across deploys)
-- `PORT=3001` in `.env` (nginx proxies to this port)
+- **Production URL:** `http://198.199.88.229`
+- **Server:** DigitalOcean Droplet, Ubuntu 24.04, 1GB RAM
+- **Deploy command:** `ssh root@198.199.88.229 "cd /home/ponte && bash deploy.sh"`
+  - Runs: `git pull origin main && npm install --production && pm2 restart ponte-api`
+- **PM2 process:** `ponte-api` (`pm2 list`, `pm2 logs ponte-api`)
+- **nginx:** serves static files from `/home/ponte`; proxies `/api/` → `localhost:3001`
+- **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
+- **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Key design decisions
