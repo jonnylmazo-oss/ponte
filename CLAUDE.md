@@ -139,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v8`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v9`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -188,7 +188,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Progress bar** + X/Y counter at top of drill screen
 - **Score summary** at end: X/Y correct (%) with "Try again" and "Choose article" buttons
 - Selector auto-refreshes when Practice tab nav is clicked (picks up newly generated articles)
-- Script load order: after `flashcards.js`; sw.js bumped to `ponte-v7`
+- Script load order: after `flashcards.js`; followed by `dictionary.js`; sw.js bumped to `ponte-v9`
 
 ## Mobile drill scroll fix (issues #28/#29, closed)
 - Both flashcard and false friends drill back faces use shared flex column layout
@@ -204,12 +204,14 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `drillReverse` state variable in `flashcards.js`; `updateReverseBtn()` syncs label ("Standard 🔄" / "Reverse 🔄") and `.active` class
 - Toggling mid-drill refreshes the current card immediately; sw.js bumped to `ponte-v8`
 
-## Dictionary tab (issue #30, P1 — not yet built)
-- Word/phrase lookup via existing `/api/translate` endpoint — shows IT word, EN meaning, ES equivalent, category badge, pronunciation, tense/infinitive, usage note; 🔊 button; Save to Flashcards
-- Usage checker: user types an Italian sentence → new `/api/check-usage` endpoint → Claude returns corrected version + per-error explanations tied to Spanish interference patterns
-- Search history: last 20 lookups in `localStorage`, shown as clickable chips below search bar
-- One-tap save: same card structure (`{italian, english, spanish, category, note, ...}`) as reader saves
-- UI: two sections — Lookup at top, Usage Checker below
+## Dictionary tab (issue #30, closed)
+- `dictionary.js`: IIFE — two sections: Word Lookup + Usage Checker
+- **Word Lookup:** text input → `POST /api/translate` → result card: word (category color), pronunciation, EN/ES rows, TENSE/∞ rows if verb, usage note, 🔊 button, Save ★ button
+- **Search history:** last 20 lookups in `localStorage` (`ponte_dict_history`), shown as clickable chips; Clear button removes all
+- **Save to Flashcards:** same card structure as reader saves; `sourceArticle: 'Dictionary lookup'`; fires `ponte:flashcard-saved` event; toggles to "Saved ✓" if already in deck
+- **Usage Checker:** textarea → `POST /api/check-usage` → if correct: green "Looks good!"; if errors: corrected sentence in cyan + per-error cards (strikethrough wrong → green fix, explanation, Grammar/Spanish Transfer/Word Choice badge); encouragement always shown
+- `server.js` `/api/check-usage`: `max_tokens: 600`, `temperature: 0.2`; returns `{original, corrected, isCorrect, errors[], encouragement}`
+- Tab between Grammar and Practice in sidebar (🔍) and bottom nav; sw.js bumped to `ponte-v9`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
