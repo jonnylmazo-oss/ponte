@@ -242,6 +242,22 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - PWA `manifest.json`: `background_color: #F8F1E3`, `theme_color: #0055AA`; iOS status bar: `default`
 - sw.js bumped to `ponte-v13`
 
+## Backlog (open issues)
+
+### P1 — High priority
+- **#31** Conversation simulator — AI chat mode: Claude plays Italian speaker, user replies in Italian, corrections after each turn; no scripts
+- **#32** Error-to-drill engine: track error pattern types across drill sessions, surface in Grammar tab as personalized weak areas
+- **#33** Sentence rebuilding mode: show English sentence, user reconstructs full Italian from memory; third mode in Practice tab
+
+### P2 — Medium priority
+- **#34** Cultural context layer in Reader: 2-3 sentence cultural note per article, collapsible below article text
+- **#35** Weekly learning mission: one goal per week in Progress tab, resets Monday, simple progress bar — no gamification
+- **#36** Native audio per article: ElevenLabs or real audio; TTS insufficient for speech rhythm / connected speech
+
+### P3 — Low priority
+- **#37** Pronunciation lab: user records word/sentence, compares to native reference (requires #36 first)
+- **#38** Collaborative deck sharing: export/import flashcard deck as JSON link, no accounts needed
+
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
 - Fallback: if backend is unreachable, `articles[0]` (hardcoded) is shown
