@@ -56,7 +56,23 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Drill mode: CSS 3D flip, Got it / Tricky queue management, first-try score at end; respects active filter/search
 - Script load order: `data/false-friends.js` → `app.js` → `false-friends.js`
 
-## Grammar tab (issue #4)
+## Grammar tab — 4-stage learning path
+- `data/grammar.js`: 45 cards (original 40 + 5 new: IDs 41-45) with fields `{ id, title, category, difficulty, stageId, english, italian, example, exampleEN, trap, spanishShortcut, tip? }`
+  - Old `spanish: { label, example, note }` / `italian: { label, example, note }` format removed
+  - `stageId`: 1=Foundation, 2=Traps, 3=Nuance, 4=Fluency
+  - 30 pattern drills unchanged (`grammarDrills` array, `grammarCardId` → card `id`)
+- `grammar.js`: IIFE — stage tiles grid → card list view
+  - Landing: 2×2 tile grid (1-col on mobile); each tile shows count + viewed progress bar (`ponte_grammar_viewed` in localStorage)
+  - Click tile → shows all cards for that stage; back button returns to grid
+  - One stage open at a time; `IntersectionObserver` marks cards viewed at 30% threshold
+  - Cards always fully readable (no expand/collapse): EN row, IT row (cyan), example sentence, ⚠️ trap, 🇪🇸 Spanish shortcut, [Practice this →] button
+  - "Practice this →" switches to Pattern Drills sub-tab filtered to card's category
+  - Stage colors: Stage 1 `#00C2B8`, Stage 2 `#F5C842`, Stage 3 `#F5894A`, Stage 4 `#A855F7`
+  - Pattern Drills and From Your Reading sub-tabs unchanged
+- Sub-tab label changed: "Verb Deltas" → "Learn" (`data-panel="stages"`)
+- HTML panel replaced: `grammar-panel-delta` → `grammar-panel-stages`
+
+## Grammar tab (issue #4 — SUPERSEDED by redesign above)
 - `data/grammar.js`: 40 delta cards with fields: `{id, title, category, difficulty, spanish: {label, example, note}, italian: {label, example, note}, trap, tip}`; 30 pattern drills with fields: `{id, grammarCardId, sentence (contains ___), answer, distractors[3], explanation}`
 - Categories: tense(10), pronoun(8), subjunctive(6), reflexive(4), preposition(5), geminate(3), modal(4)
 - `grammar.js`: vanilla JS IIFE — sub-tab switching (Verb Deltas / Pattern Drills / From Your Reading), category+difficulty filters, expand/collapse card grid (grid-template-rows animation), drill engine with shuffled queue + 4-option MCQ + immediate feedback + progress bar + first-try score
@@ -135,7 +151,14 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
-## Audio pronunciation (issue #25)
+## Audio pronunciation (issue #25, closed)
+- **Bug fix:** tooltip 🔊 had `e.stopPropagation()` to prevent bubble to document click (tooltip dismiss)
+- **Flashcard library:** 🔊 button (`fc-card-speak-btn`) inline with Italian word in each library card; handled via event delegation in `fcGrid` click listener
+- **Drill front face:** 🔊 button (`fc-front-speak-btn`) lets user hear word before flipping
+- **Drill back face:** auto-play on flip (350ms delay) + 🔊 replay button (`fc-speak-btn`)
+- `window.ponteSpeak` set synchronously in app.js IIFE — available when flashcards.js runs
+
+## Audio pronunciation (issue #25 — details)
 - **Shared utility:** `speech.speak(text)` in `app.js` (inside IIFE); exposed as `window.ponteSpeak` for `flashcards.js`
   - `utterance.lang = 'it-IT'`, `rate = 0.85`, `pitch = 1.0`
   - Prefers Italian system voice: `voices.find(v => v.lang === 'it-IT')`
