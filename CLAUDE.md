@@ -139,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v7`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v8`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -190,12 +190,19 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Selector auto-refreshes when Practice tab nav is clicked (picks up newly generated articles)
 - Script load order: after `flashcards.js`; sw.js bumped to `ponte-v7`
 
-## Mobile drill scroll fix (issue #28, closed)
-- Both flashcard and false friends drill back faces have long content that can overflow on iPhone
-- Fix: card containers use `height: clamp(280px, 65vh, 520px)` (not `min-height`); inners use `height: 100%`; faces use `bottom: 0` to fill container
-- Scrollable content wrapped in `.fc-flip-scroll` / `.ff-flip-scroll`: `flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch`
-- Action buttons (Got it / Tricky) sit outside the scroll wrapper with `flex-shrink: 0; min-height: 44px` — always visible at bottom
-- HTML: back face = `<div class="fc-flip-scroll">` wrapping word-row + answer + note, then `<div class="fc-drill-actions">` outside
+## Mobile drill scroll fix (issues #28/#29, closed)
+- Both flashcard and false friends drill back faces use shared flex column layout
+- Card containers use `height: clamp(280px, 65vh, 520px)`; inners use `height: 100%`; faces use `position: absolute; inset: 0`; back face has `padding: 0; gap: 0; overflow: hidden`
+- Scrollable content: `<div class="drill-card-content">` — `flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 24px 8px`
+- Sticky buttons: `<div class="drill-card-buttons">` — `flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg-card); padding: 12px 24px 16px`
+- Mobile media queries add `.fc-flip-back { padding: 0; }` and `.ff-flip-back { padding: 0; }` to override `.fc-flip-face` padding rule
+
+## Reverse drill mode (issue #29, closed)
+- `Reverse 🔄` toggle button in `.fc-drill-topbar` next to Exit; state in `localStorage` (`ponte_drill_reverse`)
+- Standard mode: Italian on front, English + Spanish + category badge + note on back
+- Reverse mode: English on front ("What is this in Italian?"), Italian on back with auto-play pronunciation + category badge + note; front speak button hidden
+- `drillReverse` state variable in `flashcards.js`; `updateReverseBtn()` syncs label ("Standard 🔄" / "Reverse 🔄") and `.active` class
+- Toggling mid-drill refreshes the current card immediately; sw.js bumped to `ponte-v8`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
