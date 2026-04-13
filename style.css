@@ -3303,8 +3303,80 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 .prac-done-score {
   font-size: 16px;
   color: var(--text-mid);
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
+
+/* ── Missed words section ─────────────────────────────────── */
+
+.prac-missed-list {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.prac-missed-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.prac-missed-perfect {
+  font-size: 14px;
+  color: #2E6B3E;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.prac-missed-words {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.prac-missed-word {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.prac-missed-word strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.prac-missed-en {
+  color: var(--text-mid);
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+.prac-save-missed-btn {
+  display: block;
+  width: 100%;
+  padding: 11px 20px;
+  margin-bottom: 20px;
+  background: rgba(46, 107, 62, 0.1);
+  border: 1px solid rgba(46, 107, 62, 0.4);
+  border-radius: var(--radius);
+  color: #2E6B3E;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: center;
+}
+
+.prac-save-missed-btn:hover:not(:disabled) { background: rgba(46, 107, 62, 0.18); }
+.prac-save-missed-btn:disabled { opacity: 0.6; cursor: default; }
 
 .prac-done-actions {
   display: flex;
