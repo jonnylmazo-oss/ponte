@@ -279,11 +279,53 @@
       <!-- Tab: Practice -->
       <div class="tab-panel" id="tab-practice">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
-        <div class="coming-soon">
-          <div class="coming-soon-icon">✍️</div>
-          <h2 class="coming-soon-title">Practice</h2>
-          <p class="coming-soon-desc">Fill in the blank with the right Italian word. Build recall, not just recognition.</p>
-          <span class="coming-soon-tag">On the roadmap</span>
+
+        <!-- Setup screen -->
+        <div id="prac-setup" class="prac-setup">
+          <h2 class="prac-heading">Practice</h2>
+          <p class="prac-subheading">Fill in the blank — active recall from articles you've read.</p>
+          <div class="prac-toolbar">
+            <select id="prac-article-select" class="prac-select"></select>
+            <button id="prac-generate-btn" class="prac-generate-btn">+ Generate new</button>
+          </div>
+          <div class="prac-mode-row">
+            <span class="prac-mode-label">Mode:</span>
+            <button class="prac-mode-btn active" data-mode="choice">Multiple choice</button>
+            <button class="prac-mode-btn" data-mode="type">Type it</button>
+          </div>
+          <button id="prac-start-btn" class="prac-start-btn" disabled>Start Practice →</button>
+        </div>
+
+        <!-- Drill screen -->
+        <div id="prac-drill" class="prac-drill" hidden>
+          <div class="prac-progress-track">
+            <div class="prac-progress-fill" id="prac-progress-bar"></div>
+          </div>
+          <div class="prac-progress-label" id="prac-progress-label"></div>
+          <div class="prac-card">
+            <div class="prac-sentence-it" id="prac-sentence-it"></div>
+            <div class="prac-sentence-en" id="prac-sentence-en"></div>
+            <div class="prac-choices" id="prac-choices"></div>
+            <div class="prac-type-area" id="prac-type-area" hidden>
+              <input type="text" id="prac-type-input" class="prac-type-input"
+                placeholder="Type the Italian word…"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button id="prac-type-submit" class="prac-type-submit">Check</button>
+            </div>
+            <div class="prac-feedback" id="prac-feedback" hidden></div>
+            <button class="prac-next-btn" id="prac-next-btn" hidden>Next →</button>
+          </div>
+        </div>
+
+        <!-- Complete screen -->
+        <div id="prac-done" class="prac-done" hidden>
+          <div class="prac-done-icon">🎉</div>
+          <h2 class="prac-done-title">Practice complete!</h2>
+          <p class="prac-done-score" id="prac-done-score"></p>
+          <div class="prac-done-actions">
+            <button id="prac-retry-btn" class="prac-retry-btn">Try again</button>
+            <button id="prac-back-btn" class="prac-back-btn">Choose article</button>
+          </div>
         </div>
       </div>
 
@@ -477,6 +519,7 @@
   <script src="false-friends.js"></script>
   <script src="grammar.js"></script>
   <script src="flashcards.js"></script>
+  <script src="practice.js"></script>
 
   <!-- Service worker registration + install banner logic -->
   <script>
