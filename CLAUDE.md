@@ -80,11 +80,18 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Flashcard system
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
-- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, timesCorrect, timesWrong, lastSeen}`
+- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, timesCorrect, timesWrong, lastSeen, lastDrilled}`
+- `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
+- `lastDrilled`: ISO timestamp set on every Got it / Tricky action in drill mode
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
 - Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
 - Cross-module sync: `app.js` fires `window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'))` on save/delete; `flashcards.js` listens to re-render
 - `flashcards.js` IIFE: library view (search, category filter, card grid, delete), drill mode (3D CSS flip, Got it/Tricky, score + tricky list)
+- **Drill score tracking (issues #21/#22/#23, closed):**
+  - Session stats bar in drill panel: "X correct · Y tricky · Z% this session" (resets each drill start)
+  - Accuracy badge on library cards if drilled ≥1 time: 🟢 80%+, 🟡 50–79%, 🔴 <50%
+  - Word type filter row in toolbar: All / Nouns / Verbs / Adjectives / Phrases (filters drill queue by `wordType` field)
+  - Reset Scores button in toolbar: confirms then zeros `timesCorrect`, `timesWrong`, `lastDrilled` for all cards
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
 
 ## Tab navigation
@@ -131,7 +138,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v1`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v4`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -148,7 +155,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v5`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -168,7 +175,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcard drill:** auto-plays 350ms after flip (card CSS animation); 🔊 replay button (`fc-speak-btn`) on back face
 - **Reader column:** 🔊/⏹ button (`article-speak-btn`) next to "Italiano" label; reads full article; `articleSpeaking` state flag; stops on new article render (`stopArticleSpeech()` called in `renderArticle`)
 - **Graceful degradation:** buttons hidden if `!speech.supported` (no `window.speechSynthesis`)
-- Service worker bumped to `ponte-v2` when this shipped
+- Service worker bumped to `ponte-v4` (drill score tracking)
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
