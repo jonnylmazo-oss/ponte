@@ -1366,14 +1366,14 @@ header {
 .ff-flip-card {
   width: 100%;
   max-width: 440px;
-  min-height: 300px;
+  height: clamp(300px, 65vh, 520px);
   perspective: 1200px;
 }
 
 .ff-flip-inner {
   position: relative;
   width: 100%;
-  min-height: 300px;
+  height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1384,8 +1384,7 @@ header {
 
 .ff-flip-face {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  min-height: 300px;
+  top: 0; left: 0; right: 0; bottom: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background: var(--bg-card);
@@ -1403,7 +1402,20 @@ header {
 .ff-flip-back {
   transform: rotateY(180deg);
   justify-content: flex-start;
-  padding-top: 28px;
+  padding: 20px 28px 16px;
+}
+
+.ff-flip-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px;
 }
 
 .ff-flip-word {
@@ -1467,12 +1479,14 @@ header {
   gap: 10px;
   width: 100%;
   max-width: 300px;
-  margin-top: 4px;
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 
 .ff-got-btn,
 .ff-tricky-btn {
   flex: 1;
+  min-height: 44px;
   padding: 10px;
   border-radius: var(--radius);
   font-family: var(--font);
@@ -2225,14 +2239,14 @@ header {
 .fc-flip-card {
   width: 100%;
   max-width: 440px;
-  min-height: 280px;
+  height: clamp(280px, 65vh, 520px);
   perspective: 1200px;
 }
 
 .fc-flip-inner {
   position: relative;
   width: 100%;
-  min-height: 280px;
+  height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2240,8 +2254,7 @@ header {
 
 .fc-flip-face {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  min-height: 280px;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-mid);
   border-radius: 12px;
@@ -2258,7 +2271,20 @@ header {
 .fc-flip-back {
   transform: rotateY(180deg);
   justify-content: flex-start;
-  padding-top: 28px;
+  padding: 20px 28px 16px;
+}
+
+.fc-flip-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 4px;
 }
 
 .fc-flip-word {
@@ -2318,7 +2344,8 @@ header {
 .fc-drill-actions {
   display: flex;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 8px;
+  flex-shrink: 0;
 }
 
 .fc-got-btn {
@@ -2329,6 +2356,7 @@ header {
   font-family: var(--font);
   font-size: 14px;
   font-weight: 500;
+  min-height: 44px;
   padding: 8px 22px;
   cursor: pointer;
   transition: background 0.12s;
@@ -2343,6 +2371,7 @@ header {
   font-family: var(--font);
   font-size: 14px;
   font-weight: 500;
+  min-height: 44px;
   padding: 8px 22px;
   cursor: pointer;
   transition: background 0.12s;
