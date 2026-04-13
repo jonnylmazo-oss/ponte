@@ -60,7 +60,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `data/grammar.js`: 45 cards (original 40 + 5 new: IDs 41-45) with fields `{ id, title, category, difficulty, stageId, english, italian, example, exampleEN, trap, spanishShortcut, tip? }`
   - Old `spanish: { label, example, note }` / `italian: { label, example, note }` format removed
   - `stageId`: 1=Foundation, 2=Traps, 3=Nuance, 4=Fluency
-  - 30 pattern drills unchanged (`grammarDrills` array, `grammarCardId` → card `id`)
+  - 30 pattern drills (`grammarDrills` array, `grammarCardId` → card `id`); each drill has `sentenceEN` field (English translation with `___` mirroring the Italian blank)
 - `grammar.js`: IIFE — stage tiles grid → card list view
   - Landing: 2×2 tile grid (1-col on mobile); each tile shows count + viewed progress bar (`ponte_grammar_viewed` in localStorage)
   - Click tile → shows all cards for that stage; back button returns to grid
