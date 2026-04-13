@@ -11,7 +11,7 @@ ponte/
 ├── false-friends.js    — False Friends tab UI IIFE
 ├── grammar.js          — Grammar tab UI IIFE
 ├── flashcards.js       — Flashcards tab UI IIFE (library + drill)
-├── style.css           — dark-theme design system
+├── style.css           — Kindle sepia design system
 ├── data/
 │   ├── articles.js     — fallback article (articles[0] = "Una mattina a Roma")
 │   ├── wordmap.js      — static wordmap for the fallback article
@@ -139,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v9`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v12`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -156,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v11`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v13`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -217,17 +217,17 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `server.js` `/api/check-usage`: `max_tokens: 600`, `temperature: 0.2`; returns `{original, corrected, isCorrect, errors[], encouragement}`
 - sw.js bumped to `ponte-v10`
 
-## Light theme — Option C "True Light" (current)
-- Full light mode: white surfaces, dark text, blue accent
-- CSS variables in `:root`: `--bg: #FFFFFF`, `--bg-card: #FFFFFF`, `--bg-italian: #F8F8F8`, `--border: #E5E5E5`, `--text: #111111`, `--text-mid: #444444`, `--text-dim: #999999`
-- Accent: `#0066CC` (replaces all previous `#00C2B8` cyan)
-- Category colors: cognate `#006633` (green), false-friend `#CC2200` (red), divergence `#CC6600` (orange), new `#555555` (grey)
-- Active nav item: `#EEF4FF` background, `#0066CC` text
-- Sidebar/bottom-nav: `#F8F8F8` background
-- Got it button: `#006633` solid / white text; Tricky button: `#CC6600` solid / white text
-- Grammar correct/wrong feedback: light tinted backgrounds (F0FFF4/FFF0F0)
-- PWA `theme_color: #0066CC`; iOS status bar: `default` (light)
-- sw.js bumped to `ponte-v11`; grammar.js stage 1 color updated to `#0066CC`
+## Kindle Sepia theme (current)
+- Warm parchment background with brown text and blue accent
+- CSS variables in `:root`: `--bg: #F8F1E3`, `--bg-card: #FBF5E9`, `--bg-italian: #F0E6D0`, `--border: #D9C9A8`, `--text: #3B2D1F`, `--text-mid: #6B5744`, `--text-dim: #9B8470`
+- Accent: `#0055AA`
+- Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
+- Active nav item: `#E8D9BC` background, `#0055AA` text
+- Sidebar bg: `#F0E6D0`; card/tooltip/input bg: `#FBF5E9`; input border: `#C9B898`
+- Got it button: `#2E6B3E` solid / white text; Tricky button: `#B85C00` solid / white text
+- Grammar stage colors (set in grammar.js): Stage 1 `#0055AA`, Stage 2 `#B85C00`, Stage 3 `#B83232`, Stage 4 `#7B4AAA`
+- PWA `manifest.json`: `background_color: #F8F1E3`, `theme_color: #0055AA`; iOS status bar: `default`
+- sw.js bumped to `ponte-v12`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
