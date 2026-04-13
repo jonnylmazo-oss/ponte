@@ -29,10 +29,10 @@
 
   // ── Stage definitions ─────────────────────────────────────────────────────
   const STAGES = [
-    { id: 1, title: 'Foundation',  subtitle: 'Things that work differently from English', color: '#0066CC' },
-    { id: 2, title: 'Traps',       subtitle: 'Things that look familiar but aren\'t',       color: '#F5C842' },
-    { id: 3, title: 'Nuance',      subtitle: 'Things English doesn\'t have',                color: '#F5894A' },
-    { id: 4, title: 'Fluency',     subtitle: 'What separates intermediate from advanced',   color: '#A855F7' },
+    { id: 1, title: 'Foundation',  subtitle: 'Things that work differently from English', color: '#0055AA' },
+    { id: 2, title: 'Traps',       subtitle: 'Things that look familiar but aren\'t',       color: '#B85C00' },
+    { id: 3, title: 'Nuance',      subtitle: 'Things English doesn\'t have',                color: '#B83232' },
+    { id: 4, title: 'Fluency',     subtitle: 'What separates intermediate from advanced',   color: '#7B4AAA' },
   ];
 
   const LS_VIEWED = 'ponte_grammar_viewed';
