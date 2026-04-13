@@ -139,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v12`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v13`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -156,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v13`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v14`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -217,6 +217,19 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `server.js` `/api/check-usage`: `max_tokens: 600`, `temperature: 0.2`; returns `{original, corrected, isCorrect, errors[], encouragement}`
 - sw.js bumped to `ponte-v10`
 
+## Fullscreen immersive drill mode (issue #31, closed)
+- Flashcard drill and False Friends drill both enter fullscreen when started
+- `body` gets class `drill-fullscreen` on entry; removed on exit
+- **Fullscreen header** (`#drill-fullscreen-header`): fixed, `z-index: 100`, 56px tall — Ponte logo left, X/Y progress center (absolute-centered), Exit button right
+- **Drill panel** (`.fc-drill`, `.ff-drill`): `position: fixed; top: 56px; inset: 0` when `:not([hidden])`, `display: flex; flex-direction: column`
+- **Done screens** (`.fc-drill-done`, `.ff-drill-done`): same fixed fullscreen positioning
+- **Hidden in fullscreen:** sidebar, bottom nav, `.tab-topbar`, `.ff-toolbar`, existing drill topbars, `fc-session-stats`
+- **Entry:** 200ms `drill-fadein` opacity animation; **Exit:** class removed, all hidden elements restored
+- **Escape key** exits drill in both FC and FF (each listens independently, guards on own state)
+- Status text synced: `fcDrillStatus` → `syncFsStatus()`; `ffDrillStatus` → `syncFFStatus()`
+- Exit button `onclick` reassigned per drill module on entry
+- `sw.js` bumped to `ponte-v13`
+
 ## Kindle Sepia theme (current)
 - Warm parchment background with brown text and blue accent
 - CSS variables in `:root`: `--bg: #F8F1E3`, `--bg-card: #FBF5E9`, `--bg-italian: #F0E6D0`, `--border: #D9C9A8`, `--text: #3B2D1F`, `--text-mid: #6B5744`, `--text-dim: #9B8470`
@@ -227,7 +240,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Got it button: `#2E6B3E` solid / white text; Tricky button: `#B85C00` solid / white text
 - Grammar stage colors (set in grammar.js): Stage 1 `#0055AA`, Stage 2 `#B85C00`, Stage 3 `#B83232`, Stage 4 `#7B4AAA`
 - PWA `manifest.json`: `background_color: #F8F1E3`, `theme_color: #0055AA`; iOS status bar: `default`
-- sw.js bumped to `ponte-v12`
+- sw.js bumped to `ponte-v13`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
