@@ -156,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v7`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v10`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -204,14 +204,18 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `drillReverse` state variable in `flashcards.js`; `updateReverseBtn()` syncs label ("Standard 🔄" / "Reverse 🔄") and `.active` class
 - Toggling mid-drill refreshes the current card immediately; sw.js bumped to `ponte-v8`
 
-## Dictionary tab (issue #30, closed)
-- `dictionary.js`: IIFE — two sections: Word Lookup + Usage Checker
-- **Word Lookup:** text input → `POST /api/translate` → result card: word (category color), pronunciation, EN/ES rows, TENSE/∞ rows if verb, usage note, 🔊 button, Save ★ button
-- **Search history:** last 20 lookups in `localStorage` (`ponte_dict_history`), shown as clickable chips; Clear button removes all
-- **Save to Flashcards:** same card structure as reader saves; `sourceArticle: 'Dictionary lookup'`; fires `ponte:flashcard-saved` event; toggles to "Saved ✓" if already in deck
+## Translate tab (issue #30, closed)
+- Renamed from "Dictionary" — sidebar/bottom nav label is "Translate", icon 🔄; tab ID remains `dictionary` (CSS/localStorage)
+- `dictionary.js`: IIFE — two sections: Translate + Usage Checker
+- **Bidirectional input:** Italian input (`dict-it-input`) + ↔ swap button (`dict-swap-btn`) + English input (`dict-en-input`); `direction` state (`'it'`|`'en'`) tracks which input was last typed; Enter on either input triggers search in that direction; swap button swaps values and flips direction
+- **IT→EN:** `POST /api/translate`; **EN→IT:** `POST /api/translate-to-italian` (new endpoint); after result, both inputs populate with the Italian/English values
+- **Random word 🎲:** `dict-random-btn` picks from `falseFriends` global (loaded before `dictionary.js`), sets IT input, sets direction to `'it'`, triggers lookup
+- **Search history:** last 20 lookups in `localStorage` (`ponte_dict_history`) — saves the Italian word; chips trigger IT→EN lookup
+- **Save to Flashcards:** Italian always front; `sourceArticle: 'Translate lookup'`; fires `ponte:flashcard-saved` event; toggles to "Saved ✓" if already in deck
 - **Usage Checker:** textarea → `POST /api/check-usage` → if correct: green "Looks good!"; if errors: corrected sentence in cyan + per-error cards (strikethrough wrong → green fix, explanation, Grammar/Spanish Transfer/Word Choice badge); encouragement always shown
+- `server.js` `/api/translate-to-italian`: `max_tokens: 400`, `temperature: 0.2`; returns same shape as `/api/translate`
 - `server.js` `/api/check-usage`: `max_tokens: 600`, `temperature: 0.2`; returns `{original, corrected, isCorrect, errors[], encouragement}`
-- Tab between Grammar and Practice in sidebar (🔍) and bottom nav; sw.js bumped to `ponte-v9`
+- sw.js bumped to `ponte-v10`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
