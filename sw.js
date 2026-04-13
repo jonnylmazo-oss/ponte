@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v7';
+const CACHE_NAME = 'ponte-v8';
 
 const PRECACHE = [
   '/',

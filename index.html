@@ -177,12 +177,12 @@
                   <button class="ff-flip-btn" id="ff-flip-btn">Flip</button>
                 </div>
                 <div class="ff-flip-face ff-flip-back">
-                  <div class="ff-flip-scroll">
+                  <div class="drill-card-content">
                     <div class="ff-flip-word" id="ff-flip-word-back"></div>
                     <div class="ff-flip-answer" id="ff-flip-answer"></div>
                     <p class="ff-flip-tip" id="ff-flip-tip"></p>
                   </div>
-                  <div class="ff-drill-actions">
+                  <div class="drill-card-buttons">
                     <button class="ff-got-btn" id="ff-got-btn">✓ Got it</button>
                     <button class="ff-tricky-btn" id="ff-tricky-btn">↺ Tricky</button>
                   </div>
@@ -377,7 +377,10 @@
         <div class="fc-drill" id="fc-drill" hidden>
           <div class="fc-drill-topbar">
             <span class="fc-drill-status" id="fc-drill-status"></span>
-            <button class="fc-exit-drill" id="fc-exit-drill">Exit</button>
+            <div class="fc-drill-topbar-right">
+              <button class="fc-drill-reverse-btn" id="fc-drill-reverse-btn">Reverse 🔄</button>
+              <button class="fc-exit-drill" id="fc-exit-drill">Exit</button>
+            </div>
           </div>
           <div class="fc-session-stats" id="fc-session-stats"></div>
           <div class="fc-drill-arena">
@@ -389,11 +392,11 @@
                     <button class="speak-btn" id="fc-front-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
                   </div>
                   <p class="fc-flip-source" id="fc-flip-source"></p>
-                  <p class="fc-flip-prompt">What does this mean?</p>
+                  <p class="fc-flip-prompt" id="fc-flip-prompt">What does this mean?</p>
                   <button class="fc-flip-btn" id="fc-flip-btn">Flip</button>
                 </div>
                 <div class="fc-flip-face fc-flip-back">
-                  <div class="fc-flip-scroll">
+                  <div class="drill-card-content">
                     <div class="fc-flip-word-row">
                       <div class="fc-flip-word" id="fc-flip-word-back"></div>
                       <button class="speak-btn" id="fc-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
@@ -401,7 +404,7 @@
                     <div class="fc-flip-answer" id="fc-flip-answer"></div>
                     <p class="fc-flip-note" id="fc-flip-note"></p>
                   </div>
-                  <div class="fc-drill-actions">
+                  <div class="drill-card-buttons">
                     <button class="fc-got-btn" id="fc-got-btn">✓ Got it</button>
                     <button class="fc-tricky-btn" id="fc-tricky-btn">↺ Tricky</button>
                   </div>

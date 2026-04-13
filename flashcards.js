@@ -63,22 +63,25 @@
   const fcDrillRestart = $('fc-drill-restart');
   const fcSpeakBtn      = $('fc-speak-btn');
   const fcFrontSpeakBtn = $('fc-front-speak-btn');
-  const fcToolbar       = $('fc-toolbar');
-  const fcSessionStats  = $('fc-session-stats');
-  const fcResetScores   = $('fc-reset-scores-btn');
+  const fcToolbar         = $('fc-toolbar');
+  const fcSessionStats    = $('fc-session-stats');
+  const fcResetScores     = $('fc-reset-scores-btn');
+  const fcDrillReverseBtn = $('fc-drill-reverse-btn');
+  const fcFlipPrompt      = $('fc-flip-prompt');
 
   if (!fcGrid) return; // tab not present in DOM
 
   // ── State ────────────────────────────────────────────────────────────────
-  let activeFilter  = 'all';
-  let searchQuery   = '';
-  let drillQueue    = [];
-  let drillTotal    = 0;
-  let drillCorrect  = 0;
-  let trickyCards   = [];
-  let drillWordType = 'all';
+  let activeFilter   = 'all';
+  let searchQuery    = '';
+  let drillQueue     = [];
+  let drillTotal     = 0;
+  let drillCorrect   = 0;
+  let trickyCards    = [];
+  let drillWordType  = 'all';
   let sessionCorrect = 0;
   let sessionTricky  = 0;
+  let drillReverse   = localStorage.getItem('ponte_drill_reverse') === 'true';
 
   // ── Filter helpers ────────────────────────────────────────────────────────
   function getFiltered() {
@@ -221,6 +224,22 @@
     renderLibrary();
   });
 
+  // ── Reverse drill mode ────────────────────────────────────────────────────
+  function updateReverseBtn() {
+    if (!fcDrillReverseBtn) return;
+    fcDrillReverseBtn.textContent = drillReverse ? 'Standard 🔄' : 'Reverse 🔄';
+    fcDrillReverseBtn.classList.toggle('active', drillReverse);
+  }
+
+  fcDrillReverseBtn && fcDrillReverseBtn.addEventListener('click', () => {
+    drillReverse = !drillReverse;
+    localStorage.setItem('ponte_drill_reverse', drillReverse);
+    updateReverseBtn();
+    if (!fcDrill.hidden && drillQueue.length) showDrillCard();
+  });
+
+  updateReverseBtn();
+
   // ── Drill mode ────────────────────────────────────────────────────────────
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -270,21 +289,38 @@
     }
     const card = drillQueue[0];
     const done = drillTotal - drillQueue.length;
-
-    fcDrillStatus.textContent = `${done} / ${drillTotal}`;
-    fcFlipWord.textContent     = card.italian;
-    fcFlipWordBack.textContent = card.italian;
-    fcFlipSource.textContent   = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
-
-    // Answer side
     const color = CATEGORY_COLORS[card.category] || CATEGORY_COLORS['new'];
     const label = CATEGORY_LABELS[card.category]  || card.category;
-    fcFlipAnswer.innerHTML = `
-      <div class="fc-flip-en">${escapeHTML(card.english)}</div>
-      ${card.spanish ? `<div class="fc-flip-es">${escapeHTML(card.spanish)}</div>` : ''}
-      <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
-    fcFlipNote.textContent = card.note || '';
-    fcFlipNote.hidden = !card.note;
+
+    fcDrillStatus.textContent = `${done} / ${drillTotal}`;
+
+    if (drillReverse) {
+      // Front: English word; Back: Italian + category badge + note
+      fcFlipWord.textContent     = card.english;
+      fcFlipSource.textContent   = '';
+      if (fcFlipPrompt) fcFlipPrompt.textContent = 'What is this in Italian?';
+      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = true;
+
+      fcFlipWordBack.textContent = card.italian;
+      fcFlipAnswer.innerHTML =
+        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
+      fcFlipNote.textContent = card.note || '';
+      fcFlipNote.hidden = !card.note;
+    } else {
+      // Front: Italian word; Back: English + Spanish + category badge + note
+      fcFlipWord.textContent     = card.italian;
+      fcFlipSource.textContent   = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
+      if (fcFlipPrompt) fcFlipPrompt.textContent = 'What does this mean?';
+      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = false;
+
+      fcFlipWordBack.textContent = card.italian;
+      fcFlipAnswer.innerHTML = `
+        <div class="fc-flip-en">${escapeHTML(card.english)}</div>
+        ${card.spanish ? `<div class="fc-flip-es">${escapeHTML(card.spanish)}</div>` : ''}
+        <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
+      fcFlipNote.textContent = card.note || '';
+      fcFlipNote.hidden = !card.note;
+    }
 
     // Reset flip
     fcFlipInner.classList.remove('flipped');

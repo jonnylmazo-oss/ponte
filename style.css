@@ -1402,20 +1402,9 @@ header {
 .ff-flip-back {
   transform: rotateY(180deg);
   justify-content: flex-start;
-  padding: 20px 28px 16px;
-}
-
-.ff-flip-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 4px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
 .ff-flip-word {
@@ -1474,14 +1463,6 @@ header {
   font-style: italic;
 }
 
-.ff-drill-actions {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  max-width: 300px;
-  flex-shrink: 0;
-  margin-top: 8px;
-}
 
 .ff-got-btn,
 .ff-tricky-btn {
@@ -1571,6 +1552,7 @@ header {
   .ff-drill-arena { padding: 24px 16px; }
 
   .ff-flip-face { padding: 24px 20px; }
+  .ff-flip-back { padding: 0; }
 
   .ff-flip-word { font-size: 28px; }
 }
@@ -2228,6 +2210,26 @@ header {
 }
 .fc-exit-drill:hover { color: var(--text); border-color: #444; }
 
+.fc-drill-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc-drill-reverse-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s;
+}
+.fc-drill-reverse-btn:hover { color: var(--text); border-color: #444; }
+.fc-drill-reverse-btn.active { color: var(--cyan); border-color: var(--cyan); }
+
 /* ─── Flip card ──────────────────────────────────────────────── */
 
 .fc-drill-arena {
@@ -2271,10 +2273,14 @@ header {
 .fc-flip-back {
   transform: rotateY(180deg);
   justify-content: flex-start;
-  padding: 20px 28px 16px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
-.fc-flip-scroll {
+/* ─── Shared drill card flex layout ──────────────────────────── */
+
+.drill-card-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -2284,7 +2290,18 @@ header {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding-bottom: 4px;
+  padding: 20px 24px 8px;
+}
+
+.drill-card-buttons {
+  flex-shrink: 0;
+  display: flex;
+  gap: 12px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  width: 100%;
+  justify-content: center;
 }
 
 .fc-flip-word {
@@ -2341,12 +2358,6 @@ header {
   max-width: 340px;
 }
 
-.fc-drill-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  flex-shrink: 0;
-}
 
 .fc-got-btn {
   background: rgba(61, 214, 140, 0.1);
@@ -2435,6 +2446,7 @@ header {
   .fc-grid { grid-template-columns: 1fr; }
   .fc-drill-arena { padding: 24px 16px; }
   .fc-flip-face { padding: 24px 20px; }
+  .fc-flip-back { padding: 0; }
   .fc-flip-word { font-size: 28px; }
 }
 
