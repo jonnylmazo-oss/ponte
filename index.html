@@ -55,6 +55,10 @@
           <span class="nav-icon">🧠</span>
           <span class="nav-label">Grammar</span>
         </button>
+        <button class="nav-item" data-tab="dictionary">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label">Dictionary</span>
+        </button>
         <button class="nav-item" data-tab="practice">
           <span class="nav-icon">✍️</span>
           <span class="nav-label">Practice</span>
@@ -278,6 +282,77 @@
 
       </div><!-- #tab-grammar -->
 
+      <!-- Tab: Dictionary -->
+      <div class="tab-panel" id="tab-dictionary">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+
+        <!-- Section 1: Word Lookup -->
+        <div class="dict-section">
+          <h2 class="dict-section-title">Word Lookup</h2>
+          <div class="dict-search-row">
+            <input type="text" id="dict-input" class="dict-input"
+              placeholder="Type any Italian word or phrase…"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <button class="dict-search-btn" id="dict-search-btn">Search</button>
+          </div>
+
+          <!-- Recent history chips -->
+          <div class="dict-history" id="dict-history" hidden>
+            <div class="dict-history-chips" id="dict-history-chips"></div>
+            <button class="dict-clear-history" id="dict-clear-history">Clear</button>
+          </div>
+
+          <div class="dict-loading" id="dict-loading" hidden>Looking up…</div>
+
+          <!-- Result card -->
+          <div class="dict-result" id="dict-result" hidden>
+            <div class="dict-result-header">
+              <div class="dict-result-word-group">
+                <div class="dict-result-word-row">
+                  <span class="dict-result-word" id="dict-result-word"></span>
+                  <button class="speak-btn" id="dict-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
+                </div>
+                <span class="dict-result-pron" id="dict-result-pron"></span>
+              </div>
+              <span class="dict-result-badge" id="dict-result-badge"></span>
+            </div>
+            <div class="dict-result-rows">
+              <div class="dict-result-row">
+                <span class="lang-tag">EN</span>
+                <span id="dict-result-en"></span>
+              </div>
+              <div class="dict-result-row">
+                <span class="lang-tag">ES</span>
+                <span id="dict-result-es"></span>
+              </div>
+              <div class="dict-result-row" id="dict-tense-row" hidden>
+                <span class="lang-tag">TENSE</span>
+                <span id="dict-result-tense"></span>
+              </div>
+              <div class="dict-result-row" id="dict-root-row" hidden>
+                <span class="lang-tag">∞</span>
+                <span class="dict-result-root" id="dict-result-root"></span>
+              </div>
+            </div>
+            <p class="dict-result-note" id="dict-result-note"></p>
+            <div class="dict-result-actions">
+              <button class="dict-save-btn" id="dict-save-btn">Save ★</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Usage Checker -->
+        <div class="dict-section">
+          <h2 class="dict-section-title">Check my Italian ✍️</h2>
+          <p class="dict-section-sub">Write a sentence — get feedback on grammar and Spanish transfer errors.</p>
+          <textarea class="dict-usage-input" id="dict-usage-input"
+            placeholder="Ho andato al mercato ieri…" rows="3"></textarea>
+          <button class="dict-check-btn" id="dict-check-btn">Check</button>
+          <div class="dict-usage-loading" id="dict-usage-loading" hidden>Checking…</div>
+          <div class="dict-usage-result" id="dict-usage-result" hidden></div>
+        </div>
+      </div><!-- #tab-dictionary -->
+
       <!-- Tab: Practice -->
       <div class="tab-panel" id="tab-practice">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
@@ -463,6 +538,10 @@
       <span class="bottom-nav-icon">🧠</span>
       <span class="bottom-nav-label">Grammar</span>
     </button>
+    <button class="bottom-nav-item" data-tab="dictionary">
+      <span class="bottom-nav-icon">🔍</span>
+      <span class="bottom-nav-label">Dictionary</span>
+    </button>
     <button class="bottom-nav-item" data-tab="practice">
       <span class="bottom-nav-icon">✍️</span>
       <span class="bottom-nav-label">Practice</span>
@@ -527,6 +606,7 @@
   <script src="grammar.js"></script>
   <script src="flashcards.js"></script>
   <script src="practice.js"></script>
+  <script src="dictionary.js"></script>
 
   <!-- Service worker registration + install banner logic -->
   <script>
