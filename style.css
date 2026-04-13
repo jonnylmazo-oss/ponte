@@ -3844,16 +3844,20 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 /* ─── Fullscreen immersive drill mode ────────────────────────────────────── */
 
 .drill-fullscreen-header {
+  display: none; /* shown only via body.drill-fullscreen below */
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: 56px;
-  display: flex;
   align-items: center;
   padding: 0 20px;
   background: var(--bg);
   border-bottom: 0.5px solid var(--border);
   box-sizing: border-box;
+}
+
+body.drill-fullscreen .drill-fullscreen-header {
+  display: flex;
 }
 
 .drill-fs-logo {
