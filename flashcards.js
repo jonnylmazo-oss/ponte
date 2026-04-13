@@ -68,6 +68,7 @@
   const fcResetScores     = $('fc-reset-scores-btn');
   const fcDrillReverseBtn = $('fc-drill-reverse-btn');
   const fcFlipPrompt      = $('fc-flip-prompt');
+  const fcFlipCard        = $('fc-flip-card');
 
   if (!fcGrid) return; // tab not present in DOM
 
@@ -278,8 +279,10 @@
     fcBrowse.hidden   = true;
     fcToolbar.hidden  = true;
     fcDrillDone.hidden = true;
+    if (fcFlipCard) fcFlipCard.style.visibility = 'hidden';
     fcDrill.hidden    = false;
     showDrillCard();
+    if (fcFlipCard) fcFlipCard.style.visibility = '';
   }
 
   function showDrillCard() {
