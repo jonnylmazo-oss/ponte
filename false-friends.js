@@ -40,6 +40,32 @@
     flipped:      false,
   };
 
+  // ── Fullscreen helpers ─────────────────────────────────────────────────
+  function enterFFFullscreen() {
+    const hdr = document.getElementById('drill-fullscreen-header');
+    const btn = document.getElementById('drill-fs-exit');
+    document.body.classList.add('drill-fullscreen');
+    if (hdr) hdr.hidden = false;
+    if (btn) btn.onclick = exitDrill;
+  }
+
+  function leaveFFFullscreen() {
+    const hdr = document.getElementById('drill-fullscreen-header');
+    document.body.classList.remove('drill-fullscreen');
+    if (hdr) hdr.hidden = true;
+  }
+
+  function syncFFStatus(text) {
+    const el = document.getElementById('drill-fs-status');
+    if (el) el.textContent = text;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('drill-fullscreen')) {
+      if (state.drillMode) exitDrill();
+    }
+  });
+
   // ── DOM refs ───────────────────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
 
@@ -172,6 +198,7 @@
     ffDrillToggle.textContent = '✕ Exit drill';
 
     nextCard();
+    enterFFFullscreen();
   }
 
   function exitDrill() {
@@ -181,6 +208,7 @@
     ffBrowse.hidden    = false;
     ffDrillToggle.classList.remove('active');
     ffDrillToggle.textContent = '⚡ Drill mode';
+    leaveFFFullscreen();
   }
 
   function nextCard() {
@@ -212,6 +240,7 @@
     const total     = state.drillDone.length + state.drillQueue.length + 1;
     const remaining = state.drillQueue.length + 1;
     ffDrillStatus.textContent = `${remaining} / ${total} remaining`;
+    syncFFStatus(`${remaining} / ${total}`);
   }
 
   function showDrillComplete() {

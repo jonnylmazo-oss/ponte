@@ -72,6 +72,32 @@
 
   if (!fcGrid) return; // tab not present in DOM
 
+  // ── Fullscreen helpers ────────────────────────────────────────────────────
+  const drillFsHeader = $('drill-fullscreen-header');
+  const drillFsStatus = $('drill-fs-status');
+  const drillFsExit   = $('drill-fs-exit');
+
+  function enterDrillFullscreen() {
+    document.body.classList.add('drill-fullscreen');
+    if (drillFsHeader) drillFsHeader.hidden = false;
+    if (drillFsExit) drillFsExit.onclick = exitDrill;
+  }
+
+  function leaveDrillFullscreen() {
+    document.body.classList.remove('drill-fullscreen');
+    if (drillFsHeader) drillFsHeader.hidden = true;
+  }
+
+  function syncFsStatus(text) {
+    if (drillFsStatus) drillFsStatus.textContent = text;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('drill-fullscreen')) {
+      if (!fcDrill.hidden || !fcDrillDone.hidden) exitDrill();
+    }
+  });
+
   // ── State ────────────────────────────────────────────────────────────────
   let activeFilter   = 'all';
   let searchQuery    = '';
@@ -283,6 +309,7 @@
     fcDrill.hidden    = false;
     showDrillCard();
     if (fcFlipCard) fcFlipCard.style.visibility = '';
+    enterDrillFullscreen();
   }
 
   function showDrillCard() {
@@ -296,6 +323,7 @@
     const label = CATEGORY_LABELS[card.category]  || card.category;
 
     fcDrillStatus.textContent = `${done} / ${drillTotal}`;
+    syncFsStatus(`${done} / ${drillTotal}`);
 
     if (drillReverse) {
       // Front: English word; Back: Italian + category badge + note
@@ -354,6 +382,7 @@
     fcDrillDone.hidden = true;
     fcToolbar.hidden   = false;
     fcBrowse.hidden    = false;
+    leaveDrillFullscreen();
     renderLibrary();
   }
 

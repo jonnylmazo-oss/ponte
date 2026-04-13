@@ -3768,3 +3768,135 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   .dict-section { padding: 20px 16px; }
   .dict-result-word { font-size: 24px; }
 }
+
+/* ─── Fullscreen immersive drill mode ────────────────────────────────────── */
+
+.drill-fullscreen-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--bg);
+  border-bottom: 0.5px solid var(--border);
+  box-sizing: border-box;
+}
+
+.drill-fs-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  min-width: 64px;
+}
+
+.drill-fs-logo span { color: #0055AA; }
+
+.drill-fs-status {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-mid);
+  font-variant-numeric: tabular-nums;
+}
+
+.drill-fs-exit {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.drill-fs-exit:hover {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+
+body.drill-fullscreen {
+  overflow: hidden;
+}
+
+body.drill-fullscreen .sidebar {
+  display: none !important;
+}
+
+body.drill-fullscreen .bottom-nav {
+  display: none !important;
+}
+
+body.drill-fullscreen .tab-topbar {
+  display: none !important;
+}
+
+body.drill-fullscreen .ff-toolbar {
+  display: none !important;
+}
+
+body.drill-fullscreen .main-area {
+  margin-left: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+body.drill-fullscreen .fc-drill:not([hidden]),
+body.drill-fullscreen .ff-drill:not([hidden]) {
+  position: fixed;
+  top: 56px; left: 0; right: 0; bottom: 0;
+  z-index: 99;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  animation: drill-fadein 0.2s ease;
+}
+
+body.drill-fullscreen .fc-drill-done:not([hidden]),
+body.drill-fullscreen .ff-drill-done:not([hidden]) {
+  position: fixed;
+  top: 56px; left: 0; right: 0; bottom: 0;
+  z-index: 99;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: drill-fadein 0.2s ease;
+}
+
+body.drill-fullscreen .fc-drill-topbar,
+body.drill-fullscreen .ff-drill-topbar {
+  display: none;
+}
+
+body.drill-fullscreen .fc-session-stats {
+  display: none;
+}
+
+body.drill-fullscreen .fc-drill-arena,
+body.drill-fullscreen .ff-drill-arena {
+  flex: 1;
+  padding: 20px;
+  min-height: 0;
+  align-items: center;
+}
+
+body.drill-fullscreen .fc-flip-card,
+body.drill-fullscreen .ff-flip-card {
+  max-width: 600px;
+  height: clamp(300px, calc(100vh - 96px), 700px);
+  max-height: none;
+}
+
+@keyframes drill-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
