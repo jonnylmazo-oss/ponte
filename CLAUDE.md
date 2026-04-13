@@ -66,7 +66,8 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - Click tile → shows all cards for that stage; back button returns to grid
   - One stage open at a time; `IntersectionObserver` marks cards viewed at 30% threshold
   - Cards always fully readable (no expand/collapse): EN row, IT row (cyan), example sentence, ⚠️ trap, 🇪🇸 Spanish shortcut, [Practice this →] button
-  - "Practice this →" switches to Pattern Drills sub-tab filtered to card's category
+  - "Practice this →" switches to Pattern Drills sub-tab filtered to that card's `grammarCardId` specifically (not the whole category); clicking a category button resets the card-specific filter; "No drills yet for this concept" shown when 0 results
+  - "See more examples →" button on each card: POST `/api/grammar-examples` → 3 new sentences from Claude, cached in `localStorage` per `cardId` (`ponte_gramex_{id}`); button becomes "Refresh examples →" after first load
   - Stage colors: Stage 1 `#00C2B8`, Stage 2 `#F5C842`, Stage 3 `#F5894A`, Stage 4 `#A855F7`
   - Pattern Drills and From Your Reading sub-tabs unchanged
 - Sub-tab label changed: "Verb Deltas" → "Learn" (`data-panel="stages"`)
@@ -138,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v4`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v5`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -155,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v5`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v6`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
