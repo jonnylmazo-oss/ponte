@@ -124,6 +124,7 @@
           <div class="column column-italian">
             <div class="column-label">
               Italiano
+              <button class="speak-btn speak-article-btn" id="article-speak-btn" aria-label="Read article aloud" title="Read aloud">🔊</button>
               <div class="legend">
                 <span class="legend-item cognate">Same in Spanish</span>
                 <span class="legend-item false-friend">False Friend</span>
@@ -341,7 +342,10 @@
                   <button class="fc-flip-btn" id="fc-flip-btn">Flip</button>
                 </div>
                 <div class="fc-flip-face fc-flip-back">
-                  <div class="fc-flip-word" id="fc-flip-word-back"></div>
+                  <div class="fc-flip-word-row">
+                    <div class="fc-flip-word" id="fc-flip-word-back"></div>
+                    <button class="speak-btn" id="fc-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
+                  </div>
                   <div class="fc-flip-answer" id="fc-flip-answer"></div>
                   <p class="fc-flip-note" id="fc-flip-note"></p>
                   <div class="fc-drill-actions">
@@ -425,7 +429,10 @@
   <div class="tooltip" id="tooltip" aria-hidden="true" hidden>
     <div class="tooltip-header">
       <div class="tooltip-word-group">
-        <span class="tooltip-word" id="tooltip-word"></span>
+        <div class="tooltip-word-line">
+          <span class="tooltip-word" id="tooltip-word"></span>
+          <button class="speak-btn" id="tooltip-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
+        </div>
         <span class="tooltip-pron" id="tooltip-pron"></span>
       </div>
       <span class="tooltip-badge" id="tooltip-badge"></span>

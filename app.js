@@ -27,6 +27,35 @@
     'Giulio Cesare — una scena storica',
   ];
 
+  // ── Speech synthesis ───────────────────────────────────────────────────
+  const speech = (() => {
+    if (!('speechSynthesis' in window)) return { speak: () => null, supported: false };
+
+    let voices = [];
+    function loadVoices() { voices = speechSynthesis.getVoices(); }
+    loadVoices();
+    speechSynthesis.addEventListener('voiceschanged', loadVoices);
+
+    function speak(text) {
+      if (!text) return null;
+      speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang  = 'it-IT';
+      utt.rate  = 0.85;
+      utt.pitch = 1.0;
+      const voice = voices.find((v) => v.lang === 'it-IT') ||
+                    voices.find((v) => v.lang.startsWith('it'));
+      if (voice) utt.voice = voice;
+      speechSynthesis.speak(utt);
+      return utt;
+    }
+
+    return { speak, supported: true };
+  })();
+
+  // Expose for flashcards.js (same-page IIFE, loaded after app.js)
+  window.ponteSpeak = speech.speak;
+
   // ── State ──────────────────────────────────────────────────────────────
   const state = {
     article:         null,
@@ -65,6 +94,8 @@
   const tooltipExampleEn = $('tooltip-example-en');
   const tooltipRows      = document.querySelector('.tooltip-rows');
   const tooltipSaveBtn   = $('tooltip-save-btn');
+  const tooltipSpeakBtn  = $('tooltip-speak-btn');
+  const articleSpeakBtn  = $('article-speak-btn');
   const backdrop         = $('tooltip-backdrop');
 
   const topicInput       = $('topic-input');
@@ -140,6 +171,7 @@
 
   // ── Render ─────────────────────────────────────────────────────────────
   function renderArticle(article, wordmapOverride) {
+    stopArticleSpeech();
     state.article      = article;
     state.activeWordmap = wordmapOverride || buildWordmap(article.words);
 
@@ -472,6 +504,59 @@
       applyTranslationState(!state.translationOpen, true);
     });
   }
+
+  // ── Audio ──────────────────────────────────────────────────────────────
+  let articleSpeaking = false;
+
+  // Show/hide the article speak button only when speech is supported
+  if (!speech.supported && articleSpeakBtn) articleSpeakBtn.hidden = true;
+  if (!speech.supported && tooltipSpeakBtn) tooltipSpeakBtn.hidden = true;
+
+  function stopArticleSpeech() {
+    if (articleSpeaking) {
+      speechSynthesis.cancel();
+      articleSpeaking = false;
+      if (articleSpeakBtn) {
+        articleSpeakBtn.textContent = '🔊';
+        articleSpeakBtn.classList.remove('speaking');
+      }
+    }
+  }
+
+  tooltipSpeakBtn && tooltipSpeakBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // don't trigger tooltip close
+    if (!currentTooltipWord) return;
+    stopArticleSpeech();
+    const btn = tooltipSpeakBtn;
+    btn.classList.add('speaking');
+    const utt = speech.speak(currentTooltipWord);
+    if (utt) {
+      utt.onend  = () => btn.classList.remove('speaking');
+      utt.onerror = () => btn.classList.remove('speaking');
+    } else {
+      btn.classList.remove('speaking');
+    }
+  });
+
+  articleSpeakBtn && articleSpeakBtn.addEventListener('click', () => {
+    if (!speech.supported || !state.article) return;
+    if (articleSpeaking) {
+      stopArticleSpeech();
+      return;
+    }
+    articleSpeaking = true;
+    articleSpeakBtn.textContent = '⏹';
+    articleSpeakBtn.classList.add('speaking');
+    const utt = speech.speak(state.article.italian);
+    if (utt) {
+      utt.onend  = () => { articleSpeaking = false; articleSpeakBtn.textContent = '🔊'; articleSpeakBtn.classList.remove('speaking'); };
+      utt.onerror = () => { articleSpeaking = false; articleSpeakBtn.textContent = '🔊'; articleSpeakBtn.classList.remove('speaking'); };
+    } else {
+      articleSpeaking = false;
+      articleSpeakBtn.textContent = '🔊';
+      articleSpeakBtn.classList.remove('speaking');
+    }
+  });
 
   // ── Events ─────────────────────────────────────────────────────────────
 

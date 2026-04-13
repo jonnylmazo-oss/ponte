@@ -61,6 +61,7 @@
   const fcDrillScore  = $('fc-drill-score');
   const fcTrickyList  = $('fc-tricky-list');
   const fcDrillRestart = $('fc-drill-restart');
+  const fcSpeakBtn    = $('fc-speak-btn');
   const fcToolbar     = $('fc-toolbar');
 
   if (!fcGrid) return; // tab not present in DOM
@@ -254,6 +255,17 @@
   fcFlipBtn.addEventListener('click', () => {
     fcFlipInner.classList.add('flipped');
     fcFlipBtn.disabled = true;
+    // Auto-pronounce after card turns (CSS flip ~350ms)
+    if (drillQueue.length && window.ponteSpeak) {
+      setTimeout(() => window.ponteSpeak(drillQueue[0].italian), 350);
+    }
+  });
+
+  // Replay pronunciation
+  fcSpeakBtn && fcSpeakBtn.addEventListener('click', () => {
+    if (drillQueue.length && window.ponteSpeak) {
+      window.ponteSpeak(drillQueue[0].italian);
+    }
   });
 
   // Got it

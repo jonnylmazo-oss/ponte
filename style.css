@@ -2464,3 +2464,60 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
     }
   }
 }
+
+/* ─── Speaker buttons ────────────────────────────────────────── */
+
+.speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #666;
+  opacity: 0.7;
+  transition: color 0.15s, opacity 0.15s;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.speak-btn:hover {
+  color: #00C2B8;
+  opacity: 1;
+}
+.speak-btn.speaking {
+  color: #00C2B8;
+  opacity: 1;
+  animation: speak-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes speak-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Tooltip word row: word + speak btn inline */
+.tooltip-word-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Article column header speak button */
+.speak-article-btn {
+  font-size: 13px;
+  margin-left: 4px;
+  padding: 1px 3px;
+}
+
+/* Flashcard back face: word + speak btn row */
+.fc-flip-word-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.fc-flip-word-row .fc-flip-word {
+  margin-bottom: 0;
+}
