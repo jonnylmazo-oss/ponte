@@ -88,6 +88,7 @@
   const drillProgressBar = document.getElementById('gr-drill-progress-bar');
   const drillCard        = document.getElementById('gr-drill-card');
   const drillSentence    = document.getElementById('gr-drill-sentence');
+  const drillSentenceEN  = document.getElementById('gr-drill-sentence-en');
   const drillOptions     = document.getElementById('gr-drill-options');
   const drillFeedback    = document.getElementById('gr-drill-feedback');
   const drillNextBtn     = document.getElementById('gr-drill-next');
@@ -345,6 +346,12 @@
     drillProgressBar.style.width = Math.round((drillIndex / total) * 100) + '%';
 
     drillSentence.innerHTML = drill.sentence.replace(/___/g, '<span class="gr-blank">___</span>');
+    if (drillSentenceEN) {
+      drillSentenceEN.innerHTML = drill.sentenceEN
+        ? drill.sentenceEN.replace(/___/g, '<span class="gr-blank-en">___</span>')
+        : '';
+      drillSentenceEN.hidden = !drill.sentenceEN;
+    }
 
     const options = shuffle([drill.answer, ...drill.distractors]);
     drillOptions.innerHTML = options.map(opt =>

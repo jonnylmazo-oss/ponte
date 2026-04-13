@@ -700,6 +700,7 @@ const grammarDrills = [
     id: 1,
     grammarCardId: 1,
     sentence: "Ieri mattina Marco ___ al mercato da solo.",
+    sentenceEN: "Yesterday morning Marco ___ to the market alone.",
     answer: "è andato",
     distractors: ["ha andato", "andava", "ha ito"],
     explanation: "'Andare' is a motion verb — always essere in compound tenses: 'è andato'. 'Ha andato' is the direct Spanish-influenced error (using haber/avere for all verbs)."
@@ -708,6 +709,7 @@ const grammarDrills = [
     id: 2,
     grammarCardId: 1,
     sentence: "I miei genitori ___ a Napoli tre anni fa.",
+    sentenceEN: "My parents ___ to Naples three years ago.",
     answer: "sono partiti",
     distractors: ["hanno partito", "partivano", "sono partire"],
     explanation: "'Partire' (to depart) uses essere: 'sono partiti'. Agreement: partiti (m.pl.). 'Hanno partito' is the haber-influenced error."
@@ -718,6 +720,7 @@ const grammarDrills = [
     id: 3,
     grammarCardId: 5,
     sentence: "Non interrompermi — ___ proprio adesso.",
+    sentenceEN: "Don't interrupt me — I ___ right now.",
     answer: "sto lavorando",
     distractors: ["sono lavorando", "lavoro adesso", "stavo lavorando"],
     explanation: "Stare + gerundio expresses action in progress right now. 'Sono lavorando' is not Italian — essere is not used with gerundio. 'Sto lavorando' = I'm working (right now)."
@@ -726,6 +729,7 @@ const grammarDrills = [
     id: 4,
     grammarCardId: 5,
     sentence: "Luca ___ a Milano da due anni.",
+    sentenceEN: "Luca ___ in Milan for two years.",
     answer: "vive",
     distractors: ["sta vivendo", "è vivendo", "ha vissuto"],
     explanation: "Italian doesn't use stare + gerundio for extended ongoing states. Use simple present + da: 'vive a Milano da due anni'. 'Sta vivendo' would mean he's in the process of moving in right now."
@@ -736,6 +740,7 @@ const grammarDrills = [
     id: 5,
     grammarCardId: 6,
     sentence: "___ questo ristorante da quando avevo vent'anni.",
+    sentenceEN: "I ___ this restaurant since I was twenty years old.",
     answer: "Frequento",
     distractors: ["Ho frequentato", "Frequentavo", "Sto frequentando"],
     explanation: "For an action ongoing from the past to now, Italian uses present tense + da. 'Ho frequentato' (passato prossimo) implies the action is over."
@@ -746,6 +751,7 @@ const grammarDrills = [
     id: 6,
     grammarCardId: 11,
     sentence: "Hai delle mele? — Sì, ___ ho comprate tre al mercato.",
+    sentenceEN: "Do you have apples? — Yes, I bought three ___ at the market.",
     answer: "ne",
     distractors: ["le", "ci", "di esse"],
     explanation: "'Ne' is mandatory when answering with a quantity without repeating the noun. Note also the participle agreement: 'comprate' (f.pl. mele). 'Le ho comprate tre' without 'ne' is wrong."
@@ -754,6 +760,7 @@ const grammarDrills = [
     id: 7,
     grammarCardId: 11,
     sentence: "Non voglio più parlare di questa storia. — Capisco, non ___ parliamo.",
+    sentenceEN: "I don't want to talk about this anymore. — I understand, let's not talk about ___ anymore.",
     answer: "ne",
     distractors: ["ci", "lo", "di lei"],
     explanation: "'Ne' replaces 'di + topic'. 'Ne parliamo' = we talk about it (di + cosa). 'Ci parliamo' would mean 'we talk to each other' — different meaning entirely."
@@ -764,6 +771,7 @@ const grammarDrills = [
     id: 8,
     grammarCardId: 12,
     sentence: "Conosci quella libreria in via Dante? — Sì, ___ vado spesso.",
+    sentenceEN: "Do you know that bookshop on via Dante? — Yes, I go ___ often.",
     answer: "ci",
     distractors: ["li", "vi", "là"],
     explanation: "'Ci' replaces a previously mentioned place ('in via Dante'). In Italian, ci is required — you can't just drop the reference. 'Li' is for people (to them), not places."
@@ -774,6 +782,7 @@ const grammarDrills = [
     id: 9,
     grammarCardId: 13,
     sentence: "Vuoi che mandi il documento a Luigi? — Sì, ___ manda subito.",
+    sentenceEN: "Do you want me to send the document to Luigi? — Yes, send ___ right away.",
     answer: "glielo",
     distractors: ["se lo", "lo gli", "gli lo"],
     explanation: "'Gli + lo' fuses into 'glielo' (one word). Italian never uses 'se lo' for 3rd person singular indirect objects — that's Spanish. 'Lo gli' and 'gli lo' are not valid Italian sequences."
@@ -784,6 +793,7 @@ const grammarDrills = [
     id: 10,
     grammarCardId: 15,
     sentence: "Le finestre erano aperte? — Sì, ___ ho ___ stamattina.",
+    sentenceEN: "Were the windows open? — Yes, I ___ ___ this morning.",
     answer: "le / chiuse",
     distractors: ["le / chiuso", "li / chiusi", "le / chiuduto"],
     explanation: "The direct object clitic 'le' (f.pl.) precedes the verb → participle must agree: 'chiuse' (not 'chiuso'). 'Chiuduto' doesn't exist — participio of chiudere is 'chiuso'."
@@ -794,6 +804,7 @@ const grammarDrills = [
     id: 11,
     grammarCardId: 17,
     sentence: "In questa città ___ molti musei interessanti.",
+    sentenceEN: "In this city ___ many interesting museums.",
     answer: "ci sono",
     distractors: ["c'è", "hay", "c'hanno"],
     explanation: "'Ci sono' (there are) is used with plural nouns. 'C'è' is for singular nouns. 'Hay' is Spanish — it doesn't exist in Italian."
@@ -804,6 +815,7 @@ const grammarDrills = [
     id: 12,
     grammarCardId: 19,
     sentence: "Penso che Marco ___ in ritardo domani.",
+    sentenceEN: "I think Marco ___ late tomorrow.",
     answer: "sia",
     distractors: ["è", "sarà", "sarebbe"],
     explanation: "After 'penso che', Italian always uses congiuntivo: 'sia' (congiuntivo presente di essere). 'È' (indicativo) is a Spanish-influenced error — Italian requires subjunctive here regardless of register."
@@ -812,6 +824,7 @@ const grammarDrills = [
     id: 13,
     grammarCardId: 19,
     sentence: "Non credo che loro ___ la verità.",
+    sentenceEN: "I don't believe they ___ the truth.",
     answer: "dicano",
     distractors: ["dicono", "diceranno", "diranno"],
     explanation: "'Non credo che' triggers congiuntivo: 'dicano' (3rd pl. congiuntivo presente di dire). 'Dicono' is indicativo — never used after 'non credo che' in Italian."
@@ -822,6 +835,7 @@ const grammarDrills = [
     id: 14,
     grammarCardId: 21,
     sentence: "Benché ___ stanco, Luca è uscito a correre.",
+    sentenceEN: "Although he ___ tired, Luca went out for a run.",
     answer: "fosse",
     distractors: ["era", "è", "sia"],
     explanation: "'Benché' always requires congiuntivo. The main clause is past → use congiuntivo imperfetto: 'fosse'. 'Era' (imperfetto indicativo) is grammatically impossible after benché."
@@ -832,6 +846,7 @@ const grammarDrills = [
     id: 15,
     grammarCardId: 22,
     sentence: "Chiamami prima che tu ___ di casa.",
+    sentenceEN: "Call me before you ___ the house.",
     answer: "esca",
     distractors: ["esci", "uscire", "uscirai"],
     explanation: "'Prima che' + different subject → congiuntivo. 'Esca' is 2nd person congiuntivo presente of 'uscire'. 'Esci' is indicativo — wrong after 'prima che'."
@@ -842,6 +857,7 @@ const grammarDrills = [
     id: 16,
     grammarCardId: 25,
     sentence: "Stamattina mi ___ molto tardi.",
+    sentenceEN: "This morning I ___ very late.",
     answer: "sono svegliato",
     distractors: ["ho svegliato", "sono svegliata", "ho svegliata"],
     explanation: "Reflexive verbs always use essere: 'mi sono svegliato'. 'Mi ho svegliato' is ungrammatical. (Note: 'mi sono svegliata' would be correct for a female speaker.)"
@@ -850,6 +866,7 @@ const grammarDrills = [
     id: 17,
     grammarCardId: 25,
     sentence: "Le ragazze ___ presto per non perdere il treno.",
+    sentenceEN: "The girls ___ early so as not to miss the train.",
     answer: "si sono alzate",
     distractors: ["si hanno alzate", "si sono alzati", "hanno alzato"],
     explanation: "'Alzarsi' is reflexive → essere auxiliary. And the participle agrees: 'alzate' (f.pl.) because 'le ragazze' is feminine plural. 'Alzati' would be masculine/mixed group."
@@ -860,6 +877,7 @@ const grammarDrills = [
     id: 18,
     grammarCardId: 28,
     sentence: "Io e Giulia non ___ da quasi due mesi.",
+    sentenceEN: "Giulia and I haven't ___ for almost two months.",
     answer: "ci siamo visti",
     distractors: ["ci abbiamo visti", "abbiamo visto", "siamo visti"],
     explanation: "Reciprocal 'vedersi' uses essere: 'ci siamo visti'. 'Ci abbiamo visti' mixes the wrong auxiliary. 'Siamo visti' is missing the reflexive ci."
@@ -870,6 +888,7 @@ const grammarDrills = [
     id: 19,
     grammarCardId: 29,
     sentence: "Quest'estate vado ___ Sicilia con la mia famiglia.",
+    sentenceEN: "This summer I'm going ___ Sicily with my family.",
     answer: "in",
     distractors: ["a", "nella", "alla"],
     explanation: "Regions and islands use 'in': 'in Sicilia', 'in Toscana', 'in Sardegna'. Cities use 'a' (a Palermo). 'Nella Sicilia' sounds archaic/literary."
@@ -878,6 +897,7 @@ const grammarDrills = [
     id: 20,
     grammarCardId: 29,
     sentence: "I miei nonni abitano ___ Toscana, vicino a Siena.",
+    sentenceEN: "My grandparents live ___ Tuscany, near Siena.",
     answer: "in",
     distractors: ["a", "nella", "alla"],
     explanation: "Regions use 'in': 'in Toscana', 'in Lombardia'. The city Siena uses 'a'. So: 'in Toscana, vicino a Siena' — different prepositions for region vs city."
@@ -888,6 +908,7 @@ const grammarDrills = [
     id: 21,
     grammarCardId: 30,
     sentence: "Luigi studia medicina ___ cinque anni.",
+    sentenceEN: "Luigi has been studying medicine ___ five years.",
     answer: "da",
     distractors: ["per", "desde", "in"],
     explanation: "Present + 'da' + duration = ongoing from past to now. 'Per' would mean 'for (a completed period)': 'ha studiato per cinque anni' = he studied for five years (then stopped). 'Desde' is Spanish."
@@ -898,6 +919,7 @@ const grammarDrills = [
     id: 22,
     grammarCardId: 31,
     sentence: "Stasera passo ___ mia sorella prima di andare al cinema.",
+    sentenceEN: "Tonight I'm stopping ___ my sister's before going to the cinema.",
     answer: "da",
     distractors: ["a casa di", "a", "in casa di"],
     explanation: "'Passare da + person' = to stop by their place. 'Passo da mia sorella' = I'll stop by my sister's. 'A casa di mia sorella' also works but is wordier — 'da' alone is the natural choice."
@@ -908,6 +930,7 @@ const grammarDrills = [
     id: 23,
     grammarCardId: 34,
     sentence: "Ho perso il mio ___ preferito. (hat)",
+    sentenceEN: "I lost my favourite ___. (hat)",
     answer: "cappello",
     distractors: ["capello", "capelo", "capello"],
     explanation: "'Cappello' (hat) has a geminate pp. 'Capello' (no doubling) means a single strand of hair. One consonant difference = completely different meaning — geminates matter in Italian."
@@ -918,6 +941,7 @@ const grammarDrills = [
     id: 24,
     grammarCardId: 37,
     sentence: "Non ___ andare alla festa ieri sera.",
+    sentenceEN: "I ___ go to the party last night.",
     answer: "sono potuto",
     distractors: ["ho potuto", "potevo", "sono potuta"],
     explanation: "'Potere' with an essere-verb ('andare') → compound takes essere: 'sono potuto/a andare'. (Note: 'sono potuta' for female speaker.) 'Ho potuto andare' is common in speech but essere is the precise form."
@@ -928,6 +952,7 @@ const grammarDrills = [
     id: 25,
     grammarCardId: 39,
     sentence: "Ho provato per ore ma non ___ aprire il barattolo.",
+    sentenceEN: "I tried for hours but I couldn't ___ open the jar.",
     answer: "riuscivo ad",
     distractors: ["potevo", "sapevo", "sono riuscito a"],
     explanation: "'Riuscire a' expresses trying but not managing. 'Non riuscivo ad aprire' = I couldn't manage to open it (despite effort). 'Non potevo' would imply impossibility or lack of permission — different nuance."
@@ -938,6 +963,7 @@ const grammarDrills = [
     id: 26,
     grammarCardId: 40,
     sentence: "___ dove abita Marta?",
+    sentenceEN: "___ where Marta lives?",
     answer: "Sai",
     distractors: ["Conosci", "Conosco", "Sa"],
     explanation: "'Sapere' is used for knowing facts and clauses: 'sapere dove' = to know where. 'Conosci' would work for knowing a person, but not for knowing a fact or indirect question."
@@ -946,6 +972,7 @@ const grammarDrills = [
     id: 27,
     grammarCardId: 40,
     sentence: "___ bene Roma — ci sono cresciuta.",
+    sentenceEN: "I ___ Rome well — I grew up there.",
     answer: "Conosco",
     distractors: ["So", "Sapevo", "Riconosco"],
     explanation: "'Conoscere' expresses familiarity with places and people: 'Conosco Roma' = I know Rome well. 'So Roma' would mean 'I know of Rome' as a fact — unnatural. 'Conosco' = familiarity from experience."
@@ -956,6 +983,7 @@ const grammarDrills = [
     id: 28,
     grammarCardId: 12,
     sentence: "Questo problema è difficile. Non ___ avevo mai pensato prima.",
+    sentenceEN: "This problem is hard. I had never thought about ___ before.",
     answer: "ci",
     distractors: ["ne", "lo", "a esso"],
     explanation: "'Pensare a qualcosa' → 'pensarci': ci replaces 'a + thing'. 'Ne' would replace 'di + something'. 'Lo' is for direct objects. 'Ci penso' = I'm thinking about it."
@@ -966,6 +994,7 @@ const grammarDrills = [
     id: 29,
     grammarCardId: 2,
     sentence: "___ un cornetto e un caffè, per favore.",
+    sentenceEN: "I ___ a croissant and a coffee, please.",
     answer: "Volevo",
     distractors: ["Voglio", "Vorrò", "Vorevo"],
     explanation: "Both 'volevo' (imperfetto) and 'vorrei' (condizionale) work as polite requests. 'Voglio' (present) sounds blunt. 'Vorrò' is future. 'Volevo' uses the distinctly Italian imperfetto-as-softener in shops and cafés."
@@ -976,6 +1005,7 @@ const grammarDrills = [
     id: 30,
     grammarCardId: 3,
     sentence: "Mentre ___ la cena, ha squillato il telefono.",
+    sentenceEN: "While I ___ dinner, the phone rang.",
     answer: "preparavo",
     distractors: ["ho preparato", "preparai", "stavo preparando"],
     explanation: "The ongoing background action uses imperfetto: 'preparavo'. The interrupting completed action uses passato prossimo: 'ha squillato'. 'Ho preparato' for the background would make the two actions sound sequential rather than simultaneous."

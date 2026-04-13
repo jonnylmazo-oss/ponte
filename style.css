@@ -1857,6 +1857,21 @@ header {
   letter-spacing: 1px;
 }
 
+.gr-drill-sentence-en {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: -16px;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.gr-blank-en {
+  color: rgba(0, 194, 184, 0.55);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
 .gr-drill-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
