@@ -156,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v10`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v11`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -216,6 +216,18 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `server.js` `/api/translate-to-italian`: `max_tokens: 400`, `temperature: 0.2`; returns same shape as `/api/translate`
 - `server.js` `/api/check-usage`: `max_tokens: 600`, `temperature: 0.2`; returns `{original, corrected, isCorrect, errors[], encouragement}`
 - sw.js bumped to `ponte-v10`
+
+## Light theme — Option C "True Light" (current)
+- Full light mode: white surfaces, dark text, blue accent
+- CSS variables in `:root`: `--bg: #FFFFFF`, `--bg-card: #FFFFFF`, `--bg-italian: #F8F8F8`, `--border: #E5E5E5`, `--text: #111111`, `--text-mid: #444444`, `--text-dim: #999999`
+- Accent: `#0066CC` (replaces all previous `#00C2B8` cyan)
+- Category colors: cognate `#006633` (green), false-friend `#CC2200` (red), divergence `#CC6600` (orange), new `#555555` (grey)
+- Active nav item: `#EEF4FF` background, `#0066CC` text
+- Sidebar/bottom-nav: `#F8F8F8` background
+- Got it button: `#006633` solid / white text; Tricky button: `#CC6600` solid / white text
+- Grammar correct/wrong feedback: light tinted backgrounds (F0FFF4/FFF0F0)
+- PWA `theme_color: #0066CC`; iOS status bar: `default` (light)
+- sw.js bumped to `ponte-v11`; grammar.js stage 1 color updated to `#0066CC`
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
