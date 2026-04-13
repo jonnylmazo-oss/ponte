@@ -139,7 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v13`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v14`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -156,7 +156,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
 - **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v14`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v15`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
@@ -178,17 +178,20 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Graceful degradation:** buttons hidden if `!speech.supported` (no `window.speechSynthesis`)
 - Service worker bumped to `ponte-v4` (drill score tracking)
 
-## Practice tab (issue #6, closed)
+## Practice tab (issues #6, #39 closed)
 - `practice.js`: IIFE — cloze fill-in-the-blank from generated articles stored in localStorage
-- **Article selector:** dropdown of all `ponte_article_*` keys; "Generate new" switches to Reader tab
-- **Word selection:** from `article.words`; priority: false-friend > divergence > new > cognate; min 5 / max 10 blanks; cognates included only if fewer than 5 non-cognates
-- **Sentence extraction:** splits Italian + English paragraph on sentence boundaries; matches word to sentence by index; shows English sentence in italic grey below Italian
-- **Multiple choice mode** (default): 4 options (answer + 3 distractors from other article words); immediate feedback with note + category badge
-- **Type it mode:** text input + Enter/Check; Levenshtein ≤1 accepted as correct (minor typos OK)
-- **Progress bar** + X/Y counter at top of drill screen
-- **Score summary** at end: X/Y correct (%) with "Try again" and "Choose article" buttons
-- Selector auto-refreshes when Practice tab nav is clicked (picks up newly generated articles)
-- Script load order: after `flashcards.js`; followed by `dictionary.js`; sw.js bumped to `ponte-v9`
+- **Article selector:** dropdown of all `ponte_article_*` keys; "Generate new" switches to Reader tab; selector refreshes on tab click
+- **Word selection:** from `article.words`; priority: false-friend > divergence > new > cognate; min 5 / max 10 blanks; cognates only if fewer than 5 non-cognates
+- **Sentence extraction:** splits Italian + English on sentence boundaries; shows English sentence in muted text below Italian
+- **Multiple choice mode** (default): 4 options (correct + 3 AI distractors); auto-advance 1.5s on correct; Next button on wrong
+- **Type it mode:** text input + Enter/Check; Levenshtein ≤1 accepted as correct (shows exact spelling on close typo)
+- **AI distractors:** `POST /api/distractors` — Claude generates 3 plausible wrong answers targeting Spanish-speaker confusion (wrong tense, Spanish cognate, transfer errors); cached in localStorage as `ponte_dist_{word}`; falls back to other article words if API fails
+- **Loading state:** Start button shows "Loading…" while distractors are fetched in parallel via `Promise.all`
+- **Missed words tracker:** `missedItems` array tracks wrong answers throughout session
+- **End screen:** score + missed words list (Italian, English, category badge) + "Save N missed words to Flashcards ★" button
+- **Save missed to flashcards:** writes directly to `ponte_flashcards` localStorage, syncs to server, fires `ponte:flashcard-saved` event
+- **Progress bar** + X/Y counter at top
+- sw.js bumped to `ponte-v14`
 
 ## Mobile drill scroll fix (issues #28/#29, closed)
 - Both flashcard and false friends drill back faces use shared flex column layout
