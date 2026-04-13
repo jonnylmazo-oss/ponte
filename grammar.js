@@ -3,6 +3,11 @@
 (function () {
   'use strict';
 
+  const API_BASE = (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) ? 'http://localhost:3000' : '';
+
   // ── Helpers ──────────────────────────────────────────────────────────────
   function esc(str) {
     if (!str) return '';
@@ -57,6 +62,7 @@
   let drillCatFilter = 'all';
   let openStageId    = null;
   let viewObserver   = null;
+  let drillCardId    = null;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
   const tabGrammar   = document.getElementById('tab-grammar');
@@ -149,13 +155,53 @@
     // Attach "Practice this →" button listeners
     stageCardsEl.querySelectorAll('.gr-practice-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const cat = btn.dataset.cat;
+        const cardId = parseInt(btn.dataset.cardid, 10);
         exitStageDetail();
         switchPanel('drills');
-        // Set drill filter to this card's category
-        drillCatFilter = cat;
-        drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+        drillCardId = cardId;
+        // Deactivate category buttons — card-specific filter overrides them
+        drillCatBtns.forEach(b => b.classList.remove('active'));
         startDrills();
+      });
+    });
+
+    // Attach "See more examples →" button listeners
+    stageCardsEl.querySelectorAll('.gr-more-examples-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const cardId = parseInt(btn.dataset.cardid, 10);
+        const card   = grammarCards.find(c => c.id === cardId);
+        if (!card) return;
+
+        btn.disabled    = true;
+        btn.textContent = 'Loading…';
+
+        const container = document.getElementById('gr-extra-' + cardId);
+        try {
+          const res = await fetch(API_BASE + '/api/grammar-examples', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              concept:        card.title,
+              stage:          card.stageId,
+              currentExample: card.example,
+            }),
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (!data.examples || !data.examples.length) throw new Error('empty response');
+
+          saveExamplesCache(cardId, data.examples);
+          if (container) {
+            container.innerHTML = renderExtraExamples(data.examples);
+            container.hidden    = false;
+          }
+          btn.textContent = 'Refresh examples →';
+        } catch (err) {
+          console.warn('Grammar examples failed:', err.message);
+          btn.textContent = 'See more examples →';
+        } finally {
+          btn.disabled = false;
+        }
       });
     });
   }
@@ -170,9 +216,26 @@
 
   stageBackBtn && stageBackBtn.addEventListener('click', exitStageDetail);
 
+  // ── Example cache helpers ─────────────────────────────────────────────────
+  function loadExamplesCache(cardId) {
+    try { return JSON.parse(localStorage.getItem('ponte_gramex_' + cardId) || 'null'); }
+    catch { return null; }
+  }
+  function saveExamplesCache(cardId, examples) {
+    localStorage.setItem('ponte_gramex_' + cardId, JSON.stringify(examples));
+  }
+  function renderExtraExamples(examples) {
+    return examples.map(ex => `
+      <div class="gr-extra-example">
+        <div class="gr-extra-it">${esc(ex.italian)}</div>
+        <div class="gr-extra-en">${esc(ex.english)}</div>
+      </div>`).join('');
+  }
+
   // ── Card renderer ─────────────────────────────────────────────────────────
   function renderCard(card, stageColor) {
     const hasDrill = grammarDrills.some(d => d.grammarCardId === card.id);
+    const cached   = loadExamplesCache(card.id);
     return `
       <div class="gr-new-card" data-id="${card.id}">
         <div class="gr-new-card-badges">
@@ -204,8 +267,12 @@
           <span>${esc(card.spanishShortcut)}</span>
         </div>` : ''}
         ${hasDrill ? `
-        <button class="gr-practice-btn" data-cat="${esc(card.category)}">Practice this →</button>
+        <button class="gr-practice-btn" data-cardid="${card.id}">Practice this →</button>
         ` : ''}
+        <button class="gr-more-examples-btn" data-cardid="${card.id}">${cached ? 'Refresh examples →' : 'See more examples →'}</button>
+        <div class="gr-extra-examples" id="gr-extra-${card.id}" ${cached ? '' : 'hidden'}>
+          ${cached ? renderExtraExamples(cached) : ''}
+        </div>
       </div>`;
   }
 
@@ -229,12 +296,16 @@
   drillCatBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       drillCatFilter = btn.dataset.cat;
+      drillCardId    = null; // clear card-specific filter when using category buttons
       drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === drillCatFilter));
       startDrills();
     });
   });
 
   function getFilteredDrills() {
+    if (drillCardId !== null) {
+      return grammarDrills.filter(d => d.grammarCardId === drillCardId);
+    }
     if (drillCatFilter === 'all') return grammarDrills.slice();
     const catCardIds = new Set(
       grammarCards.filter(c => c.category === drillCatFilter).map(c => c.id)
@@ -245,6 +316,16 @@
   function startDrills() {
     const filtered = getFilteredDrills();
     drillCount.textContent = filtered.length + ' drill' + (filtered.length !== 1 ? 's' : '');
+
+    const noMsg = document.getElementById('gr-no-drills');
+    if (!filtered.length) {
+      drillCard.hidden = true;
+      drillDone.hidden = true;
+      if (noMsg) noMsg.hidden = false;
+      return;
+    }
+    if (noMsg) noMsg.hidden = true;
+
     drillQueue  = shuffle(filtered);
     drillIndex  = 0;
     drillScore  = 0;

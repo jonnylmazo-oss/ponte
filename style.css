@@ -2878,3 +2878,58 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   color: #00C2B8;
   border-color: #00C2B8;
 }
+
+/* See more examples button */
+.gr-more-examples-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--border-mid);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font);
+  margin-top: 4px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.gr-more-examples-btn:hover {
+  color: #F5894A;
+  border-color: #F5894A;
+}
+.gr-more-examples-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Extra examples container */
+.gr-extra-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border-left: 2px solid rgba(245, 137, 74, 0.35);
+  border-radius: 0 6px 6px 0;
+}
+.gr-extra-example {}
+.gr-extra-it {
+  font-style: italic;
+  color: #00C2B8;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.gr-extra-en {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* No drills message */
+.gr-no-drills {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-style: italic;
+}
