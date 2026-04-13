@@ -376,6 +376,53 @@ app.post('/api/flashcards', (req, res) => {
   }
 });
 
+// ── Translate to Italian — POST /api/translate-to-italian
+// Body: { text: string }
+app.post('/api/translate-to-italian', async (req, res) => {
+  const { text } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'text is required' });
+  }
+
+  const prompt = `The user is an English speaker learning Italian. Translate this English text to Italian: "${text.trim()}"
+Return JSON only — no markdown, no code fences:
+{
+  "italian": "Italian translation",
+  "english": "${text.trim().replace(/"/g, '\\"')}",
+  "spanish": "Spanish equivalent or translation",
+  "note": "One sentence for a Spanish speaker: is this a safe cognate, false friend, or does it diverge from Spanish usage?",
+  "category": "cognate or false-friend or divergence or new",
+  "tense": "if a conjugated verb, e.g. 'passato prossimo, 1st person singular' — otherwise null",
+  "root": "if a conjugated verb, the infinitive form e.g. 'svegliarsi' — otherwise null",
+  "pronunciation": "stress-marked syllable pronunciation of the Italian word e.g. 'TAR-di' — always include",
+  "wordType": "noun or verb or adjective or adverb or phrase or other"
+}
+Category guide — cognate: looks and means the same as Spanish; false-friend: looks Spanish but means something different; divergence: exists in Spanish but used differently in Italian; new: no close Spanish equivalent.`;
+
+  try {
+    const message = await client.messages.create({
+      model:       'claude-sonnet-4-20250514',
+      max_tokens:  400,
+      temperature: 0.2,
+      messages:    [{ role: 'user', content: prompt }],
+    });
+
+    const result = parseArticleJSON(message.content[0].text);
+    if (!result.italian) result.italian = '';
+    res.json(result);
+  } catch (err) {
+    console.error('Translate-to-Italian error:', err.message);
+    res.json({
+      italian:  '',
+      english:  text.trim(),
+      spanish:  '',
+      note:     '',
+      category: 'new',
+    });
+  }
+});
+
 // ── Usage checker — POST /api/check-usage
 // Body: { sentence: string }
 app.post('/api/check-usage', async (req, res) => {

@@ -1,4 +1,4 @@
-// dictionary.js — Dictionary tab: word lookup + usage checker
+// dictionary.js — Translate tab: bidirectional word lookup + usage checker
 
 (function () {
   'use strict';
@@ -46,9 +46,12 @@
   }
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
-  const dictInput        = $('dict-input');
-  if (!dictInput) return;
+  const dictItInput      = $('dict-it-input');
+  if (!dictItInput) return;
 
+  const dictEnInput      = $('dict-en-input');
+  const dictSwapBtn      = $('dict-swap-btn');
+  const dictRandomBtn    = $('dict-random-btn');
   const dictSearchBtn    = $('dict-search-btn');
   const dictHistory      = $('dict-history');
   const dictHistoryChips = $('dict-history-chips');
@@ -73,6 +76,30 @@
   const dictUsageResult  = $('dict-usage-result');
 
   let currentEntry = null;
+  let direction = 'it'; // 'it' = Italian→English, 'en' = English→Italian
+
+  // ── Direction tracking ────────────────────────────────────────────────────
+  dictItInput.addEventListener('input', () => { direction = 'it'; });
+  dictEnInput.addEventListener('input', () => { direction = 'en'; });
+
+  // ── Swap ──────────────────────────────────────────────────────────────────
+  dictSwapBtn.addEventListener('click', () => {
+    const itVal = dictItInput.value;
+    dictItInput.value = dictEnInput.value;
+    dictEnInput.value = itVal;
+    direction = direction === 'it' ? 'en' : 'it';
+  });
+
+  // ── Random word ───────────────────────────────────────────────────────────
+  dictRandomBtn.addEventListener('click', () => {
+    if (typeof falseFriends !== 'undefined' && falseFriends.length) {
+      const pick = falseFriends[Math.floor(Math.random() * falseFriends.length)];
+      dictItInput.value = pick.italian;
+      dictEnInput.value = '';
+      direction = 'it';
+      doLookup();
+    }
+  });
 
   // ── History ────────────────────────────────────────────────────────────────
   function loadHistory() {
@@ -105,31 +132,35 @@
   dictHistoryChips.addEventListener('click', (e) => {
     const chip = e.target.closest('.dict-chip');
     if (!chip) return;
-    dictInput.value = chip.dataset.word;
-    doLookup(chip.dataset.word);
+    dictItInput.value = chip.dataset.word;
+    dictEnInput.value = '';
+    direction = 'it';
+    doLookup();
   });
 
   // ── Lookup ─────────────────────────────────────────────────────────────────
-  async function doLookup(text) {
-    text = (text || '').trim();
+  async function doLookup() {
+    const isIT = direction === 'it';
+    const text = (isIT ? dictItInput.value : dictEnInput.value).trim();
     if (!text) return;
 
     dictLoading.hidden = false;
     dictResult.hidden  = true;
 
     try {
-      const res   = await fetch(API_BASE + '/api/translate', {
+      const endpoint = isIT ? '/api/translate' : '/api/translate-to-italian';
+      const res   = await fetch(API_BASE + endpoint, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ text }),
       });
       const entry = await res.json();
       currentEntry = entry;
-      saveToHistory(text);
+      saveToHistory(entry.italian || text);
       renderHistory();
       renderResult(entry);
     } catch (err) {
-      console.error('Dictionary lookup failed:', err);
+      console.error('Translate lookup failed:', err);
     } finally {
       dictLoading.hidden = true;
     }
@@ -138,6 +169,10 @@
   function renderResult(entry) {
     const color = CATEGORY_COLORS[entry.category] || CATEGORY_COLORS['new'];
     const label = CATEGORY_LABELS[entry.category]  || entry.category;
+
+    // Populate both inputs with result values
+    dictItInput.value = entry.italian || '';
+    dictEnInput.value = entry.english || '';
 
     dictResultWord.textContent        = entry.italian || '';
     dictResultWord.style.color        = color;
@@ -208,7 +243,7 @@
         note:          currentEntry.note          || '',
         pronunciation: currentEntry.pronunciation || '',
         savedAt:       new Date().toISOString(),
-        sourceArticle: 'Dictionary lookup',
+        sourceArticle: 'Translate lookup',
         wordType:      currentEntry.wordType      || 'other',
         timesCorrect:  0,
         timesWrong:    0,
@@ -236,9 +271,12 @@
   });
 
   // ── Search triggers ────────────────────────────────────────────────────────
-  dictSearchBtn.addEventListener('click', () => doLookup(dictInput.value));
-  dictInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') doLookup(dictInput.value);
+  dictSearchBtn.addEventListener('click', doLookup);
+  dictItInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { direction = 'it'; doLookup(); }
+  });
+  dictEnInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { direction = 'en'; doLookup(); }
   });
 
   // ── Usage Checker ──────────────────────────────────────────────────────────

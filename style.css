@@ -3368,15 +3368,18 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   line-height: 1.5;
 }
 
-/* Search row */
-.dict-search-row {
+/* Inputs row */
+.dict-inputs-row {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .dict-input {
   flex: 1;
+  min-width: 120px;
   background: var(--bg-card);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius);
@@ -3388,6 +3391,31 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   transition: border-color 0.15s;
 }
 .dict-input:focus { border-color: #00C2B8; }
+
+.dict-swap-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.dict-swap-btn:hover { border-color: #00C2B8; color: #00C2B8; }
+
+/* Action row */
+.dict-action-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 
 .dict-search-btn {
   background: #00C2B8;
@@ -3403,6 +3431,20 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   white-space: nowrap;
 }
 .dict-search-btn:hover { opacity: 0.85; }
+
+.dict-random-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.dict-random-btn:hover { border-color: #00C2B8; color: #00C2B8; }
 
 /* History */
 .dict-history {

@@ -56,8 +56,8 @@
           <span class="nav-label">Grammar</span>
         </button>
         <button class="nav-item" data-tab="dictionary">
-          <span class="nav-icon">🔍</span>
-          <span class="nav-label">Dictionary</span>
+          <span class="nav-icon">🔄</span>
+          <span class="nav-label">Translate</span>
         </button>
         <button class="nav-item" data-tab="practice">
           <span class="nav-icon">✍️</span>
@@ -282,18 +282,25 @@
 
       </div><!-- #tab-grammar -->
 
-      <!-- Tab: Dictionary -->
+      <!-- Tab: Translate -->
       <div class="tab-panel" id="tab-dictionary">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
 
-        <!-- Section 1: Word Lookup -->
+        <!-- Section 1: Translate -->
         <div class="dict-section">
-          <h2 class="dict-section-title">Word Lookup</h2>
-          <div class="dict-search-row">
-            <input type="text" id="dict-input" class="dict-input"
-              placeholder="Type any Italian word or phrase…"
+          <h2 class="dict-section-title">Translate</h2>
+          <div class="dict-inputs-row">
+            <input type="text" id="dict-it-input" class="dict-input"
+              placeholder="Scrivi in italiano…"
               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <button class="dict-swap-btn" id="dict-swap-btn" title="Swap direction">↔</button>
+            <input type="text" id="dict-en-input" class="dict-input"
+              placeholder="Type in English…"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          </div>
+          <div class="dict-action-row">
             <button class="dict-search-btn" id="dict-search-btn">Search</button>
+            <button class="dict-random-btn" id="dict-random-btn">Random word 🎲</button>
           </div>
 
           <!-- Recent history chips -->
@@ -539,8 +546,8 @@
       <span class="bottom-nav-label">Grammar</span>
     </button>
     <button class="bottom-nav-item" data-tab="dictionary">
-      <span class="bottom-nav-icon">🔍</span>
-      <span class="bottom-nav-label">Dictionary</span>
+      <span class="bottom-nav-icon">🔄</span>
+      <span class="bottom-nav-label">Translate</span>
     </button>
     <button class="bottom-nav-item" data-tab="practice">
       <span class="bottom-nav-icon">✍️</span>
