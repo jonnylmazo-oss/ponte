@@ -70,7 +70,6 @@
   let drillMode      = 'choice';
   let drillAnswered  = false;
   let missedItems    = [];
-  let autoAdvanceTimer = null;
 
   // ── Article selector ──────────────────────────────────────────────────────
   function getStoredArticles() {
@@ -277,7 +276,6 @@
   });
 
   function showDrillItem() {
-    if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; }
     if (drillIndex >= drillItems.length) { endDrill(); return; }
 
     const item = drillItems[drillIndex];
@@ -295,8 +293,10 @@
       pracSentenceEN.hidden = true;
     }
 
-    pracFeedback.hidden = true;
-    pracNextBtn.hidden  = true;
+    pracFeedback.hidden   = true;
+    pracFeedback.innerHTML = '';
+    pracNextBtn.hidden    = true;
+    pracNextBtn.textContent = drillIndex + 1 >= drillItems.length ? 'See Results →' : 'Next →';
 
     if (drillMode === 'choice') {
       showChoiceMode(item);
@@ -399,18 +399,8 @@
       <span class="prac-cat-badge" style="border-color:${color};color:${color}">${catLabel}</span>
     `;
     pracFeedback.hidden = false;
-
-    if (correct && drillMode === 'choice') {
-      // Auto-advance after 1.5s on correct multiple choice
-      autoAdvanceTimer = setTimeout(() => {
-        autoAdvanceTimer = null;
-        drillIndex++;
-        showDrillItem();
-      }, 1500);
-    } else {
-      pracNextBtn.hidden = false;
-      pracNextBtn.focus();
-    }
+    pracNextBtn.hidden  = false;
+    pracNextBtn.focus();
   }
 
   pracNextBtn.addEventListener('click', () => { drillIndex++; showDrillItem(); });
