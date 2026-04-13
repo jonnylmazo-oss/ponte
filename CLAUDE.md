@@ -135,6 +135,18 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v2`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
+## Audio pronunciation (issue #25)
+- **Shared utility:** `speech.speak(text)` in `app.js` (inside IIFE); exposed as `window.ponteSpeak` for `flashcards.js`
+  - `utterance.lang = 'it-IT'`, `rate = 0.85`, `pitch = 1.0`
+  - Prefers Italian system voice: `voices.find(v => v.lang === 'it-IT')`
+  - Handles async voice loading via `speechSynthesis.onvoiceschanged`
+  - Calls `speechSynthesis.cancel()` before each new utterance
+- **Tooltip:** 🔊 button in `.tooltip-word-line` (flex row wrapping word + button); inline with Italian word; pulses while speaking
+- **Flashcard drill:** auto-plays 350ms after flip (card CSS animation); 🔊 replay button (`fc-speak-btn`) on back face
+- **Reader column:** 🔊/⏹ button (`article-speak-btn`) next to "Italiano" label; reads full article; `articleSpeaking` state flag; stops on new article render (`stopArticleSpeech()` called in `renderArticle`)
+- **Graceful degradation:** buttons hidden if `!speech.supported` (no `window.speechSynthesis`)
+- Service worker bumped to `ponte-v2` when this shipped
+
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
 - Fallback: if backend is unreachable, `articles[0]` (hardcoded) is shown
