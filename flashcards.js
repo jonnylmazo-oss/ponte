@@ -61,8 +61,9 @@
   const fcDrillScore  = $('fc-drill-score');
   const fcTrickyList  = $('fc-tricky-list');
   const fcDrillRestart = $('fc-drill-restart');
-  const fcSpeakBtn    = $('fc-speak-btn');
-  const fcToolbar     = $('fc-toolbar');
+  const fcSpeakBtn      = $('fc-speak-btn');
+  const fcFrontSpeakBtn = $('fc-front-speak-btn');
+  const fcToolbar       = $('fc-toolbar');
 
   if (!fcGrid) return; // tab not present in DOM
 
@@ -116,7 +117,10 @@
       return `
         <div class="fc-card" data-id="${card.id}">
           <div class="fc-card-body">
-            <div class="fc-card-italian">${escapeHTML(card.italian)}</div>
+            <div class="fc-card-it-row">
+              <span class="fc-card-italian">${escapeHTML(card.italian)}</span>
+              <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
+            </div>
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
             ${card.spanish ? `<div class="fc-card-es">${escapeHTML(card.spanish)}</div>` : ''}
             ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
@@ -134,8 +138,14 @@
     return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  // ── Delete / Library speak ────────────────────────────────────────────────
   fcGrid.addEventListener('click', (e) => {
+    // Speak button in library card
+    const speakBtn = e.target.closest('.fc-card-speak-btn');
+    if (speakBtn) {
+      if (window.ponteSpeak) window.ponteSpeak(speakBtn.dataset.word);
+      return;
+    }
     const btn = e.target.closest('.fc-delete-btn');
     if (!btn) return;
     const id = Number(btn.dataset.id);
@@ -261,7 +271,14 @@
     }
   });
 
-  // Replay pronunciation
+  // Front face: pronounce before flipping
+  fcFrontSpeakBtn && fcFrontSpeakBtn.addEventListener('click', () => {
+    if (drillQueue.length && window.ponteSpeak) {
+      window.ponteSpeak(drillQueue[0].italian);
+    }
+  });
+
+  // Back face: replay pronunciation
   fcSpeakBtn && fcSpeakBtn.addEventListener('click', () => {
     if (drillQueue.length && window.ponteSpeak) {
       window.ponteSpeak(drillQueue[0].italian);

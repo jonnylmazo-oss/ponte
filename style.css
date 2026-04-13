@@ -2106,11 +2106,16 @@ header {
 
 .fc-card-body { padding: 14px 16px 12px; }
 
+.fc-card-it-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
 .fc-card-italian {
   font-size: 18px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 4px;
 }
 .fc-card-en {
   font-size: 13px;
