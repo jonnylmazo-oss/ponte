@@ -205,34 +205,23 @@
 
         <!-- Sub-tab bar -->
         <div class="grammar-subtabs">
-          <button class="grammar-subtab active" data-panel="delta">Verb Deltas</button>
+          <button class="grammar-subtab active" data-panel="stages">Learn</button>
           <button class="grammar-subtab" data-panel="drills">Pattern Drills</button>
           <button class="grammar-subtab" data-panel="reading">From Your Reading</button>
         </div>
 
-        <!-- Panel: Verb Deltas -->
-        <div id="grammar-panel-delta">
-          <div class="gr-toolbar">
-            <div class="gr-filters">
-              <div class="gr-filter-group">
-                <button class="gr-cat-btn active" data-cat="all">All</button>
-                <button class="gr-cat-btn" data-cat="tense">Tense</button>
-                <button class="gr-cat-btn" data-cat="pronoun">Pronoun</button>
-                <button class="gr-cat-btn" data-cat="subjunctive">Subjunctive</button>
-                <button class="gr-cat-btn" data-cat="reflexive">Reflexive</button>
-                <button class="gr-cat-btn" data-cat="preposition">Preposition</button>
-                <button class="gr-cat-btn" data-cat="geminate">Geminate</button>
-                <button class="gr-cat-btn" data-cat="modal">Modal</button>
-              </div>
-              <div class="gr-filter-group">
-                <button class="gr-diff-btn active" data-diff="all">All levels</button>
-                <button class="gr-diff-btn" data-diff="B1">B1</button>
-                <button class="gr-diff-btn" data-diff="B2">B2</button>
-              </div>
-            </div>
-            <span class="gr-count" id="gr-delta-count"></span>
+        <!-- Panel: Stages (4-stage learning path) -->
+        <div id="grammar-panel-stages">
+          <div id="gr-stage-tiles-wrapper">
+            <div class="gr-stage-grid" id="gr-stage-grid"></div>
           </div>
-          <div class="gr-delta-grid" id="gr-delta-grid"></div>
+          <div class="gr-stage-detail" id="gr-stage-detail" hidden>
+            <div class="gr-stage-detail-header">
+              <button class="gr-back-btn" id="gr-stage-back">← All Stages</button>
+              <h2 class="gr-stage-detail-title" id="gr-stage-title"></h2>
+            </div>
+            <div class="gr-stage-cards" id="gr-stage-cards"></div>
+          </div>
         </div>
 
         <!-- Panel: Pattern Drills -->

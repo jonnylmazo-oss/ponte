@@ -1,7 +1,6 @@
-// data/grammar.js — Grammar delta cards and pattern drills for Ponte
-// For Spanish speakers learning Italian — 40 delta cards, 30 pattern drills
+// data/grammar.js — Grammar cards and pattern drills for Ponte
+// 4-stage learning path for Spanish speakers learning Italian
 
-// ── VERB DELTA CARDS (40) ────────────────────────────────────────────────
 const grammarCards = [
 
   // ── TENSE (10) ──────────────────────────────────────────────────────────
@@ -11,17 +10,13 @@ const grammarCards = [
     title: "Passato Prossimo: Essere vs Avere",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Pretérito Perfecto / Indefinido",
-      example: "Ayer <em>fui</em> al mercado. / <em>He ido</em> al mercado.",
-      note: "Spanish always uses <strong>haber</strong> as the auxiliary for all verbs in compound tenses."
-    },
-    italian: {
-      label: "Passato Prossimo",
-      example: "Ieri <em>sono andato</em> al mercato. / <em>Ho mangiato</em> la pizza.",
-      note: "Motion and state-change verbs use <strong>essere</strong>; most action/transitive verbs use <strong>avere</strong>. Participle agrees with subject when essere is used."
-    },
+    stageId: 1,
+    english: "I went / I have gone (English uses 'have' for all verbs)",
+    italian: "sono andato (motion) / ho mangiato (action)",
+    example: "Ieri sono andato al mercato. Ho mangiato la pizza.",
+    exampleEN: "Yesterday I went to the market. I ate the pizza.",
     trap: "Writing 'ho andato', 'ho venuto', 'ho partito' — these motion verbs always need essere.",
+    spanishShortcut: "Spanish always uses haber: 'he ido', 'he comido'. Italian splits: essere for motion/state-change, avere for most transitive verbs.",
     tip: "Core essere verbs: andare, venire, partire, arrivare, tornare, entrare, uscire, nascere, morire, restare, scendere, salire, cadere, diventare, sembrare. All reflexives also use essere."
   },
 
@@ -30,17 +25,13 @@ const grammarCards = [
     title: "Imperfetto: Polite Requests",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Pretérito Imperfecto",
-      example: "De niño <em>jugaba</em> en el parque. / <em>Quería</em> pedirte algo.",
-      note: "Used for past habits, ongoing states, and background — same uses as Italian. 'Quería pedirte' softens a request."
-    },
-    italian: {
-      label: "Imperfetto",
-      example: "Da bambino <em>giocavo</em> al parco. / <em>Volevo</em> un caffè.",
-      note: "Same habitual/background uses as Spanish. But Italian imperfetto has a uniquely common use as a <strong>polite softener</strong> in shops and restaurants: 'volevo' = I would like (more natural than 'vorrei' in many contexts)."
-    },
-    trap: "Missing the shop/restaurant imperfetto: 'Volevo un cornetto' sounds natural in Italian; 'quería un croissant' is also used in Spanish but less pervasive.",
+    stageId: 2,
+    english: "I would like a coffee (conditional) / I wanted a coffee (past)",
+    italian: "Volevo un caffè. / Volevo chiederti una cosa.",
+    example: "Da bambino giocavo al parco. Volevo un cornetto, per favore.",
+    exampleEN: "As a child I used to play in the park. I'd like a croissant, please.",
+    trap: "Missing the shop/restaurant imperfetto: 'Volevo un cornetto' sounds natural in Italian; beginners often reach for 'vorrei' or blunt 'voglio'.",
+    spanishShortcut: "Spanish uses quería in the same softening way: 'quería pedirte algo'. Italian does this even more pervasively in everyday commerce.",
     tip: "In a café, 'Volevo un caffè macchiato' is perfectly natural Italian — the imperfetto softens the request the way English 'I was hoping for...' does."
   },
 
@@ -49,17 +40,13 @@ const grammarCards = [
     title: "Passato Prossimo vs Imperfetto",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Pretérito Indefinido vs Imperfecto",
-      example: "<em>Dormía</em> cuando <em>sonó</em> el teléfono.",
-      note: "Ongoing background state (imperfecto) interrupted by a completed action (indefinido). Same logic applies in Italian."
-    },
-    italian: {
-      label: "Imperfetto vs Passato Prossimo",
-      example: "<em>Dormivo</em> quando <em>ha suonato</em> il telefono.",
-      note: "Same foreground/background logic — but the completed action uses <strong>passato prossimo</strong> (not passato remoto, in everyday northern/central Italian speech)."
-    },
+    stageId: 1,
+    english: "I was sleeping when the phone rang (background vs foreground)",
+    italian: "Dormivo (background) quando ha suonato il telefono (completed event).",
+    example: "Dormivo quando ha suonato il telefono.",
+    exampleEN: "I was sleeping when the phone rang.",
     trap: "Using passato remoto for the completed action in everyday speech. 'Dormivo quando suonò il telefono' sounds literary or southern-regional.",
+    spanishShortcut: "Spanish: dormía cuando sonó. Italian: dormivo quando ha suonato. Same logic — but completed event uses passato prossimo (not passato remoto) in everyday northern/central Italian.",
     tip: "In everyday Italian (especially north of Rome): passato prossimo does all the work of Spanish pretérito indefinido for recent/personal events."
   },
 
@@ -68,17 +55,13 @@ const grammarCards = [
     title: "Futuro: Epistemic Probability",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Futuro Simple",
-      example: "¿Quién <em>será</em> ese hombre? / <em>Tendrá</em> unos cuarenta años.",
-      note: "Spanish futuro can express conjecture or probability ('must be', 'probably is')."
-    },
-    italian: {
-      label: "Futuro Semplice (same epistemic use)",
-      example: "Chi <em>sarà</em> quell'uomo? / <em>Avrà</em> una quarantina d'anni.",
-      note: "Italian uses futuro semplice the same way — for <strong>present probability</strong>: 'avrà' = he must be about / he's probably. For scheduled near-future, present tense is more common."
-    },
+    stageId: 4,
+    english: "Who could that be? He must be about forty. (guessing, not predicting)",
+    italian: "Chi sarà quell'uomo? Avrà una quarantina d'anni.",
+    example: "Chi sarà quell'uomo? Avrà una quarantina d'anni.",
+    exampleEN: "Who could that man be? He must be around forty.",
     trap: "Using present indicativo for probability when futuro is needed: 'Chi è?' asks who someone is; 'chi sarà?' expresses the uncertainty of not knowing.",
+    spanishShortcut: "Identical to Spanish futuro epistémico: '¿quién será?' / 'tendrá cuarenta años'. Both languages use future tense to express present-tense conjecture.",
     tip: "Italian futuro epistemic use = Spanish futuro epistémico. Both languages say 'avrà/tendrá trent'anni' to mean 'must be about thirty'. Identical usage."
   },
 
@@ -87,17 +70,13 @@ const grammarCards = [
     title: "Stare + Gerundio: Restricted Use",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Estar + Gerundio (broad use)",
-      example: "<em>Está viviendo</em> en Roma desde hace un año. / <em>Estaba</em> trabajando todo el día.",
-      note: "Estar + gerundio spans current moment, extended periods, and interrupted past actions."
-    },
-    italian: {
-      label: "Stare + Gerundio (current moment only)",
-      example: "<em>Sta vivendo</em> a Roma — <strong>wrong</strong>. ✓ <em>Vive</em> a Roma da un anno. / <em>Stavo</em> lavorando quando hai chiamato.",
-      note: "Italian stare + gerundio is <strong>restricted to the action in progress at a specific moment</strong>. It cannot express extended ongoing states — use simple present + da instead."
-    },
+    stageId: 1,
+    english: "I've been living in Rome for a year (extended ongoing state)",
+    italian: "Vivo a Roma da un anno. (NOT: sto vivendo) / Stavo lavorando quando hai chiamato.",
+    example: "Vivo a Roma da un anno. Non interrompermi — sto lavorando proprio adesso.",
+    exampleEN: "I've been living in Rome for a year. Don't interrupt me — I'm working right now.",
     trap: "Saying 'Sto vivendo a Roma da un anno' — Italian uses simple present instead: 'Vivo a Roma da un anno'.",
+    spanishShortcut: "Spanish 'estoy viviendo en Roma desde hace un año' is fine. Italian stare + gerundio is snapshot-only; extended states need simple present + da.",
     tip: "Stare + gerundio = snapshot at this moment. For extended ongoing states, Italian reaches for simple tenses, not the progressive."
   },
 
@@ -106,17 +85,13 @@ const grammarCards = [
     title: "Da + Present for Ongoing Duration",
     category: "tense",
     difficulty: "B1",
-    spanish: {
-      label: "Hace… que / Llevar + Gerundio",
-      example: "<em>Hace tres años que</em> estudio italiano. / <em>Llevo tres años</em> estudiando italiano.",
-      note: "Spanish needs a special construction for 'have been doing X for Y time'."
-    },
-    italian: {
-      label: "Present Tense + Da",
-      example: "<em>Studio</em> italiano <em>da tre anni</em>.",
-      note: "Italian uses simple present tense + <strong>da</strong> + time expression. Compact but structurally different from Spanish. Imperfetto + da = was doing X for Y time (before being interrupted)."
-    },
-    trap: "Translating Spanish word-for-word: *'fa tre anni che studio' — not standard. Also: 'ho studiato da tre anni' is wrong; passato prossimo implies the action is complete.",
+    stageId: 1,
+    english: "I have been studying Italian for three years (ongoing to now)",
+    italian: "Studio italiano da tre anni.",
+    example: "Studio italiano da tre anni. Vivevo lì da due anni quando ho trovato lavoro.",
+    exampleEN: "I have been studying Italian for three years. I had been living there for two years when I found work.",
+    trap: "Translating Spanish word-for-word: 'fa tre anni che studio' is not standard. Also: 'ho studiato da tre anni' is wrong — passato prossimo implies the action is complete.",
+    spanishShortcut: "Spanish: 'hace tres años que estudio' or 'llevo tres años estudiando'. Italian collapses this into: present tense + da. Much simpler.",
     tip: "Present + da = still ongoing. Imperfetto + da = was ongoing (before something else happened). 'Studiavo da un'ora quando ha chiamato' = I'd been studying for an hour when he called."
   },
 
@@ -125,17 +100,13 @@ const grammarCards = [
     title: "Passato Remoto: Regional Register",
     category: "tense",
     difficulty: "B2",
-    spanish: {
-      label: "Pretérito Indefinido",
-      example: "Ayer <em>comí</em> aquí. / Colón <em>llegó</em> a América en 1492.",
-      note: "Spanish pretérito indefinido covers both recent and historical past (with perfecto compuesto varying by region)."
-    },
-    italian: {
-      label: "Passato Remoto: Historical / Literary",
-      example: "Colombo <em>arrivò</em> in America nel 1492. / Ieri <em>ho mangiato</em> qui. (north)",
-      note: "Standard written Italian: passato remoto = historical or distant past. <strong>Northern Italy</strong>: passato prossimo for everything recent. <strong>Southern Italy</strong>: passato remoto even for yesterday."
-    },
+    stageId: 2,
+    english: "Yesterday I ate here (recent past — same word in English)",
+    italian: "Colombo arrivò in America nel 1492. / Ieri ho mangiato qui. (north)",
+    example: "Colombo arrivò in America nel 1492. Ieri ho mangiato qui.",
+    exampleEN: "Columbus arrived in America in 1492. Yesterday I ate here.",
     trap: "Using passato remoto for recent events in a northern context — it sounds literary, formal, or regionally southern.",
+    spanishShortcut: "Spanish pretérito indefinido covers all past events. Italian passato remoto = historical/literary past. Passato prossimo = recent/personal past in the north.",
     tip: "Safe rule: passato prossimo for anything with a present-day connection. Passato remoto for historical events and formal/literary writing."
   },
 
@@ -144,17 +115,13 @@ const grammarCards = [
     title: "Gerundio Cannot Modify Nouns",
     category: "tense",
     difficulty: "B2",
-    spanish: {
-      label: "Gerundio as Noun Modifier",
-      example: "Vi a <em>un hombre corriendo</em>. / <em>La mujer llorando</em> en la calle.",
-      note: "Spanish gerundio can describe another noun's action (lo vi saliendo, la vi llorando)."
-    },
-    italian: {
-      label: "No Gerundio as Noun Modifier",
-      example: "✗ *Ho visto un uomo correndo. ✓ Ho visto <em>un uomo che correva</em>.",
-      note: "Italian requires a relative clause (che + verb) where Spanish uses a gerundio to modify a noun. Italian gerundio only modifies the subject of its own clause."
-    },
-    trap: "Saying *'Ho visto un uomo correndo' — this sounds Spanish-influenced and is not Italian. Use 'un uomo che correva' or 'un uomo mentre correva'.",
+    stageId: 4,
+    english: "I saw a man running / the woman crying in the street",
+    italian: "Ho visto un uomo che correva. (NOT: *un uomo correndo)",
+    example: "Ho visto un uomo che correva lungo il fiume.",
+    exampleEN: "I saw a man running along the river.",
+    trap: "Saying 'Ho visto un uomo correndo' — this sounds Spanish-influenced and is not Italian. Use 'un uomo che correva' or 'un uomo mentre correva'.",
+    spanishShortcut: "Spanish gerundio can describe a noun: 'vi a un hombre corriendo'. Italian gerundio can only modify the clause's own subject — to describe another noun, use 'che' + verb.",
     tip: "Italian gerundio = Spanish gerundio but only when the subjects match: 'Ho mangiato guardando la TV' (I ate while watching). Can't describe someone else's action — that needs 'che'."
   },
 
@@ -163,17 +130,13 @@ const grammarCards = [
     title: "Trapassato Prossimo: Essere/Avere Split",
     category: "tense",
     difficulty: "B2",
-    spanish: {
-      label: "Pluscuamperfecto",
-      example: "Cuando <em>llegué</em>, ya <em>había comido</em>. / Ya se <em>había ido</em>.",
-      note: "Always formed with imperfecto de haber + participio. All verbs use haber — no splits."
-    },
-    italian: {
-      label: "Trapassato Prossimo",
-      example: "Quando sono arrivato, aveva già mangiato. / <em>Era</em> già <em>andato via</em>.",
-      note: "Imperfetto di avere + participio <strong>OR</strong> imperfetto di essere + participio — the same essere/avere split as passato prossimo applies to all compound tenses."
-    },
-    trap: "Using avere for essere-verbs: *'aveva andato' must be 'era andato'. The split never takes a day off.",
+    stageId: 3,
+    english: "When I arrived, he had already left (past perfect)",
+    italian: "Quando sono arrivato, aveva già mangiato. / Era già andato via.",
+    example: "Quando sono arrivato, aveva già mangiato. Era già andato via.",
+    exampleEN: "When I arrived, he had already eaten. He had already left.",
+    trap: "Using avere for essere-verbs: 'aveva andato' must be 'era andato'. The split never takes a day off.",
+    spanishShortcut: "Spanish pluscuamperfecto always uses haber: 'había comido', 'se había ido'. Italian splits: era andato (essere-verb), aveva mangiato (avere-verb). Same split as passato prossimo.",
     tip: "If a verb uses essere in passato prossimo, it uses essere in trapassato, condizionale passato, and congiuntivo passato too. The rule is consistent across all compound tenses."
   },
 
@@ -182,17 +145,13 @@ const grammarCards = [
     title: "Condizionale Passato in Hypotheticals",
     category: "tense",
     difficulty: "B2",
-    spanish: {
-      label: "Condicional Compuesto",
-      example: "Si <em>hubiera</em> sabido, <em>habría venido</em>.",
-      note: "Si + pluscuamperfecto subjuntivo → condicional compuesto. All verbs use haber."
-    },
-    italian: {
-      label: "Condizionale Passato",
-      example: "Se <em>avessi</em> saputo, <em>sarei venuto</em>.",
-      note: "Se + congiuntivo trapassato → condizionale passato. Essere-verbs use essere in condizionale passato too: <strong>sarei venuto</strong>, non 'avrei venuto'."
-    },
-    trap: "Using avere for essere-verbs: *'avrei andato' must be 'sarei andato'. *'avrei venuto' must be 'sarei venuto'.",
+    stageId: 4,
+    english: "If I had known, I would have come",
+    italian: "Se avessi saputo, sarei venuto. (NOT: *avrei venuto)",
+    example: "Se avessi saputo, sarei venuto alla festa.",
+    exampleEN: "If I had known, I would have come to the party.",
+    trap: "Using avere for essere-verbs: 'avrei andato' must be 'sarei andato'. 'avrei venuto' must be 'sarei venuto'.",
+    spanishShortcut: "Spanish: 'si hubiera sabido, habría venido'. Italian: 'se avessi saputo, sarei venuto'. Essere-verbs use sarei/saresti/sarebbe in the conditional perfect — haber always uses haber in Spanish.",
     tip: "Condizionale passato of essere-verbs: sarei, saresti, sarebbe, saremmo, sareste, sarebbero + participle (with agreement). Same essere rule, every tense."
   },
 
@@ -203,17 +162,13 @@ const grammarCards = [
     title: "Ne: The Partitive Pronoun",
     category: "pronoun",
     difficulty: "B1",
-    spanish: {
-      label: "No Equivalent",
-      example: "¿Cuántas manzanas tienes? — Tengo <em>tres</em>. / Hablamos <em>de eso</em>.",
-      note: "Spanish repeats the noun, drops it, or uses 'de eso/de ello'. There is no partitive clitic."
-    },
-    italian: {
-      label: "Ne",
-      example: "Quante mele hai? — <em>Ne</em> ho tre. / Parliamo di politica → <em>Ne</em> parliamo.",
-      note: "<strong>Ne</strong> replaces 'di + noun/pronoun' and is mandatory with quantities: 'ne ho tre' = I have three of them; 'ne parliamo' = we talk about it (di + topic)."
-    },
-    trap: "Omitting ne with quantities: *'Ho tre' is wrong — you must say 'Ne ho tre'. Also: when the participle follows ne, it agrees: 'ne ho mangiate tre' (mele, f.pl.).",
+    stageId: 3,
+    english: "How many apples do you have? — I have three. (English drops 'of them')",
+    italian: "Quante mele hai? — Ne ho tre. / Parliamo di politica → Ne parliamo.",
+    example: "Quante mele hai? — Ne ho tre. Ne parliamo dopo.",
+    exampleEN: "How many apples do you have? — I have three (of them). We'll talk about it later.",
+    trap: "Omitting ne with quantities: 'Ho tre' is wrong — you must say 'Ne ho tre'. Also: when the participle follows ne, it agrees: 'ne ho mangiate tre' (mele, f.pl.).",
+    spanishShortcut: "Spanish drops the pronoun entirely: '¿cuántas tienes? — tengo tres.' Italian requires 'ne' to stand in for 'di + noun'. There is no Spanish equivalent — learn it as an Italian-only pattern.",
     tip: "Whenever you answer a 'how many?' question without repeating the noun, ne is required. Think of ne as 'of it/of them' — Italian always expresses it; Spanish drops it."
   },
 
@@ -222,17 +177,13 @@ const grammarCards = [
     title: "Ci: The Locative Pronoun",
     category: "pronoun",
     difficulty: "B1",
-    spanish: {
-      label: "No Locative Clitic",
-      example: "¿Vas al mercado? — Sí, voy <em>(allí)</em>. / No pienso <em>en eso</em>.",
-      note: "Spanish drops the location or repeats it — no locative clitic equivalent to ci."
-    },
-    italian: {
-      label: "Ci",
-      example: "Vai al mercato? — Sì, <em>ci</em> vado. / <em>Ci</em> penso spesso. / <em>Ci</em> vuole pazienza.",
-      note: "<strong>Ci</strong> replaces 'a/in + place' and 'a + thing being thought about'. Also: c'è / ci sono (there is/are), and ci vuole (it takes / it requires)."
-    },
+    stageId: 3,
+    english: "Do you go to the market? — Yes, I go there. (English drops or keeps 'there')",
+    italian: "Vai al mercato? — Sì, ci vado. / Ci penso spesso. / Ci vuole pazienza.",
+    example: "Vai al mercato? — Sì, ci vado ogni giorno. Ci vuole pazienza con lui.",
+    exampleEN: "Do you go to the market? — Yes, I go there every day. You need patience with him.",
     trap: "Dropping ci when referencing a previously mentioned place: after 'al bar?' the response 'Vado ogni giorno' is incomplete — 'Ci vado ogni giorno' is required.",
+    spanishShortcut: "Spanish drops the location pronoun. Italian requires ci to replace 'a/in + place'. Also: c'è/ci sono (hay), ci vuole (hace falta) — these have no Spanish clitic equivalent.",
     tip: "Ci stacks with ne: 'ci vuole' (it takes), 'farcela' (fare + ci + la = to manage it). These two clitics do enormous work in Italian with no Spanish parallel."
   },
 
@@ -241,17 +192,13 @@ const grammarCards = [
     title: "Double Pronouns: Glielo vs Se lo",
     category: "pronoun",
     difficulty: "B2",
-    spanish: {
-      label: "Se lo / Se la / Se los / Se las",
-      example: "¿Le das el libro a María? — <em>Se lo</em> doy.",
-      note: "All 3rd-person indirect + direct combinations become se lo/la/los/las in Spanish."
-    },
-    italian: {
-      label: "Glielo / Gliela / Glieli / Gliele",
-      example: "Gli dai il libro? — <em>Glielo</em> do.",
-      note: "Italian fuses gli + lo → <strong>glielo</strong> (one word). This covers him, her (informal), and them. Italian never changes gli to 'se' before a direct object pronoun."
-    },
-    trap: "Writing *'se lo do' or *'lo gli do' instead of 'glielo do' — glielo is always one fused word in Italian.",
+    stageId: 3,
+    english: "Are you giving the book to him? — I'm giving it to him.",
+    italian: "Gli dai il libro? — Glielo do. (one fused word)",
+    example: "Vuoi che mandi il documento a Luigi? — Glielo mando subito.",
+    exampleEN: "Do you want me to send the document to Luigi? — I'll send it to him right away.",
+    trap: "Writing 'se lo do' or 'lo gli do' instead of 'glielo do' — glielo is always one fused word in Italian.",
+    spanishShortcut: "Spanish: 'se lo doy' (le/les → se before lo/la). Italian: 'glielo do' (gli + lo fuses into glielo). Italian never uses se in this position — glielo, gliela, glieli, gliele.",
     tip: "Glielo, gliela, glieli, gliele — all one word, never separated. One form serves him, her, and them (unlike Spanish le/les → se before lo/la)."
   },
 
@@ -260,17 +207,13 @@ const grammarCards = [
     title: "Clitic Climbing with Modals",
     category: "pronoun",
     difficulty: "B2",
-    spanish: {
-      label: "Clitic Climbing (optional)",
-      example: "Quiero <em>verlo</em>. / <em>Lo</em> quiero ver. (both OK)",
-      note: "In Spanish, clitics can attach to the infinitive or climb to the conjugated verb."
-    },
-    italian: {
-      label: "Clitic Climbing (same freedom, extra idioms)",
-      example: "Voglio <em>vederlo</em>. / <em>Lo</em> voglio vedere. (both OK) / <em>Farcela</em> = fare + ci + la.",
-      note: "Italian allows the same clitic climbing with modals. But Italian also has <strong>idiomatic fused forms</strong> like farcela (to manage), andarsene (to leave), cavarsela (to get by) — these have no direct Spanish equivalents."
-    },
+    stageId: 3,
+    english: "I want to see it / I want to see him (clitic can move to modal)",
+    italian: "Voglio vederlo. / Lo voglio vedere. (both OK) / Farcela = fare + ci + la.",
+    example: "Lo voglio vedere. Voglio vederlo. Non ce la faccio più.",
+    exampleEN: "I want to see it. I want to see it. I can't take it anymore.",
     trap: "Treating farcela / andarsene as separable the way simple clitics are: 'ce la faccio' works but 'la faccio ce' doesn't — learn these as fixed idioms.",
+    spanishShortcut: "Same clitic freedom as Spanish: 'quiero verlo' or 'lo quiero ver'. Bonus: Italian has lexicalized multi-clitic idioms — farcela, cavarsela, andarsene — with no direct Spanish equivalents.",
     tip: "Same clitic freedom as Spanish for simple cases. Bonus: Italian has lexicalized multi-clitic idioms (farcela, cavarsela, andarsene) that must be learned whole."
   },
 
@@ -279,17 +222,13 @@ const grammarCards = [
     title: "Past Participle Agrees with Direct Object Clitic",
     category: "pronoun",
     difficulty: "B2",
-    spanish: {
-      label: "No Agreement",
-      example: "La película que <em>he visto</em>. / Las velas que <em>has apagado</em>.",
-      note: "Modern Spanish does not make the past participle agree with a preceding direct object."
-    },
-    italian: {
-      label: "Mandatory Agreement",
-      example: "Il film che <em>ho visto</em>. / Le candele — <em>le hai spente</em>.",
-      note: "When a direct object clitic precedes the verb, the past participle <strong>must agree</strong> in gender and number: lo → visto, la → vista, li → visti, le → viste/spente."
-    },
-    trap: "Saying *'le ho spento' instead of 'le ho spente' — when 'le' (them, f.pl.) precedes the verb, the participle needs the -e plural ending.",
+    stageId: 3,
+    english: "The candles — I turned them off. (English: no agreement)",
+    italian: "Le candele — le hai spente. (participle agrees: spente, not spento)",
+    example: "Le finestre? Le ho chiuse stamattina. Il film? L'ho visto ieri.",
+    exampleEN: "The windows? I closed them this morning. The film? I saw it yesterday.",
+    trap: "Saying 'le ho spento' instead of 'le ho spente' — when 'le' (them, f.pl.) precedes the verb, the participle needs the -e plural ending.",
+    spanishShortcut: "Modern Spanish has no participle agreement: 'las he apagado'. Italian requires it: 'le ho spente'. The clitic gender/number triggers the participle ending.",
     tip: "Direct object clitic before the verb → participle agrees. No preceding clitic → no required agreement. Le candele? Le ho spente."
   },
 
@@ -298,17 +237,13 @@ const grammarCards = [
     title: "Gli: One Pronoun for Him, Her, Them",
     category: "pronoun",
     difficulty: "B2",
-    spanish: {
-      label: "Le (singular) / Les (plural)",
-      example: "<em>Le</em> doy el libro (a él/a ella). <em>Les</em> doy el libro (a ellos/ellas).",
-      note: "Spanish distinguishes singular indirect object (le) from plural (les)."
-    },
-    italian: {
-      label: "Gli (him / her-informal / them)",
-      example: "<em>Gli</em> do il libro (a lui / a lei / a loro).",
-      note: "In modern spoken Italian, <strong>gli</strong> serves as indirect object for him, her, and them. Only in formal writing does Italian distinguish: gli (him), le (her), loro (them, post-verbal)."
-    },
+    stageId: 2,
+    english: "I give the book to him / to her / to them (three distinct ideas)",
+    italian: "Gli do il libro. (serves him, her, and them in everyday speech)",
+    example: "Gli do il libro. Puoi dirgli che arrivo tra poco?",
+    exampleEN: "I give him/her/them the book. Can you tell him/her/them I'll be there soon?",
     trap: "Assuming 'le' always means 'to her' in Italian — in everyday speech, gli replaces le and loro. Context and verb agreement disambiguate.",
+    spanishShortcut: "Spanish distinguishes: 'le doy' (singular) vs 'les doy' (plural). Italian spoken norm: 'gli' covers all three. Only formal writing uses gli/le/loro separately.",
     tip: "In conversation, gli does it all. In formal writing: gli (him), le (her), loro/gli (them). Don't overthink it in speech."
   },
 
@@ -317,17 +252,13 @@ const grammarCards = [
     title: "C'è / Ci Sono vs Hay",
     category: "pronoun",
     difficulty: "B1",
-    spanish: {
-      label: "Hay (invariable)",
-      example: "<em>Hay</em> un problema. <em>Hay</em> tres problemas.",
-      note: "Spanish hay is invariable — it doesn't change for singular vs plural nouns."
-    },
-    italian: {
-      label: "C'è / Ci Sono",
-      example: "<em>C'è</em> un problema. <em>Ci sono</em> tre problemi.",
-      note: "Italian requires number agreement: <strong>c'è</strong> for singular, <strong>ci sono</strong> for plural. The verb 'essere' shows through."
-    },
-    trap: "Using c'è with a plural noun: *'C'è tre persone' — must be 'ci sono tre persone'.",
+    stageId: 1,
+    english: "There is / there are (English distinguishes; Spanish hay doesn't)",
+    italian: "C'è un problema. / Ci sono tre problemi.",
+    example: "C'è un problema. Ci sono tre persone fuori.",
+    exampleEN: "There is a problem. There are three people outside.",
+    trap: "Using c'è with a plural noun: 'C'è tre persone' — must be 'ci sono tre persone'.",
+    spanishShortcut: "Spanish 'hay' is invariable: 'hay un problema', 'hay tres problemas'. Italian splits into c'è (singular) and ci sono (plural). The verb essere shows through.",
     tip: "C'è = hay (singular). Ci sono = hay (plural). Unlike Spanish hay, Italian c'è/ci sono agree in number."
   },
 
@@ -336,17 +267,13 @@ const grammarCards = [
     title: "Subject Pronoun Drop",
     category: "pronoun",
     difficulty: "B1",
-    spanish: {
-      label: "Pro-Drop (routinely dropped)",
-      example: "<em>(Yo)</em> voy al mercado. <em>(Él)</em> dice que viene.",
-      note: "Spanish drops subject pronouns routinely; retains them only for contrast or emphasis."
-    },
-    italian: {
-      label: "Pro-Drop (also dropped, with clearer switching signals)",
-      example: "<em>(Io)</em> vado al mercato. <em>Lui</em> dice che <em>lei</em> viene.",
-      note: "Italian also drops subject pronouns in most contexts, but tends to express 3rd-person pronouns (lui/lei/loro) more freely to signal subject switches, since Italian verb endings are less distinct than Spanish ones."
-    },
+    stageId: 2,
+    english: "He says she is coming (multiple subjects — English needs pronouns)",
+    italian: "Lui dice che lei viene. (pronouns kept to signal subject switch)",
+    example: "Io vado al mercato. Lui dice che lei viene dopo.",
+    exampleEN: "I'm going to the market. He says she's coming later.",
     trap: "Leaving out lui/lei when the subject switches mid-sentence — Italian listeners rely on the pronoun more than Spanish listeners do to track who is doing what.",
+    spanishShortcut: "Both languages drop subject pronouns. But Italian verb endings (especially 3rd person) are less distinctive, so lui/lei is used more often to signal switches than in Spanish.",
     tip: "When the subject changes, Italian often keeps lui/lei to signal the shift clearly. Spanish can rely on verb endings alone more readily."
   },
 
@@ -357,17 +284,13 @@ const grammarCards = [
     title: "Penso Che + Congiuntivo (Always)",
     category: "subjunctive",
     difficulty: "B1",
-    spanish: {
-      label: "Creo que + Indicativo (spoken) / Subjuntivo (formal)",
-      example: "Creo que <em>viene</em> mañana. (spoken) / Creo que <em>venga</em>. (formal)",
-      note: "In colloquial Spanish, positive verbs of belief (creo que, pienso que) often take indicativo."
-    },
-    italian: {
-      label: "Penso Che + Congiuntivo (always)",
-      example: "Penso che <em>venga</em> domani. / Credo che <em>sia</em> a casa.",
-      note: "Italian consistently requires <strong>congiuntivo</strong> after verbs of opinion, belief, and supposition — in all registers, spoken and written."
-    },
-    trap: "Using indicativo after 'penso che', 'credo che', 'suppongo che': *'Penso che viene' is wrong Italian, even in casual speech.",
+    stageId: 3,
+    english: "I think he's coming tomorrow (English: no subjunctive triggered)",
+    italian: "Penso che venga domani. / Credo che sia a casa.",
+    example: "Penso che venga domani. Credo che sia ancora a casa.",
+    exampleEN: "I think he's coming tomorrow. I believe he's still at home.",
+    trap: "Using indicativo after 'penso che', 'credo che', 'suppongo che': 'Penso che viene' is wrong Italian, even in casual speech.",
+    spanishShortcut: "Spanish spoken norm allows indicativo: 'creo que viene'. Italian requires congiuntivo in all registers — no shortcut exists for penso/credo/suppongo + che.",
     tip: "Italian pensare/credere/supporre/ritenere + che → always congiuntivo. There is no spoken shortcut like in Spanish."
   },
 
@@ -376,17 +299,13 @@ const grammarCards = [
     title: "Impersonal Expressions + Congiuntivo",
     category: "subjunctive",
     difficulty: "B1",
-    spanish: {
-      label: "Es + adjective + que + subjuntivo",
-      example: "Es importante que <em>llegues</em> a tiempo. Es posible que <em>venga</em>.",
-      note: "Spanish impersonal expressions with a personal subject follow the same pattern as Italian."
-    },
-    italian: {
-      label: "È + adjective + che + congiuntivo",
-      example: "È importante che <em>arrivi</em> in orario. È possibile che <em>venga</em>.",
-      note: "Structure mirrors Spanish. Also: <strong>bisogna che</strong> (it's necessary that) and <strong>occorre che</strong> both trigger congiuntivo and have no Spanish parallel with the same structure."
-    },
-    trap: "Using indicativo: *'È importante che arriva' — congiuntivo is required. Some forms look identical (arrivi = 2nd sing. indicativo AND congiuntivo) — context resolves.",
+    stageId: 3,
+    english: "It's important that you arrive on time (English uses base verb form)",
+    italian: "È importante che tu arrivi in orario. / Bisogna che tu venga.",
+    example: "È importante che arrivi in orario. Bisogna che tutti parlino.",
+    exampleEN: "It's important that you arrive on time. It's necessary that everyone speak.",
+    trap: "Using indicativo: 'È importante che arriva' — congiuntivo is required. Some forms look identical (arrivi = 2nd sing. indicativo AND congiuntivo) — context resolves.",
+    spanishShortcut: "Mirrors Spanish: 'es importante que llegues'. Italian bisogna che/occorre che + congiuntivo = Spanish hay que + infinitivo, but with a different structure (personal subject possible).",
     tip: "Bisogna che / Occorre che + congiuntivo = Italian-only structures. Spanish uses 'hay que + infinitive' instead, so these are new territory."
   },
 
@@ -395,17 +314,13 @@ const grammarCards = [
     title: "Benché / Sebbene + Congiuntivo",
     category: "subjunctive",
     difficulty: "B2",
-    spanish: {
-      label: "Aunque + Indicativo (known) or Subjuntivo (hypothetical)",
-      example: "<em>Aunque</em> hace frío, salgo. / <em>Aunque</em> haga frío, saldré.",
-      note: "Spanish 'aunque' takes indicativo for known facts, subjuntivo for concession of possibility."
-    },
-    italian: {
-      label: "Benché / Sebbene + Congiuntivo (always)",
-      example: "<em>Benché</em> faccia freddo, esco. / <em>Sebbene</em> sia stanco, continua.",
-      note: "<strong>Benché</strong> and <strong>sebbene</strong> require congiuntivo even for known facts. There is no indicativo option with these conjunctions."
-    },
-    trap: "Using indicativo after benché/sebbene: *'Benché fa freddo' is ungrammatical. For known facts without subjunctive, use 'anche se' + indicativo.",
+    stageId: 4,
+    english: "Although it's cold, I'm going out (even known facts need subjunctive in Italian)",
+    italian: "Benché faccia freddo, esco. / Sebbene sia stanco, continua.",
+    example: "Benché faccia freddo, esco a correre ogni mattina.",
+    exampleEN: "Although it's cold, I go running every morning.",
+    trap: "Using indicativo after benché/sebbene: 'Benché fa freddo' is ungrammatical. For known facts without subjunctive, use 'anche se' + indicativo.",
+    spanishShortcut: "Spanish 'aunque' takes indicativo for known facts: 'aunque hace frío, salgo'. Italian benché/sebbene always require congiuntivo. Want indicativo? Use 'anche se' instead.",
     tip: "Benché/sebbene = automatic congiuntivo. Want indicativo? Switch to 'anche se': 'Anche se fa freddo, esco' (known fact, no subjunctive needed)."
   },
 
@@ -414,17 +329,13 @@ const grammarCards = [
     title: "Prima Che + Congiuntivo",
     category: "subjunctive",
     difficulty: "B2",
-    spanish: {
-      label: "Antes de que + Subjuntivo",
-      example: "Llámame <em>antes de que</em> salgas.",
-      note: "Spanish antes de que always takes subjuntivo — same as Italian prima che."
-    },
-    italian: {
-      label: "Prima Che + Congiuntivo / Prima Di + Infinitive",
-      example: "Chiamami <em>prima che tu parta</em>. / <em>Prima di partire</em>, chiamami.",
-      note: "<strong>Prima che</strong> (different subjects) + congiuntivo. <strong>Prima di</strong> (same subject) + infinitive. Other congiuntivo conjunctions: affinché, a meno che non, nel caso in cui, purché."
-    },
-    trap: "Using prima che with the same subject: *'Prima che io parta, chiamami' — when subjects are the same, Italian uses prima di + infinitive: 'Prima di partire, chiamami'.",
+    stageId: 3,
+    english: "Call me before you leave (different subjects → subjunctive)",
+    italian: "Chiamami prima che tu parta. / Prima di partire, chiamami. (same subject → infinitive)",
+    example: "Chiamami prima che tu parta. Prima di partire, controlla il gas.",
+    exampleEN: "Call me before you leave. Before leaving, check the gas.",
+    trap: "Using prima che with the same subject: 'Prima che io parta, chiamami' — when subjects are the same, Italian uses prima di + infinitive: 'Prima di partire, chiamami'.",
+    spanishShortcut: "Identical to Spanish: 'antes de que salgas' (different subjects) vs 'antes de salir' (same subject). Same split, same logic — just prima che / prima di instead.",
     tip: "Two subjects → prima che + congiuntivo. Same subject → prima di + infinitive. Identical rule to Spanish antes de que / antes de."
   },
 
@@ -433,17 +344,13 @@ const grammarCards = [
     title: "Congiuntivo in Independent Wishes",
     category: "subjunctive",
     difficulty: "B2",
-    spanish: {
-      label: "¡Ojalá! / ¡Que + Subjuntivo!",
-      example: "¡<em>Ojalá</em> venga! / ¡<em>Que</em> te vaya bien!",
-      note: "Spanish uses 'ojalá' (from Arabic) or standalone 'que' for wishes."
-    },
-    italian: {
-      label: "Magari / Che + Congiuntivo",
-      example: "<em>Magari</em> venisse! / <em>Che</em> tu possa farcela!",
-      note: "<strong>Magari</strong> = if only / I wish (with congiuntivo) or maybe / perhaps (with indicativo/condizionale). The mood changes the meaning completely."
-    },
+    stageId: 4,
+    english: "If only he would come! / I wish he'd come! (English uses 'wish' + past)",
+    italian: "Magari venisse! (wish) / Magari viene. (maybe)",
+    example: "Magari venisse alla festa! Che tu possa farcela!",
+    exampleEN: "If only he'd come to the party! May you manage!",
     trap: "Using 'magari' without congiuntivo for a wish: 'Magari viene' = maybe he'll come (possibility); 'Magari venisse!' = if only he'd come! (wish). Wrong mood, wrong meaning.",
+    spanishShortcut: "Spanish: '¡ojalá viniera!' or '¡que te vaya bien!'. Italian: 'magari venisse!' or 'che tu possa farcela!'. Magari has no direct Spanish equivalent — it changes meaning with the mood.",
     tip: "Magari + congiuntivo imperfetto = strong wish (if only). Magari + indicativo = maybe. Context and mood together carry the full meaning."
   },
 
@@ -452,17 +359,13 @@ const grammarCards = [
     title: "Congiuntivo Passato Formation",
     category: "subjunctive",
     difficulty: "B2",
-    spanish: {
-      label: "Pretérito Perfecto de Subjuntivo",
-      example: "Spero che <em>sia venuto</em>. → Espero que <em>haya venido</em>.",
-      note: "Spanish: imperfecto de subjuntivo de haber + participio. All verbs use haber."
-    },
-    italian: {
-      label: "Congiuntivo Passato",
-      example: "Spero che <em>sia venuto</em>. / Penso che <em>abbia mangiato</em>.",
-      note: "Congiuntivo presente di essere/avere + participio passato. The essere/avere split applies here too: essere-verbs → sia/siano + participio (with agreement)."
-    },
-    trap: "Using avere for essere-verbs: *'Penso che abbia andato' — must be 'Penso che sia andato'.",
+    stageId: 3,
+    english: "I hope he came / I think he has eaten (past in a subjunctive clause)",
+    italian: "Spero che sia venuto. / Penso che abbia mangiato.",
+    example: "Spero che sia venuto prima della chiusura. Penso che abbia già mangiato.",
+    exampleEN: "I hope he came before closing. I think he has already eaten.",
+    trap: "Using avere for essere-verbs: 'Penso che abbia andato' — must be 'Penso che sia andato'.",
+    spanishShortcut: "Spanish: 'espero que haya venido' (always haber). Italian: 'spero che sia venuto' (essere-verbs use sia, not abbia). The essere/avere split applies to all compound tenses.",
     tip: "Congiuntivo passato = congiuntivo of essere or avere + participio. Essere-verbs: 'sia andato/a'; avere-verbs: 'abbia mangiato'. The split is relentless."
   },
 
@@ -473,17 +376,13 @@ const grammarCards = [
     title: "Reflexive Verbs Use Essere",
     category: "reflexive",
     difficulty: "B1",
-    spanish: {
-      label: "Reflexivos: Haber (always)",
-      example: "<em>Me he levantado</em> tarde. / <em>Se han duchado</em>.",
-      note: "Spanish reflexive verbs always use haber in compound tenses."
-    },
-    italian: {
-      label: "Riflessivi: Essere (always)",
-      example: "<em>Mi sono alzato</em> tardi. / <em>Si sono fatti</em> la doccia.",
-      note: "Italian reflexive verbs always use <strong>essere</strong> in compound tenses. The past participle agrees in gender and number with the subject."
-    },
-    trap: "Using avere for reflexives: *'mi ho alzato' must be 'mi sono alzato'. Also: forgetting agreement — a female speaker says 'mi sono alzata', not 'alzato'.",
+    stageId: 1,
+    english: "I got up late / They showered (reflexive in compound tense)",
+    italian: "Mi sono alzato tardi. / Si sono fatti la doccia.",
+    example: "Mi sono alzato tardi. Mi sono fatto la doccia in fretta.",
+    exampleEN: "I got up late. I showered quickly.",
+    trap: "Using avere for reflexives: 'mi ho alzato' must be 'mi sono alzato'. Also: forgetting agreement — a female speaker says 'mi sono alzata', not 'alzato'.",
+    spanishShortcut: "Spanish reflexives always use haber: 'me he levantado'. Italian reflexives always use essere: 'mi sono alzato/a'. And the participle agrees with the subject.",
     tip: "Reflexive + essere → participle agrees. Mi sono lavato (m.), mi sono lavata (f.), ci siamo lavati (m./mixed group), ci siamo lavate (f. group)."
   },
 
@@ -492,17 +391,13 @@ const grammarCards = [
     title: "Reflexive Meaning Changes",
     category: "reflexive",
     difficulty: "B1",
-    spanish: {
-      label: "Reflexivo vs No Reflexivo",
-      example: "<em>Ir</em> (to go) vs <em>irse</em> (to leave/go away). <em>Llamar</em> vs <em>llamarse</em> (to be called).",
-      note: "Spanish adds reflexive to shift meaning — same pattern as Italian."
-    },
-    italian: {
-      label: "Verbo vs Verbo Riflessivo",
-      example: "<em>Sentire</em> un rumore (to hear) vs <em>sentirsi</em> bene (to feel). <em>Trovare</em> la chiave (to find) vs <em>trovarsi</em> a Milano (to be located).",
-      note: "Italian has the same reflexive/non-reflexive meaning shift, plus several reflexive-only idioms: <strong>rendersi conto</strong> (to realize), <strong>accorgersi</strong> (to notice), <strong>farcela</strong> (to manage)."
-    },
+    stageId: 2,
+    english: "to feel vs to hear / to find (something) vs to be located",
+    italian: "Sentire un rumore (to hear) vs sentirsi bene (to feel). Trovare la chiave vs trovarsi a Milano.",
+    example: "Non mi sento bene oggi. Mi sono trovato in una situazione difficile.",
+    exampleEN: "I don't feel well today. I found myself in a difficult situation.",
     trap: "Missing Italian-specific reflexive constructions: 'Non me ne sono accorto' (I didn't notice it) uses both 'ne' and the reflexive — a structure without a clean Spanish parallel.",
+    spanishShortcut: "Spanish has the same reflexive shift: 'ir' vs 'irse', 'llamar' vs 'llamarse'. Italian adds important idioms: rendersi conto (darse cuenta), accorgersi (notar), farcela (conseguirlo).",
     tip: "Key Italian reflexive idioms: rendersi conto di (darse cuenta de), accorgersi di (darse cuenta de / notar), farcela (poder con algo / conseguirlo)."
   },
 
@@ -511,17 +406,13 @@ const grammarCards = [
     title: "Modal + Reflexive: Compound Tense Auxiliary",
     category: "reflexive",
     difficulty: "B2",
-    spanish: {
-      label: "Modal + Reflexivo (always haber)",
-      example: "<em>Me he querido</em> lavar. / He querido <em>lavarme</em>. (both use haber)",
-      note: "Spanish compound modal constructions always use haber regardless of clitic position."
-    },
-    italian: {
-      label: "Auxiliary Changes with Clitic Position",
-      example: "<em>Mi sono dovuto</em> lavare. (clitic climbs → essere) / <em>Ho dovuto</em> lavarmi. (clitic on inf → avere)",
-      note: "When the reflexive clitic climbs to the modal, Italian uses <strong>essere</strong>. When it stays on the infinitive, Italian uses <strong>avere</strong>. Both are grammatical."
-    },
-    trap: "Using avere when the clitic has climbed: *'mi ho dovuto lavare' is wrong — must be 'mi sono dovuto lavare'.",
+    stageId: 3,
+    english: "I had to wash up (reflexive + modal in compound tense — which auxiliary?)",
+    italian: "Mi sono dovuto lavare. (clitic climbs → essere) / Ho dovuto lavarmi. (clitic on inf → avere)",
+    example: "Mi sono dovuto alzare presto. Ho dovuto alzarmi presto. (both grammatical)",
+    exampleEN: "I had to get up early. (two grammatically valid forms)",
+    trap: "Using avere when the clitic has climbed: 'mi ho dovuto lavare' is wrong — must be 'mi sono dovuto lavare'.",
+    spanishShortcut: "Spanish always uses haber regardless of clitic position: 'me he tenido que lavar' or 'he tenido que lavarme'. Italian auxiliary follows the clitic: clitic before modal → essere; clitic on infinitive → avere.",
     tip: "Reflexive clitic before modal → essere. Reflexive clitic on infinitive → avere. Heard both ways in speech — but the mixed form ('mi ho...') is always wrong."
   },
 
@@ -530,17 +421,13 @@ const grammarCards = [
     title: "Reciprocal Reflexives in Compound Tenses",
     category: "reflexive",
     difficulty: "B1",
-    spanish: {
-      label: "Recíprocos con Haber",
-      example: "<em>Nos hemos visto</em> ayer. / <em>Se quieren</em> mucho.",
-      note: "Spanish uses nos/se for reciprocal meaning; compound tenses use haber."
-    },
-    italian: {
-      label: "Riflessivi Reciproci con Essere",
-      example: "<em>Ci siamo visti</em> ieri. / <em>Si amano</em> molto.",
-      note: "Italian uses ci (1st pl.) and si (3rd pl.) for reciprocal meaning — same as Spanish nos/se. But compound tenses use <strong>essere</strong>, and the participle agrees."
-    },
-    trap: "Using avere in compound reciprocals: *'ci abbiamo visti' is wrong — must be 'ci siamo visti'. Participle: visti (m./mixed), viste (f.).",
+    stageId: 3,
+    english: "We saw each other / They love each other (reciprocal meaning)",
+    italian: "Ci siamo visti ieri. / Si amano molto.",
+    example: "Ci siamo visti ieri al mercato. Non ci sentiamo da mesi.",
+    exampleEN: "We saw each other yesterday at the market. We haven't been in touch for months.",
+    trap: "Using avere in compound reciprocals: 'ci abbiamo visti' is wrong — must be 'ci siamo visti'. Participle: visti (m./mixed), viste (f.).",
+    spanishShortcut: "Spanish: 'nos hemos visto' (haber). Italian: 'ci siamo visti' (essere). Same reciprocal meaning — different auxiliary. Participle must also agree: visti/viste.",
     tip: "Reciprocal compound tense: ci siamo / si sono + participle (agreed). 'Ci siamo visti' = 'nos hemos visto' — but essere, not haber."
   },
 
@@ -551,17 +438,13 @@ const grammarCards = [
     title: "A vs In: Cities, Countries, Regions",
     category: "preposition",
     difficulty: "B1",
-    spanish: {
-      label: "A for All Destinations",
-      example: "Voy <em>a</em> Roma. Voy <em>a</em> Italia. Voy <em>a</em> Toscana.",
-      note: "Spanish uses 'a' as the destination preposition for all geographic places."
-    },
-    italian: {
-      label: "A (cities) vs In (countries, regions)",
-      example: "Vado <em>a</em> Roma. Vado <em>in</em> Italia. Vado <em>in</em> Toscana.",
-      note: "<strong>A</strong> + città (any city). <strong>In</strong> + paese/regione/continente/isola. For masculine/plural country names: 'negli Stati Uniti', 'nel Giappone' (formal) though 'in Giappone' is standard."
-    },
-    trap: "Using 'a' for countries: *'Vado a Italia' is wrong — must be 'vado in Italia'.",
+    stageId: 2,
+    english: "I'm going to Rome / to Italy / to Tuscany (all 'to' in English)",
+    italian: "Vado a Roma. / Vado in Italia. / Vado in Toscana.",
+    example: "Vado a Roma. Vado in Italia. Abito in Toscana, vicino a Siena.",
+    exampleEN: "I'm going to Rome. I'm going to Italy. I live in Tuscany, near Siena.",
+    trap: "Using 'a' for countries: 'Vado a Italia' is wrong — must be 'vado in Italia'.",
+    spanishShortcut: "Spanish uses 'a' for all destinations: 'voy a Roma, voy a Italia, voy a Toscana'. Italian uses a + city, in + country/region. The preposition changes at the city limits.",
     tip: "A + city. In + country or region. The preposition changes at the city limits. Vado a Napoli but vado in Campania."
   },
 
@@ -570,17 +453,13 @@ const grammarCards = [
     title: "Da for Ongoing Duration",
     category: "preposition",
     difficulty: "B1",
-    spanish: {
-      label: "Hace… que / Desde hace / Llevar + Gerundio",
-      example: "<em>Hace</em> dos años <em>que</em> vivo aquí. / <em>Llevo</em> dos años viviendo aquí.",
-      note: "Spanish uses a specific construction for ongoing actions that began in the past."
-    },
-    italian: {
-      label: "Present Tense + Da",
-      example: "Vivo qui <em>da</em> due anni. / Studio italiano <em>da</em> tre anni.",
-      note: "<strong>Da</strong> + duration with present tense = action ongoing from past to now. With imperfetto: 'Vivevo lì da due anni quando...' = I'd been living there for two years when..."
-    },
-    trap: "Translating Spanish structure: *'fa due anni che vivo qui' — not standard Italian. Simply: 'vivo qui da due anni'. Also: 'ho vissuto qui da' is wrong — that would be passato prossimo (completed).",
+    stageId: 1,
+    english: "I have been living here for two years (ongoing from past to now)",
+    italian: "Vivo qui da due anni. / Studio italiano da tre anni.",
+    example: "Vivo qui da due anni. Vivevo lì da un anno quando ho trovato lavoro.",
+    exampleEN: "I have been living here for two years. I had been living there for a year when I found work.",
+    trap: "Translating Spanish structure: 'fa due anni che vivo qui' — not standard. Simply: 'vivo qui da due anni'. Also: 'ho vissuto qui da' is wrong — that would be passato prossimo (completed).",
+    spanishShortcut: "Spanish: 'hace dos años que vivo aquí' or 'llevo dos años viviendo aquí'. Italian: just 'vivo qui da due anni'. One preposition, no special construction.",
     tip: "Present + da = ongoing to now. Imperfetto + da = was ongoing when interrupted. Once you drop 'hace...que', this is the most natural Italian structure."
   },
 
@@ -589,17 +468,13 @@ const grammarCards = [
     title: "Da: Going to Someone's Place",
     category: "preposition",
     difficulty: "B1",
-    spanish: {
-      label: "A casa de / En casa de",
-      example: "Voy <em>a casa de</em> Marco. Estoy <em>en casa de</em> Ana.",
-      note: "Spanish uses 'a casa de' or 'en casa de' + person's name — the 'casa' is made explicit."
-    },
-    italian: {
-      label: "Da + Person (no 'casa' needed)",
-      example: "Vado <em>da</em> Marco. Sono <em>dal</em> medico. Passo <em>dalla</em> nonna.",
-      note: "<strong>Da</strong> + person = at their place or office. 'Vado dal medico' = I'm going to the doctor's. No 'casa' needed — da carries the meaning of 'to their place'."
-    },
+    stageId: 2,
+    english: "I'm going to Marco's (place) / I'm at the doctor's",
+    italian: "Vado da Marco. / Sono dal medico. / Passo dalla nonna.",
+    example: "Vado da Marco stasera. Domani sono dal dentista.",
+    exampleEN: "I'm going to Marco's tonight. Tomorrow I'm at the dentist's.",
     trap: "Adding 'casa' unnecessarily: 'vado a casa di Marco' works but sounds more explicit than the natural 'vado da Marco'.",
+    spanishShortcut: "Spanish uses 'voy a casa de Marco' or 'estoy en casa de Ana' — casa must be stated. Italian da + person does it all: 'da Marco' = 'a casa de Marco'. Elegant shorthand.",
     tip: "Da + person = to/at their place. Vado dal medico, vado dalla nonna, vado da Giulia. Clean and idiomatic — no 'casa' required."
   },
 
@@ -608,17 +483,13 @@ const grammarCards = [
     title: "In vs A: Seasons and Months",
     category: "preposition",
     difficulty: "B1",
-    spanish: {
-      label: "En for Both Seasons and Months",
-      example: "<em>En</em> verano hace calor. <em>En</em> enero nieva.",
-      note: "Spanish uses 'en' uniformly for both seasons and months."
-    },
-    italian: {
-      label: "In (seasons) vs A (months)",
-      example: "<em>In</em> estate fa caldo. <em>In</em> inverno nevica. <em>A</em> gennaio nevica.",
-      note: "<strong>In</strong> + stagione (estate, autunno, inverno, primavera). <strong>A</strong> + mese (a gennaio, a marzo…). 'D'estate' is also used as an alternative to 'in estate'."
-    },
-    trap: "Using 'in' for months: *'In gennaio nevica' — Italian typically uses 'a gennaio' for months, not 'in'.",
+    stageId: 2,
+    english: "In summer / in January (English 'in' for both)",
+    italian: "In estate. / In inverno. / A gennaio. / A marzo.",
+    example: "In estate fa caldo. In inverno nevica. A gennaio fa molto freddo.",
+    exampleEN: "In summer it's hot. In winter it snows. In January it's very cold.",
+    trap: "Using 'in' for months: 'In gennaio nevica' — Italian typically uses 'a gennaio' for months, not 'in'.",
+    spanishShortcut: "Spanish 'en' covers both: 'en verano', 'en enero'. Italian splits: in + season (in estate, in inverno), a + month (a gennaio, a marzo). D'estate is an alternative for in estate.",
     tip: "In estate/autunno/inverno/primavera. A gennaio, a febbraio, a marzo… Two different prepositions — one for seasons, one for months."
   },
 
@@ -627,17 +498,13 @@ const grammarCards = [
     title: "Per: One Word for Por and Para",
     category: "preposition",
     difficulty: "B2",
-    spanish: {
-      label: "Por vs Para (distinct)",
-      example: "Me fui <em>por</em> tres días. Compré flores <em>para</em> ti. Llamo <em>para</em> hablar.",
-      note: "Spanish distinguishes por (duration/cause/exchange) from para (purpose/destination/recipient)."
-    },
-    italian: {
-      label: "Per (covers both)",
-      example: "Parto <em>per</em> tre giorni. Ho comprato fiori <em>per</em> te. Chiamo <em>per</em> parlare.",
-      note: "Italian <strong>per</strong> collapses both por and para into one preposition. Context carries the meaning difference — purpose, duration into future, recipient, cause."
-    },
+    stageId: 2,
+    english: "I left for three days / I bought flowers for you / I called to talk (por vs para in Spanish)",
+    italian: "Parto per tre giorni. / Ho comprato fiori per te. / Chiamo per parlare.",
+    example: "Parto per tre giorni. Ho comprato questi fiori per te. Chiamo per parlare.",
+    exampleEN: "I'm leaving for three days. I bought these flowers for you. I'm calling to talk.",
     trap: "Looking for two Italian words to mirror Spanish por/para — Italian uses per for both. 'Per te' = both 'para ti' and 'por ti' depending on context.",
+    spanishShortcut: "Spanish distinguishes por (duration/cause/exchange) from para (purpose/destination/recipient). Italian collapses both into per. Context carries the meaning — no choice required.",
     tip: "Italian per = Spanish por + para in one. No need to choose. Context always makes the meaning clear."
   },
 
@@ -648,17 +515,13 @@ const grammarCards = [
     title: "Geminate Consonants: Minimal Pairs",
     category: "geminate",
     difficulty: "B1",
-    spanish: {
-      label: "No Phonemic Gemination",
-      example: "pala (shovel), abuelo (grandfather), camino (path)",
-      note: "Spanish double consonants (ll, rr) are not true geminates — they represent single sounds. No doubling changes word meaning."
-    },
-    italian: {
-      label: "Geminates Change Meaning",
-      example: "pala (shovel) vs <strong>palla</strong> (ball) · nono (ninth) vs <strong>nonno</strong> (grandfather) · camino (chimney) vs <strong>cammino</strong> (path / I walk) · capello (hair) vs <strong>cappello</strong> (hat)",
-      note: "In Italian, a doubled consonant is held longer — and it changes the word. This is phonemic: pala ≠ palla in meaning and pronunciation."
-    },
+    stageId: 4,
+    english: "pala vs palla / nono vs nonno (no distinction like this in English or Spanish)",
+    italian: "pala (shovel) vs palla (ball) · nono (ninth) vs nonno (grandfather) · camino vs cammino · capello vs cappello",
+    example: "Ho perso il mio cappello preferito, non un capello.",
+    exampleEN: "I lost my favorite hat, not a strand of hair.",
     trap: "Pronouncing geminates as single consonants — you may say 'pala' (shovel) when you mean 'palla' (ball), or 'nono' (ninth) instead of 'nonno' (grandfather).",
+    spanishShortcut: "Spanish double consonants (ll, rr) are not true geminates — they represent single sounds. Italian doubled consonants are held longer and change word meaning entirely.",
     tip: "Feel the brief hold before the doubled consonant: PA-la vs PAL-la. Italian ears hear the difference immediately. Practice: nonno / nono / palla / pala out loud."
   },
 
@@ -667,17 +530,13 @@ const grammarCards = [
     title: "Gemination in Verb Paradigms",
     category: "geminate",
     difficulty: "B2",
-    spanish: {
-      label: "No Paradigm Gemination",
-      example: "saber → sabes, sabe, sabemos. avere → no equivalent irregular forms.",
-      note: "Spanish verbs don't introduce double consonants within conjugation paradigms."
-    },
-    italian: {
-      label: "Unexpected Geminates in Irregular Forms",
-      example: "sapere → so, sai, sa, <strong>sappiamo</strong>, <strong>sappiate</strong>, sanno · avere → ho, hai, ha, <strong>abbiamo</strong>, avete, hanno · dare → do, dai, dà, <strong>diamo</strong>",
-      note: "Several key Italian verbs have geminate consonants in specific forms — especially 1st/2nd plural: <strong>abbiamo</strong>, <strong>abbiate</strong>, <strong>sappiamo</strong>, <strong>stiamo</strong>."
-    },
+    stageId: 4,
+    english: "we have / we know / we are (unexpected doubled consonants in Italian verb forms)",
+    italian: "abbiamo (avere) · sappiamo (sapere) · stiamo (stare) · diamo (dare)",
+    example: "Sappiamo che abbiamo ancora molto da imparare.",
+    exampleEN: "We know that we still have a lot to learn.",
     trap: "Spelling 'abiamo', 'sapiamo', 'stiano' — the geminates are required and affect both spelling and pronunciation.",
+    spanishShortcut: "Spanish verb paradigms don't introduce unexpected double consonants: 'sabemos', 'tenemos'. Italian irregular forms must be memorized: abbiamo, sappiamo, stiamo.",
     tip: "Learn these whole: abbiamo (avere), sappiamo (sapere), stiamo (stare), diamo (dare). The doubled consonants aren't predictable from the root — memorize the forms."
   },
 
@@ -686,17 +545,13 @@ const grammarCards = [
     title: "Raddoppiamento Fonosintattico",
     category: "geminate",
     difficulty: "B2",
-    spanish: {
-      label: "No Equivalent",
-      example: "No phonological doubling across word boundaries in Spanish.",
-      note: "Spanish has no system of cross-word-boundary consonant gemination."
-    },
-    italian: {
-      label: "Phonetic Doubling After Stressed Monosyllables",
-      example: "<em>a</em> + casa → /a <strong>cc</strong>asa/ · <em>è</em> + qui → /è <strong>qq</strong>uì/ · <em>va</em> + bene → /va <strong>bb</strong>ene/ · <em>tre</em> + giorni",
-      note: "After monosyllables with a final stressed vowel (a, da, su, è, va, tre, re…), the following word's initial consonant doubles phonetically. Not always in spelling but consistently in pronunciation."
-    },
+    stageId: 4,
+    english: "a casa / è qui / va bene (consonant after monosyllable sounds doubled in speech)",
+    italian: "a + casa → /a ccasa/ · è + qui → /è qqui/ · va + bene → /va bbene/",
+    example: "Va bene così. È qui da stamattina. Tre giorni fa.",
+    exampleEN: "That's fine. He's been here since this morning. Three days ago.",
     trap: "This is a pronunciation feature, not usually a spelling rule — but it explains why native Italian speech sounds more consonant-heavy than reading the text aloud would suggest.",
+    spanishShortcut: "Spanish has no equivalent system of cross-word-boundary consonant doubling. This purely phonological feature of Italian has no Spanish parallel — it must be heard, not read.",
     tip: "Listen for doubling after short words: 'a Roma' sounds like /a rr-oma/. This rhythmic gemination is part of what gives Italian its characteristic musicality — Spanish doesn't have it."
   },
 
@@ -707,17 +562,13 @@ const grammarCards = [
     title: "Modal Auxiliaries: Compound Tense Split",
     category: "modal",
     difficulty: "B1",
-    spanish: {
-      label: "Deber / Poder / Querer + Infinitivo",
-      example: "<em>He tenido que</em> ir. <em>He podido</em> hacerlo.",
-      note: "Spanish compound modal constructions always use haber — no auxiliary split."
-    },
-    italian: {
-      label: "Dovere / Potere / Volere: Auxiliary Follows Main Verb",
-      example: "<em>Sono dovuto</em> andare. (andare → essere) / <em>Ho dovuto</em> mangiare. (mangiare → avere)",
-      note: "In Italian, the compound-tense auxiliary for a modal <strong>mirrors the main verb's auxiliary</strong>: essere-verbs use essere, avere-verbs use avere. In speech, avere with all modals is also common but less precise."
-    },
-    trap: "Assuming modals always take avere: *'ho dovuto andare' is heard in speech but *'ho potuto venire' is more clearly an error — essere is expected with essere-verbs.",
+    stageId: 2,
+    english: "I had to go / I was able to do it (modals in compound tenses)",
+    italian: "Sono dovuto andare. (andare → essere) / Ho dovuto mangiare. (mangiare → avere)",
+    example: "Sono dovuto andare dal medico ieri. Ho dovuto mangiare in fretta.",
+    exampleEN: "I had to go to the doctor yesterday. I had to eat quickly.",
+    trap: "Assuming modals always take avere: 'ho dovuto andare' is heard in speech but 'ho potuto venire' is more clearly an error — essere is expected with essere-verbs.",
+    spanishShortcut: "Spanish always uses haber: 'he tenido que ir', 'he podido hacerlo'. Italian modal auxiliary mirrors the main verb's auxiliary: essere-verb → sono dovuto; avere-verb → ho dovuto.",
     tip: "Modal auxiliary = the main verb's auxiliary. Dovere + andare (essere-verb) → sono dovuto andare. Dovere + mangiare (avere-verb) → ho dovuto mangiare."
   },
 
@@ -726,17 +577,13 @@ const grammarCards = [
     title: "Modals in Compound Tenses: Both Forms",
     category: "modal",
     difficulty: "B2",
-    spanish: {
-      label: "Siempre Haber",
-      example: "<em>He querido</em> venir. <em>Ha podido</em> hacerlo.",
-      note: "Spanish compound modals always use haber regardless of the main verb."
-    },
-    italian: {
-      label: "Two Grammatical Options",
-      example: "<em>Sono voluto</em> venire. (essere, formal) / <em>Ho voluto</em> venire. (avere, spoken)",
-      note: "Both forms are used by native speakers. Formal/written Italian prefers the main verb's auxiliary. Spoken Italian frequently uses avere for all modals — a natural simplification."
-    },
+    stageId: 4,
+    english: "I wanted to come (formal: auxiliary matches main verb; spoken: avere for all)",
+    italian: "Sono voluto venire. (formal) / Ho voluto venire. (spoken — both are used)",
+    example: "Sono voluto venire alla cerimonia. / Ho voluto venire alla cerimonia.",
+    exampleEN: "I wanted to come to the ceremony. (both forms used by native speakers)",
     trap: "Treating one form as ungrammatical — both are Italian. The distinction is register, not correctness.",
+    spanishShortcut: "Spanish always uses haber for compound modals — no split. Italian has two grammatical options: essere (formal/precise) or avere (spoken simplification). Both are correct.",
     tip: "Write: 'sono dovuto andare'. Speak: 'ho dovuto andare' is fine. Understanding both prepares you to read and be understood in any context."
   },
 
@@ -745,17 +592,13 @@ const grammarCards = [
     title: "Riuscire a vs Potere for Ability",
     category: "modal",
     difficulty: "B1",
-    spanish: {
-      label: "Poder for All Ability",
-      example: "<em>Puedo</em> nadar. <em>No pude</em> abrir el frasco.",
-      note: "Spanish poder handles both general ability and managing to accomplish a specific task."
-    },
-    italian: {
-      label: "Sapere (skill) vs Riuscire a (manage to) vs Potere (allowed/possible)",
-      example: "<em>So</em> nuotare. (know how) / Non <em>riesco ad</em> aprire il barattolo. (can't manage to) / Non <em>posso</em> venire domani. (can't, not allowed/possible)",
-      note: "<strong>Sapere</strong> = to know how (skill). <strong>Riuscire a</strong> = to manage to, succeed in (implies effort). <strong>Potere</strong> = to be permitted or physically possible."
-    },
+    stageId: 2,
+    english: "I can swim / I can't open the jar (ability vs managing-to accomplish)",
+    italian: "So nuotare. (know how) / Non riesco ad aprire il barattolo. (can't manage to) / Non posso venire. (not allowed/possible)",
+    example: "So nuotare ma non riesco a fare il tuffo. Non posso venire domani.",
+    exampleEN: "I know how to swim but I can't manage the dive. I can't come tomorrow.",
     trap: "Using 'potere' where 'riuscire a' is needed: 'Non posso aprire il barattolo' implies impossibility; 'Non riesco ad aprire il barattolo' = I'm trying but can't manage.",
+    spanishShortcut: "Spanish poder covers all ability: 'puedo nadar', 'no pude abrirlo'. Italian splits: sapere (learned skill), riuscire a (managing to accomplish), potere (permission/physical possibility).",
     tip: "Riuscire a = to successfully accomplish (Spanish conseguir + infinitive). Potere = can/may (same as Spanish poder). The two aren't interchangeable when effort is implied."
   },
 
@@ -764,18 +607,86 @@ const grammarCards = [
     title: "Sapere vs Conoscere",
     category: "modal",
     difficulty: "B1",
-    spanish: {
-      label: "Saber vs Conocer",
-      example: "<em>Sé</em> nadar. <em>Sé</em> que viene. <em>Conozco</em> a María. <em>Conozco</em> Roma.",
-      note: "Spanish saber = facts/how-to/clauses; conocer = people/places/familiarity."
-    },
-    italian: {
-      label: "Sapere vs Conoscere (same split, irregular conjugation)",
-      example: "<em>So</em> nuotare. <em>So</em> che viene. <em>Conosco</em> Maria. <em>Conosco</em> Roma.",
-      note: "The sapere/conoscere split mirrors Spanish saber/conocer almost exactly. Key difference: <strong>sapere</strong> is highly irregular — so, sai, sa, sappiamo, sapete, sanno."
-    },
-    trap: "Conjugating sapere as a regular verb: *'sapo' doesn't exist — the 1st person singular is 'so'. Also: *'conosco che viene' is wrong; conoscere doesn't take a clause.",
+    stageId: 2,
+    english: "to know how / to know a fact vs to know a person / to know a place",
+    italian: "So nuotare. So che viene. / Conosco Maria. Conosco Roma.",
+    example: "So nuotare e so che sei stanco. Conosco Maria e conosco bene Roma.",
+    exampleEN: "I know how to swim and I know you're tired. I know Maria and I know Rome well.",
+    trap: "Conjugating sapere as a regular verb: 'sapo' doesn't exist — the 1st person singular is 'so'. Also: 'conosco che viene' is wrong; conoscere doesn't take a clause.",
+    spanishShortcut: "The sapere/conoscere split mirrors Spanish saber/conocer almost exactly. Only difference: sapere is highly irregular — so, sai, sa, sappiamo, sapete, sanno.",
     tip: "Sapere: so, sai, sa, sappiamo, sapete, sanno. The split matches Spanish — sapere for facts/skills, conoscere for people/places. The only new challenge is the irregular conjugation."
+  },
+
+  // ── NEW CARDS (IDs 41-45) ────────────────────────────────────────────────
+
+  {
+    id: 41,
+    title: "Gendered Articles: il/la/lo/l'/i/le/gli",
+    category: "pronoun",
+    difficulty: "B1",
+    stageId: 1,
+    english: "the (masc.) / the (fem.) / lo/gli for s+consonant and z",
+    italian: "il libro / la casa / lo studente / l'amico / i libri / le case / gli studenti",
+    example: "Lo studente compra il libro e la matita.",
+    exampleEN: "The student buys the book and the pencil.",
+    trap: "Using 'il' before s+consonant or z: 'il studente' is wrong — must be 'lo studente', 'gli studenti'.",
+    spanishShortcut: "Spanish el/la/los/las → Italian adds lo/gli for s+consonant and z. L'/gli before vowels. The extra articles are the main addition beyond the Spanish system."
+  },
+
+  {
+    id: 42,
+    title: "Si Passivante: Passive Meaning Without Passive Voice",
+    category: "reflexive",
+    difficulty: "B2",
+    stageId: 3,
+    english: "Italian is spoken here / In summer many houses are sold (impersonal passive)",
+    italian: "Qui si parla italiano. / D'estate si vendono molte case.",
+    example: "In questa trattoria si mangia benissimo.",
+    exampleEN: "In this trattoria, you eat very well. (= the food is excellent here)",
+    trap: "Forgetting number agreement: 'si vende tre case' is wrong — 'si vendono tre case' (verb agrees with the noun that follows).",
+    spanishShortcut: "Identical to Spanish se pasivo: 'aquí se habla español' = 'qui si parla italiano'. Same pattern, same agreement rule. This one transfers perfectly from Spanish."
+  },
+
+  {
+    id: 43,
+    title: "Piacere: Backwards Liking",
+    category: "pronoun",
+    difficulty: "B1",
+    stageId: 1,
+    english: "I like the book (subject = I)",
+    italian: "Il libro mi piace. (subject = the book) / Mi piacciono i dolci.",
+    example: "Mi piace il caffè. Mi piacciono molto i dolci italiani.",
+    exampleEN: "I like coffee. I really like Italian sweets.",
+    trap: "Saying 'Io piaccio il caffè' — piace agrees with what is liked (il caffè), not the liker (me). And piacciono is required for plural subjects.",
+    spanishShortcut: "Identical to Spanish gustar: me gusta = mi piace (singular subject), me gustan = mi piacciono (plural subject). The structure is exactly the same."
+  },
+
+  {
+    id: 44,
+    title: "False Verb Friends",
+    category: "tense",
+    difficulty: "B1",
+    stageId: 2,
+    english: "to support / to pretend / to attend / to assist (English meanings)",
+    italian: "supportare (bear/endure) / pretendere (demand) / attendere (wait) / assistere (witness)",
+    example: "Non pretendo scuse — voglio solo che tu ascolti.",
+    exampleEN: "I'm not demanding apologies — I just want you to listen.",
+    trap: "'Pretendo scuse' does NOT mean 'I pretend to apologize' — it means 'I demand apologies'.",
+    spanishShortcut: "Italian pretendere = Spanish pretender (to claim/demand). Attendere = aguardar (to wait), not 'attend'. Assistere = presenciar (to witness), not 'assist'."
+  },
+
+  {
+    id: 45,
+    title: "Double Negatives Are Required",
+    category: "pronoun",
+    difficulty: "B1",
+    stageId: 2,
+    english: "I don't want anything (one negative in English)",
+    italian: "Non voglio niente. / Non ho parlato con nessuno. / Non viene mai.",
+    example: "Non ho mangiato niente tutto il giorno.",
+    exampleEN: "I haven't eaten anything all day.",
+    trap: "Writing 'Voglio niente' without non — Italian requires non before the verb even when niente/nessuno/mai/nemmeno follow.",
+    spanishShortcut: "Same as Spanish: 'no quiero nada' → 'non voglio niente'. Double negative is mandatory in both languages. This is one place where Spanish and Italian share the exact same rule."
   }
 
 ];

@@ -1,5 +1,4 @@
-// grammar.js — Grammar tab UI logic for Ponte
-// Sub-tabs: Verb Deltas | Pattern Drills | From Your Reading
+// grammar.js — Grammar tab UI — 4-stage learning path
 
 (function () {
   'use strict';
@@ -14,10 +13,6 @@
       .replace(/"/g, '&quot;');
   }
 
-  function cap(str) {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
-  }
-
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -27,169 +22,222 @@
     return a;
   }
 
+  // ── Stage definitions ─────────────────────────────────────────────────────
+  const STAGES = [
+    { id: 1, title: 'Foundation',  subtitle: 'Things that work differently from English', color: '#00C2B8' },
+    { id: 2, title: 'Traps',       subtitle: 'Things that look familiar but aren\'t',       color: '#F5C842' },
+    { id: 3, title: 'Nuance',      subtitle: 'Things English doesn\'t have',                color: '#F5894A' },
+    { id: 4, title: 'Fluency',     subtitle: 'What separates intermediate from advanced',   color: '#A855F7' },
+  ];
+
+  const LS_VIEWED = 'ponte_grammar_viewed';
+
+  function loadViewed() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_VIEWED) || '[]')); }
+    catch { return new Set(); }
+  }
+  function saveViewed(set) {
+    localStorage.setItem(LS_VIEWED, JSON.stringify([...set]));
+  }
+  let viewedCards = loadViewed();
+
+  // ── Category label map ────────────────────────────────────────────────────
+  const CAT_LABELS = {
+    tense: 'TENSE', pronoun: 'PRONOUN', subjunctive: 'MOOD',
+    reflexive: 'REFLEXIVE', preposition: 'PREPOSITION', geminate: 'PHONOLOGY', modal: 'MODAL',
+  };
+  function catLabel(cat) { return CAT_LABELS[cat] || cat.toUpperCase(); }
+
   // ── State ─────────────────────────────────────────────────────────────────
-  let activePanel = 'delta';  // 'delta' | 'drills' | 'reading'
-
-  // Delta card state
-  let deltaCategory = 'all';
-  let deltaDifficulty = 'all';
-
-  // Drill state
-  let drillQueue = [];
-  let drillIndex = 0;
-  let drillScore = 0;
-  let drillAnswered = false;
-  let drillCategoryFilter = 'all';
+  let activePanel    = 'stages';
+  let drillQueue     = [];
+  let drillIndex     = 0;
+  let drillScore     = 0;
+  let drillAnswered  = false;
+  let drillCatFilter = 'all';
+  let openStageId    = null;
+  let viewObserver   = null;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
-  const tabGrammar    = document.getElementById('tab-grammar');
-  const panelDelta    = document.getElementById('grammar-panel-delta');
-  const panelDrills   = document.getElementById('grammar-panel-drills');
-  const panelReading  = document.getElementById('grammar-panel-reading');
+  const tabGrammar   = document.getElementById('tab-grammar');
+  if (!tabGrammar) return;
 
-  const subTabBtns = tabGrammar.querySelectorAll('.grammar-subtab');
+  const panelStages  = document.getElementById('grammar-panel-stages');
+  const panelDrills  = document.getElementById('grammar-panel-drills');
+  const panelReading = document.getElementById('grammar-panel-reading');
 
-  // Delta elements
-  const catBtns       = tabGrammar.querySelectorAll('.gr-cat-btn');
-  const diffBtns      = tabGrammar.querySelectorAll('.gr-diff-btn');
-  const deltaCount    = document.getElementById('gr-delta-count');
-  const deltaGrid     = document.getElementById('gr-delta-grid');
+  const subTabBtns   = tabGrammar.querySelectorAll('.grammar-subtab');
 
-  // Drill elements
-  const drillCatBtns  = tabGrammar.querySelectorAll('.gr-drill-cat-btn');
-  const drillCount    = document.getElementById('gr-drill-count');
-  const drillProgress = document.getElementById('gr-drill-progress');
+  const stageGrid      = document.getElementById('gr-stage-grid');
+  const stageTilesWrap = document.getElementById('gr-stage-tiles-wrapper');
+  const stageDetail    = document.getElementById('gr-stage-detail');
+  const stageTitleEl   = document.getElementById('gr-stage-title');
+  const stageCardsEl   = document.getElementById('gr-stage-cards');
+  const stageBackBtn   = document.getElementById('gr-stage-back');
+
+  // Drill DOM refs
+  const drillCatBtns     = tabGrammar.querySelectorAll('.gr-drill-cat-btn');
+  const drillCount       = document.getElementById('gr-drill-count');
+  const drillProgress    = document.getElementById('gr-drill-progress');
   const drillProgressBar = document.getElementById('gr-drill-progress-bar');
-  const drillCard     = document.getElementById('gr-drill-card');
-  const drillSentence = document.getElementById('gr-drill-sentence');
-  const drillOptions  = document.getElementById('gr-drill-options');
-  const drillFeedback = document.getElementById('gr-drill-feedback');
-  const drillNextBtn  = document.getElementById('gr-drill-next');
-  const drillDone     = document.getElementById('gr-drill-done');
-  const drillScoreEl  = document.getElementById('gr-drill-score');
-  const drillRestartBtn = document.getElementById('gr-drill-restart');
+  const drillCard        = document.getElementById('gr-drill-card');
+  const drillSentence    = document.getElementById('gr-drill-sentence');
+  const drillOptions     = document.getElementById('gr-drill-options');
+  const drillFeedback    = document.getElementById('gr-drill-feedback');
+  const drillNextBtn     = document.getElementById('gr-drill-next');
+  const drillDone        = document.getElementById('gr-drill-done');
+  const drillScoreEl     = document.getElementById('gr-drill-score');
+  const drillRestartBtn  = document.getElementById('gr-drill-restart');
 
-  // ── Sub-tab switching ─────────────────────────────────────────────────────
-  subTabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.panel;
-      switchPanel(target);
-    });
-  });
-
+  // ── Panel switching ───────────────────────────────────────────────────────
   function switchPanel(id) {
     activePanel = id;
     subTabBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === id));
-    panelDelta.hidden   = (id !== 'delta');
+    panelStages.hidden  = (id !== 'stages');
     panelDrills.hidden  = (id !== 'drills');
     panelReading.hidden = (id !== 'reading');
   }
 
-  // ── Delta Cards ───────────────────────────────────────────────────────────
-  catBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      deltaCategory = btn.dataset.cat;
-      catBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === deltaCategory));
-      renderDeltaCards();
-    });
-  });
+  subTabBtns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
 
-  diffBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      deltaDifficulty = btn.dataset.diff;
-      diffBtns.forEach(b => b.classList.toggle('active', b.dataset.diff === deltaDifficulty));
-      renderDeltaCards();
-    });
-  });
+  // ── Stage tiles ───────────────────────────────────────────────────────────
+  function getStageCards(stageId) {
+    return grammarCards.filter(c => c.stageId === stageId);
+  }
 
-  function getFilteredCards() {
-    return grammarCards.filter(c => {
-      if (deltaCategory !== 'all' && c.category !== deltaCategory) return false;
-      if (deltaDifficulty !== 'all' && c.difficulty !== deltaDifficulty) return false;
-      return true;
+  function renderStageTiles() {
+    stageGrid.innerHTML = STAGES.map(stage => {
+      const cards = getStageCards(stage.id);
+      const done  = cards.filter(c => viewedCards.has(c.id)).length;
+      const total = cards.length;
+      const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+      return `
+        <div class="gr-stage-tile" data-stage="${stage.id}" style="--stage-color:${stage.color}">
+          <div class="gr-stage-num">Stage ${stage.id}</div>
+          <div class="gr-stage-title-text">${stage.title}</div>
+          <div class="gr-stage-subtitle">${stage.subtitle}</div>
+          <div class="gr-stage-meta">
+            <span class="gr-stage-concept-count">${total} concepts</span>
+            <span class="gr-stage-done-count">${done} / ${total} viewed</span>
+          </div>
+          <div class="gr-stage-bar-track">
+            <div class="gr-stage-bar-fill" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    stageGrid.querySelectorAll('.gr-stage-tile').forEach(tile => {
+      tile.addEventListener('click', () => openStage(parseInt(tile.dataset.stage, 10)));
     });
   }
 
-  function categoryLabel(cat) {
-    const map = {
-      tense: 'Tense',
-      pronoun: 'Pronoun',
-      subjunctive: 'Subjunctive',
-      reflexive: 'Reflexive',
-      preposition: 'Preposition',
-      geminate: 'Geminate',
-      modal: 'Modal'
-    };
-    return map[cat] || cap(cat);
-  }
+  function openStage(stageId) {
+    openStageId = stageId;
+    const stage = STAGES.find(s => s.id === stageId);
+    const cards = getStageCards(stageId);
 
-  function renderDeltaCards() {
-    const cards = getFilteredCards();
-    deltaCount.textContent = cards.length + ' card' + (cards.length !== 1 ? 's' : '');
+    stageTitleEl.textContent = `Stage ${stage.id}: ${stage.title}`;
+    stageTitleEl.style.color = stage.color;
 
-    if (!cards.length) {
-      deltaGrid.innerHTML = '<p class="gr-empty">No cards match these filters.</p>';
-      return;
-    }
+    stageCardsEl.innerHTML = cards.map(card => renderCard(card, stage.color)).join('');
 
-    deltaGrid.innerHTML = cards.map(c => `
-      <div class="gr-card" data-id="${c.id}">
-        <div class="gr-card-header">
-          <div class="gr-card-meta">
-            <span class="gr-cat-badge gr-cat-${esc(c.category)}">${categoryLabel(c.category)}</span>
-            <span class="gr-diff-badge">${esc(c.difficulty)}</span>
-          </div>
-          <div class="gr-card-title">${esc(c.title)}</div>
-          <span class="gr-chevron" aria-hidden="true">›</span>
-        </div>
-        <div class="gr-card-body">
-          <div class="gr-card-body-inner">
-            <div class="gr-compare">
-              <div class="gr-side gr-side-es">
-                <div class="gr-side-lang">ES</div>
-                <div class="gr-side-label">${esc(c.spanish.label)}</div>
-                <div class="gr-side-example">${c.spanish.example}</div>
-                <div class="gr-side-note">${c.spanish.note}</div>
-              </div>
-              <div class="gr-side gr-side-it">
-                <div class="gr-side-lang">IT</div>
-                <div class="gr-side-label">${esc(c.italian.label)}</div>
-                <div class="gr-side-example">${c.italian.example}</div>
-                <div class="gr-side-note">${c.italian.note}</div>
-              </div>
-            </div>
-            ${c.trap ? `<div class="gr-trap"><span class="gr-trap-label">Trap</span> ${esc(c.trap)}</div>` : ''}
-            ${c.tip  ? `<div class="gr-tip"><span class="gr-tip-label">Tip</span> ${esc(c.tip)}</div>` : ''}
-          </div>
-        </div>
-      </div>
-    `).join('');
+    stageTilesWrap.hidden = true;
+    stageDetail.hidden    = false;
 
-    // Expand/collapse
-    deltaGrid.querySelectorAll('.gr-card').forEach(card => {
-      card.querySelector('.gr-card-header').addEventListener('click', () => {
-        const wasOpen = card.classList.contains('open');
-        // Close all
-        deltaGrid.querySelectorAll('.gr-card.open').forEach(c => c.classList.remove('open'));
-        if (!wasOpen) card.classList.add('open');
+    setupViewObserver();
+
+    // Attach "Practice this →" button listeners
+    stageCardsEl.querySelectorAll('.gr-practice-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.cat;
+        exitStageDetail();
+        switchPanel('drills');
+        // Set drill filter to this card's category
+        drillCatFilter = cat;
+        drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+        startDrills();
       });
     });
   }
 
-  // ── Pattern Drills ────────────────────────────────────────────────────────
+  function exitStageDetail() {
+    if (viewObserver) { viewObserver.disconnect(); viewObserver = null; }
+    stageDetail.hidden    = true;
+    stageTilesWrap.hidden = false;
+    renderStageTiles();
+    openStageId = null;
+  }
+
+  stageBackBtn && stageBackBtn.addEventListener('click', exitStageDetail);
+
+  // ── Card renderer ─────────────────────────────────────────────────────────
+  function renderCard(card, stageColor) {
+    const hasDrill = grammarDrills.some(d => d.grammarCardId === card.id);
+    return `
+      <div class="gr-new-card" data-id="${card.id}">
+        <div class="gr-new-card-badges">
+          <span class="gr-cat-badge gr-cat-${esc(card.category)}">${catLabel(card.category)}</span>
+          <span class="gr-stage-badge" style="color:${stageColor};border-color:${stageColor}">Stage ${card.stageId}</span>
+        </div>
+        <div class="gr-new-card-title">${esc(card.title)}</div>
+        <div class="gr-new-rows">
+          <div class="gr-new-row gr-row-en">
+            <span class="gr-row-lang">EN</span>
+            <span class="gr-row-text">${esc(card.english)}</span>
+          </div>
+          <div class="gr-new-row gr-row-it">
+            <span class="gr-row-lang">IT</span>
+            <span class="gr-row-text gr-it-text">${esc(card.italian)}</span>
+          </div>
+        </div>
+        <div class="gr-new-example">
+          <div class="gr-new-ex-it">${esc(card.example)}</div>
+          <div class="gr-new-ex-en">${esc(card.exampleEN)}</div>
+        </div>
+        <div class="gr-new-trap">
+          <span class="gr-trap-icon">⚠️</span>
+          <span>${esc(card.trap)}</span>
+        </div>
+        ${card.spanishShortcut ? `
+        <div class="gr-new-spanish">
+          <span class="gr-es-flag">🇪🇸</span>
+          <span>${esc(card.spanishShortcut)}</span>
+        </div>` : ''}
+        ${hasDrill ? `
+        <button class="gr-practice-btn" data-cat="${esc(card.category)}">Practice this →</button>
+        ` : ''}
+      </div>`;
+  }
+
+  // ── Intersection observer: mark cards viewed when scrolled past ───────────
+  function setupViewObserver() {
+    if (viewObserver) viewObserver.disconnect();
+    viewObserver = new IntersectionObserver((entries) => {
+      let changed = false;
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = parseInt(entry.target.dataset.id, 10);
+          if (!viewedCards.has(id)) { viewedCards.add(id); changed = true; }
+        }
+      });
+      if (changed) saveViewed(viewedCards);
+    }, { threshold: 0.3 });
+    stageCardsEl.querySelectorAll('.gr-new-card').forEach(el => viewObserver.observe(el));
+  }
+
+  // ── Pattern Drills (unchanged logic) ─────────────────────────────────────
   drillCatBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      drillCategoryFilter = btn.dataset.cat;
-      drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === drillCategoryFilter));
+      drillCatFilter = btn.dataset.cat;
+      drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === drillCatFilter));
       startDrills();
     });
   });
 
   function getFilteredDrills() {
-    if (drillCategoryFilter === 'all') return grammarDrills.slice();
-    // Find card ids matching category
+    if (drillCatFilter === 'all') return grammarDrills.slice();
     const catCardIds = new Set(
-      grammarCards.filter(c => c.category === drillCategoryFilter).map(c => c.id)
+      grammarCards.filter(c => c.category === drillCatFilter).map(c => c.id)
     );
     return grammarDrills.filter(d => catCardIds.has(d.grammarCardId));
   }
@@ -197,47 +245,34 @@
   function startDrills() {
     const filtered = getFilteredDrills();
     drillCount.textContent = filtered.length + ' drill' + (filtered.length !== 1 ? 's' : '');
-    drillQueue = shuffle(filtered);
-    drillIndex = 0;
-    drillScore = 0;
+    drillQueue  = shuffle(filtered);
+    drillIndex  = 0;
+    drillScore  = 0;
     drillDone.hidden = true;
     drillCard.hidden = false;
     showDrill();
   }
 
   function showDrill() {
-    if (drillIndex >= drillQueue.length) {
-      showDrillComplete();
-      return;
-    }
+    if (drillIndex >= drillQueue.length) { showDrillComplete(); return; }
 
     drillAnswered = false;
     const drill = drillQueue[drillIndex];
     const total = drillQueue.length;
 
-    // Progress
     drillProgress.textContent = `${drillIndex + 1} / ${total}`;
-    const pct = Math.round((drillIndex / total) * 100);
-    drillProgressBar.style.width = pct + '%';
+    drillProgressBar.style.width = Math.round((drillIndex / total) * 100) + '%';
 
-    // Sentence — replace ___ with a styled blank
-    const sentenceHTML = drill.sentence.replace(
-      /___/g,
-      '<span class="gr-blank">___</span>'
-    );
-    drillSentence.innerHTML = sentenceHTML;
+    drillSentence.innerHTML = drill.sentence.replace(/___/g, '<span class="gr-blank">___</span>');
 
-    // Options — shuffle answer + 3 distractors
     const options = shuffle([drill.answer, ...drill.distractors]);
-    drillOptions.innerHTML = options.map(opt => `
-      <button class="gr-option" data-val="${esc(opt)}">${esc(opt)}</button>
-    `).join('');
+    drillOptions.innerHTML = options.map(opt =>
+      `<button class="gr-option" data-val="${esc(opt)}">${esc(opt)}</button>`
+    ).join('');
 
     drillFeedback.hidden = true;
-    drillFeedback.textContent = '';
-    drillNextBtn.hidden = true;
+    drillNextBtn.hidden  = true;
 
-    // Attach option click handlers
     drillOptions.querySelectorAll('.gr-option').forEach(btn => {
       btn.addEventListener('click', () => handleAnswer(btn, drill));
     });
@@ -246,57 +281,39 @@
   function handleAnswer(btn, drill) {
     if (drillAnswered) return;
     drillAnswered = true;
-
-    const chosen = btn.dataset.val;
-    const correct = chosen === drill.answer;
-
+    const correct = btn.dataset.val === drill.answer;
     if (correct) drillScore++;
-
-    // Mark options
     drillOptions.querySelectorAll('.gr-option').forEach(b => {
       b.disabled = true;
       if (b.dataset.val === drill.answer) b.classList.add('correct');
       else if (b === btn && !correct) b.classList.add('wrong');
     });
-
-    // Show feedback
     drillFeedback.textContent = drill.explanation;
-    drillFeedback.className = 'gr-drill-feedback ' + (correct ? 'correct' : 'wrong');
-    drillFeedback.hidden = false;
-
-    drillNextBtn.hidden = false;
+    drillFeedback.className   = 'gr-drill-feedback ' + (correct ? 'correct' : 'wrong');
+    drillFeedback.hidden      = false;
+    drillNextBtn.hidden       = false;
   }
 
-  drillNextBtn && drillNextBtn.addEventListener('click', () => {
-    drillIndex++;
-    showDrill();
-  });
+  drillNextBtn && drillNextBtn.addEventListener('click', () => { drillIndex++; showDrill(); });
 
   function showDrillComplete() {
     drillCard.hidden = true;
     drillDone.hidden = false;
-    const total = drillQueue.length;
-    drillScoreEl.textContent = `${drillScore} / ${total} correct on first try`;
+    drillScoreEl.textContent = `${drillScore} / ${drillQueue.length} correct on first try`;
     drillProgressBar.style.width = '100%';
-    drillProgress.textContent = `${total} / ${total}`;
+    drillProgress.textContent = `${drillQueue.length} / ${drillQueue.length}`;
   }
 
-  drillRestartBtn && drillRestartBtn.addEventListener('click', () => {
-    startDrills();
-  });
+  drillRestartBtn && drillRestartBtn.addEventListener('click', startDrills);
 
   // ── Init ──────────────────────────────────────────────────────────────────
-  function init() {
-    switchPanel('delta');
-    renderDeltaCards();
-    startDrills();
+  if (typeof grammarCards === 'undefined' || typeof grammarDrills === 'undefined') {
+    console.error('grammar.js: grammarCards or grammarDrills not found');
+    return;
   }
 
-  // Only init if grammarCards/grammarDrills are available
-  if (typeof grammarCards !== 'undefined' && typeof grammarDrills !== 'undefined') {
-    init();
-  } else {
-    console.error('grammar.js: grammarCards or grammarDrills not found — check data/grammar.js load order');
-  }
+  renderStageTiles();
+  switchPanel('stages');
+  startDrills();
 
 })();
