@@ -204,6 +204,13 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `drillReverse` state variable in `flashcards.js`; `updateReverseBtn()` syncs label ("Standard 🔄" / "Reverse 🔄") and `.active` class
 - Toggling mid-drill refreshes the current card immediately; sw.js bumped to `ponte-v8`
 
+## Dictionary tab (issue #30, P1 — not yet built)
+- Word/phrase lookup via existing `/api/translate` endpoint — shows IT word, EN meaning, ES equivalent, category badge, pronunciation, tense/infinitive, usage note; 🔊 button; Save to Flashcards
+- Usage checker: user types an Italian sentence → new `/api/check-usage` endpoint → Claude returns corrected version + per-error explanations tied to Spanish interference patterns
+- Search history: last 20 lookups in `localStorage`, shown as clickable chips below search bar
+- One-tap save: same card structure (`{italian, english, spanish, category, note, ...}`) as reader saves
+- UI: two sections — Lookup at top, Usage Checker below
+
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
 - Fallback: if backend is unreachable, `articles[0]` (hardcoded) is shown
