@@ -916,9 +916,11 @@
       note:          currentTooltipEntry.note     || '',
       savedAt:       new Date().toISOString(),
       sourceArticle: state.article ? state.article.title : '',
+      wordType:      currentTooltipEntry.wordType || 'other',
       timesCorrect:  0,
       timesWrong:    0,
       lastSeen:      null,
+      lastDrilled:   null,
     };
     cards.push(card);
     localStorage.setItem(FC_KEY, JSON.stringify(cards));

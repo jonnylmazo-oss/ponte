@@ -64,16 +64,21 @@
   const fcSpeakBtn      = $('fc-speak-btn');
   const fcFrontSpeakBtn = $('fc-front-speak-btn');
   const fcToolbar       = $('fc-toolbar');
+  const fcSessionStats  = $('fc-session-stats');
+  const fcResetScores   = $('fc-reset-scores-btn');
 
   if (!fcGrid) return; // tab not present in DOM
 
   // ── State ────────────────────────────────────────────────────────────────
-  let activeFilter = 'all';
-  let searchQuery  = '';
-  let drillQueue   = [];
-  let drillTotal   = 0;
-  let drillCorrect = 0;
-  let trickyCards  = [];
+  let activeFilter  = 'all';
+  let searchQuery   = '';
+  let drillQueue    = [];
+  let drillTotal    = 0;
+  let drillCorrect  = 0;
+  let trickyCards   = [];
+  let drillWordType = 'all';
+  let sessionCorrect = 0;
+  let sessionTricky  = 0;
 
   // ── Filter helpers ────────────────────────────────────────────────────────
   function getFiltered() {
@@ -114,6 +119,17 @@
       const color  = CATEGORY_COLORS[card.category] || CATEGORY_COLORS['new'];
       const label  = CATEGORY_LABELS[card.category]  || card.category;
       const source = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
+
+      // Accuracy badge — only if card has been drilled at least once
+      let accuracyBadge = '';
+      const drillAttempts = (card.timesCorrect || 0) + (card.timesWrong || 0);
+      if (drillAttempts > 0) {
+        const pct = Math.round((card.timesCorrect / drillAttempts) * 100);
+        const tier = pct >= 80 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+        const dot  = pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🔴';
+        accuracyBadge = `<span class="fc-accuracy-badge fc-accuracy-${tier}" title="${card.timesCorrect}/${drillAttempts} correct">${dot} ${pct}%</span>`;
+      }
+
       return `
         <div class="fc-card" data-id="${card.id}">
           <div class="fc-card-body">
@@ -126,6 +142,7 @@
             ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
             <div class="fc-card-foot">
               <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>
+              ${accuracyBadge}
               <span class="fc-card-source">${escapeHTML(source)}</span>
               <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
             </div>
@@ -171,6 +188,15 @@
     renderLibrary();
   });
 
+  // ── Word type filter ──────────────────────────────────────────────────────
+  document.querySelectorAll('.fc-type-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.fc-type-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      drillWordType = btn.dataset.type;
+    });
+  });
+
   // ── Badge update ──────────────────────────────────────────────────────────
   function updateBadge() {
     const count = loadCards().length;
@@ -182,6 +208,19 @@
     });
   }
 
+  // ── Reset Scores ──────────────────────────────────────────────────────────
+  fcResetScores && fcResetScores.addEventListener('click', () => {
+    if (!confirm('Reset all drill scores? This will clear timesCorrect, timesWrong, and lastDrilled for every card.')) return;
+    const cards = loadCards().map((c) => ({
+      ...c,
+      timesCorrect: 0,
+      timesWrong:   0,
+      lastDrilled:  null,
+    }));
+    saveCards(cards);
+    renderLibrary();
+  });
+
   // ── Drill mode ────────────────────────────────────────────────────────────
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -191,13 +230,31 @@
     return arr;
   }
 
+  function updateSessionStats() {
+    if (!fcSessionStats) return;
+    const total = sessionCorrect + sessionTricky;
+    const pct   = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
+    if (total === 0) {
+      fcSessionStats.textContent = '';
+      return;
+    }
+    fcSessionStats.textContent = `${sessionCorrect} correct · ${sessionTricky} tricky · ${pct}% this session`;
+  }
+
   function startDrill() {
-    const filtered = getFiltered();
+    let filtered = getFiltered();
+    // Apply word type filter
+    if (drillWordType !== 'all') {
+      filtered = filtered.filter((c) => (c.wordType || 'other') === drillWordType);
+    }
     if (!filtered.length) return;
-    drillQueue   = shuffle([...filtered]);
-    drillTotal   = drillQueue.length;
-    drillCorrect = 0;
-    trickyCards  = [];
+    drillQueue    = shuffle([...filtered]);
+    drillTotal    = drillQueue.length;
+    drillCorrect  = 0;
+    trickyCards   = [];
+    sessionCorrect = 0;
+    sessionTricky  = 0;
+    updateSessionStats();
 
     fcBrowse.hidden   = true;
     fcToolbar.hidden  = true;
@@ -289,15 +346,18 @@
   fcGotBtn.addEventListener('click', () => {
     if (!fcFlipInner.classList.contains('flipped')) return;
     const card = drillQueue.shift();
-    // Update stats in localStorage
+    const now  = new Date().toISOString();
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
       cards[idx].timesCorrect++;
-      cards[idx].lastSeen = new Date().toISOString();
+      cards[idx].lastSeen    = now;
+      cards[idx].lastDrilled = now;
       saveCards(cards);
     }
     drillCorrect++;
+    sessionCorrect++;
+    updateSessionStats();
     showDrillCard();
   });
 
@@ -305,14 +365,17 @@
   fcTrickyBtn.addEventListener('click', () => {
     if (!fcFlipInner.classList.contains('flipped')) return;
     const card = drillQueue.shift();
-    // Update stats
+    const now  = new Date().toISOString();
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
       cards[idx].timesWrong++;
-      cards[idx].lastSeen = new Date().toISOString();
+      cards[idx].lastSeen    = now;
+      cards[idx].lastDrilled = now;
       saveCards(cards);
     }
+    sessionTricky++;
+    updateSessionStats();
     if (!trickyCards.find((c) => c.id === card.id)) trickyCards.push(card);
     // Re-insert at a random position ≥ 2 places ahead (or at end if short queue)
     const pos = drillQueue.length <= 2

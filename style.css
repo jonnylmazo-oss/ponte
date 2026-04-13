@@ -2527,6 +2527,79 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   margin-bottom: 0;
 }
 
+/* ─── Flashcard drill: word type filter + session stats + accuracy badges ── */
+
+.fc-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fc-word-type-filter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fc-type-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.fc-type-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.fc-type-btn:hover { background: rgba(255,255,255,0.07); }
+.fc-type-btn.active {
+  background: rgba(0, 194, 184, 0.15);
+  border-color: rgba(0, 194, 184, 0.5);
+  color: #00C2B8;
+}
+
+.fc-reset-scores-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 88, 74, 0.4);
+  background: rgba(245, 88, 74, 0.08);
+  color: #F5584A;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.fc-reset-scores-btn:hover { background: rgba(245, 88, 74, 0.16); }
+
+/* Session stats bar above flip card */
+.fc-session-stats {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 4px 0 8px;
+  min-height: 20px;
+  letter-spacing: 0.02em;
+}
+
+/* Accuracy badge on library cards */
+.fc-accuracy-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+}
+
 /* ─── Grammar: 4-stage learning path ────────────────────────── */
 
 /* Stage tiles grid */

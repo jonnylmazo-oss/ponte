@@ -302,7 +302,18 @@
             </div>
             <span class="fc-count" id="fc-count"></span>
           </div>
-          <button class="fc-drill-toggle" id="fc-drill-toggle">🃏 Drill mode</button>
+          <div class="fc-toolbar-right">
+            <div class="fc-word-type-filter">
+              <span class="fc-type-label">Drill:</span>
+              <button class="fc-type-btn active" data-type="all">All</button>
+              <button class="fc-type-btn" data-type="noun">Nouns</button>
+              <button class="fc-type-btn" data-type="verb">Verbs</button>
+              <button class="fc-type-btn" data-type="adjective">Adjectives</button>
+              <button class="fc-type-btn" data-type="phrase">Phrases</button>
+            </div>
+            <button class="fc-drill-toggle" id="fc-drill-toggle">🃏 Drill mode</button>
+            <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
+          </div>
         </div>
 
         <!-- Browse mode -->
@@ -321,6 +332,7 @@
             <span class="fc-drill-status" id="fc-drill-status"></span>
             <button class="fc-exit-drill" id="fc-exit-drill">Exit</button>
           </div>
+          <div class="fc-session-stats" id="fc-session-stats"></div>
           <div class="fc-drill-arena">
             <div class="fc-flip-card">
               <div class="fc-flip-inner" id="fc-flip-inner">
