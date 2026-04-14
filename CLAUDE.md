@@ -282,13 +282,63 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - PWA `manifest.json`: `background_color: #F8F1E3`, `theme_color: #0055AA`; iOS status bar: `default`
 - sw.js bumped to `ponte-v13`
 
+## Open Issues Audit — April 2026
+
+### Closed in this audit (already built)
+- **#2 Tooltip polish** — usage notes, example sentences (IT+EN), 🔊 audio pronunciation all live
+- **#9 AI writing feedback** — Usage Checker in Translate tab: Spanish-transfer error analysis, corrected sentence in cyan, per-error badge cards
+- **#19 Flashcard drill scroll on mobile** — flex column layout with clamp height, scrollable content div, sticky action buttons; fullscreen drill mode reinforces this
+- **#20 Remove dev cache-clear** — confirmed absent from app.js; only scoped localStorage gets/sets remain
+- **#31 Conversation simulator** — fully built: 10 scenarios, chat bubbles, feedback notes, session summary, save-to-flashcards, `POST /api/conversation`
+
+### Still open — partial build
+- **#1 Article library + switcher** — generation + Practice tab selector exist; no dedicated library browser UI
+- **#3 Article difficulty filter** — difficulty selector in generator exists; no filter on stored articles (blocked by #1)
+- **#17 Mobile setup and testing** — app deployed at http://198.199.88.229; HTTPS / domain still needed for full PWA installability
+- **#27 Cognate categorization fix** — basic category guide in translate prompt exists; specific guardrails (register, gender, usage-breadth rules) not yet added
+
+### Still open — not started
+| # | Title | Priority |
+|---|-------|----------|
+| #7 | Shadowing mode | P1 (requires #36) |
+| #8 | Weak word tracker | P2 |
+| #10 | Spaced repetition queue | P2 |
+| #11 | Onboarding flow | P3 |
+| #12 | Progress dashboard | P3 |
+| #13 | Mobile layout polish | P3 |
+| #14 | Public false friend SEO page | P3 |
+| #18 | Flashcard visual images via Unsplash | P2 |
+| #24 | Post-reading quiz (comprehension Qs) | P1 |
+| #26 | Classic literature content category | P1 |
+| #32 | Error-to-drill engine | P1 |
+| #33 | Sentence rebuilding mode | P1 |
+| #34 | Cultural context layer in Reader | P2 |
+| #35 | Weekly learning mission | P2 |
+| #36 | Native audio per article | P2 |
+| #37 | Pronunciation lab | P3 |
+| #38 | Collaborative deck sharing | P3 |
+
+### Gaps — built with no issue
+- Safe Cognates section (200 entries, sub-tab UI, drill mode, green palette)
+- Grammar tab 4-stage redesign (tiles → card list, stage progress, "See more examples →")
+- Verb reference card in Grammar Pattern Drills (verbRef on 18 of 30 drills)
+- Base form line on all flashcards (library + drill back face; backfill on 92 existing cards)
+- Reverse drill mode (EN→IT flip, localStorage toggle)
+- Fullscreen immersive drill mode (body.drill-fullscreen, shared header)
+- Translate tab bidirectional lookup + EN→IT endpoint
+- Flashcard drill score tracking (session stats bar, accuracy badges, word-type filter, Reset Scores)
+- Practice tab cloze mode (fill-in-the-blank from generated articles, AI distractors, miss-to-flashcards)
+
 ## Backlog (open issues)
 
 ### P1 — High priority
+- **#24** Post-reading quiz: comprehension questions generated from article via Claude (distinct from cloze Practice tab)
+- **#26** Classic literature category: dedicated UI button/tier for literary-register articles
 - **#32** Error-to-drill engine: track error pattern types across drill sessions, surface in Grammar tab as personalized weak areas
 - **#33** Sentence rebuilding mode: show English sentence, user reconstructs full Italian from memory; third mode in Practice tab
 
 ### P2 — Medium priority
+- **#27** Cognate categorization fix: tighten translate prompt with register/gender/usage-breadth guardrails
 - **#34** Cultural context layer in Reader: 2-3 sentence cultural note per article, collapsible below article text
 - **#35** Weekly learning mission: one goal per week in Progress tab, resets Monday, simple progress bar — no gamification
 - **#36** Native audio per article: ElevenLabs or real audio; TTS insufficient for speech rhythm / connected speech
