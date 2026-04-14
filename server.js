@@ -731,7 +731,7 @@ app.post('/api/generate-practice', async (req, res) => {
   const diff = difficulty || 'B1';
 
   try {
-    const message = await anthropic.messages.create({
+    const message = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1400,
       temperature: 0.8,
