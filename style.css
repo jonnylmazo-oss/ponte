@@ -3637,11 +3637,15 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 }
 
 .prac-topic-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   margin-bottom: 10px;
 }
 
 .prac-topic-input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 11px 14px;
   border: 1px solid var(--border-mid);
   border-radius: var(--radius);

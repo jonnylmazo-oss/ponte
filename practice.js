@@ -11,6 +11,26 @@
   const FC_KEY = 'ponte_flashcards';
   const EP_KEY = 'ponte_error_patterns';
 
+  const PRACTICE_SURPRISE_TOPICS = [
+    // Grammar-focused
+    'past tense actions', 'essere vs avere verbs', 'reflexive verbs',
+    'clitic pronouns', 'subjunctive mood', 'double pronouns',
+    // Daily life
+    'ordering at a bar', 'buying food at the market', 'asking for directions',
+    'making plans with friends', 'describing your day',
+    // Emotional
+    'expressing opinions', 'agreeing and disagreeing', 'giving advice',
+    'making complaints politely', 'expressing surprise',
+    // Storytelling
+    'describing a past event', 'telling a funny story',
+    'describing a person', 'talking about childhood',
+    // Cultural
+    'talking about food preferences', 'discussing football',
+    'weekend plans', 'Italian family life',
+    // Travel
+    'at the hotel', 'on public transport', 'at the restaurant', 'sightseeing',
+  ];
+
   // Maps error pattern keys → user-friendly practice topics
   const PATTERN_TOPICS = {
     'false-friend':     'false friends and confusing Italian-Spanish pairs',
@@ -96,6 +116,7 @@
   const pracStartBtn      = $('prac-start-btn');
   const pracTopicInput    = $('prac-topic-input');
   const pracWeakBtn       = $('prac-weak-btn');
+  const pracSurpriseBtn   = $('prac-surprise-btn');
   const pracModeBtns      = document.querySelectorAll('.prac-mode-btn');
   const pracDiffBtns      = document.querySelectorAll('.prac-diff-btn');
   const pracProgressBar   = $('prac-progress-bar');
@@ -154,6 +175,13 @@
     currentTopic = topTopic;
     updateGenerateBtn();
     pracTopicInput.focus();
+  });
+
+  pracSurpriseBtn && pracSurpriseBtn.addEventListener('click', () => {
+    const topic = PRACTICE_SURPRISE_TOPICS[Math.floor(Math.random() * PRACTICE_SURPRISE_TOPICS.length)];
+    if (pracTopicInput) { pracTopicInput.value = topic; }
+    currentTopic = topic;
+    updateGenerateBtn();
   });
 
   pracDiffBtns.forEach(btn => {
