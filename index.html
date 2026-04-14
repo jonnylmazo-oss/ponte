@@ -441,11 +441,22 @@
         <!-- Setup screen -->
         <div id="prac-setup" class="prac-setup">
           <h2 class="prac-heading">Practice</h2>
-          <p class="prac-subheading">Fill in the blank — active recall from articles you've read.</p>
-          <div class="prac-toolbar">
-            <select id="prac-article-select" class="prac-select"></select>
-            <button id="prac-generate-btn" class="prac-generate-btn">+ Generate new</button>
+          <p class="prac-subheading">Generate custom sentences and practice Italian translation.</p>
+
+          <label class="prac-field-label" for="prac-topic-input">What do you want to practice?</label>
+          <div class="prac-topic-row">
+            <input id="prac-topic-input" class="prac-topic-input" type="text"
+              placeholder="e.g. ordering food, past tense, asking directions…"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           </div>
+          <button id="prac-weak-btn" class="prac-weak-btn">🎯 Practice my weak areas</button>
+
+          <div class="prac-mode-row">
+            <span class="prac-mode-label">Difficulty:</span>
+            <button class="prac-diff-btn active" data-diff="B1">B1</button>
+            <button class="prac-diff-btn" data-diff="B2">B2</button>
+          </div>
+
           <div class="prac-mode-row">
             <span class="prac-mode-label">Mode:</span>
             <button class="prac-mode-btn active" data-mode="choice">Multiple choice</button>
@@ -457,7 +468,7 @@
             <button class="prac-sr-diff-btn active" data-diff="wordbank">Word Bank</button>
             <button class="prac-sr-diff-btn" data-diff="recall">Free Recall</button>
           </div>
-          <button id="prac-start-btn" class="prac-start-btn" disabled>Start Practice →</button>
+          <button id="prac-start-btn" class="prac-start-btn" disabled>Generate Practice →</button>
         </div>
 
         <!-- Drill screen -->
@@ -467,15 +478,9 @@
           </div>
           <div class="prac-progress-label" id="prac-progress-label"></div>
           <div class="prac-card">
-            <div class="prac-sentence-it" id="prac-sentence-it"></div>
             <div class="prac-sentence-en" id="prac-sentence-en"></div>
+            <div class="prac-sentence-it" id="prac-sentence-it"></div>
             <div class="prac-choices" id="prac-choices"></div>
-            <div class="prac-type-area" id="prac-type-area" hidden>
-              <input type="text" id="prac-type-input" class="prac-type-input"
-                placeholder="Type the Italian word…"
-                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-              <button id="prac-type-submit" class="prac-type-submit">Check</button>
-            </div>
             <div class="prac-feedback" id="prac-feedback" hidden></div>
             <button class="prac-next-btn" id="prac-next-btn" hidden>Next →</button>
           </div>
@@ -524,7 +529,7 @@
           <button class="prac-save-missed-btn" id="prac-save-missed-btn" hidden>Save missed words to Flashcards ★</button>
           <div class="prac-done-actions">
             <button id="prac-retry-btn" class="prac-retry-btn">Try again</button>
-            <button id="prac-back-btn" class="prac-back-btn">Choose article</button>
+            <button id="prac-back-btn" class="prac-back-btn">New practice</button>
           </div>
         </div>
       </div>

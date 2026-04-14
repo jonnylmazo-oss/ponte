@@ -1,4 +1,4 @@
-// practice.js — Practice tab: cloze fill-in-the-blank from generated articles
+// practice.js — Practice tab: topic-driven sentence generation
 
 (function () {
   'use strict';
@@ -8,9 +8,20 @@
     window.location.hostname === '127.0.0.1'
   ) ? 'http://localhost:3000' : '';
 
-  const CACHE_PREFIX      = 'ponte_article_';
-  const DISTRACTOR_PREFIX = 'ponte_dist_';
-  const FC_KEY            = 'ponte_flashcards';
+  const FC_KEY = 'ponte_flashcards';
+  const EP_KEY = 'ponte_error_patterns';
+
+  // Maps error pattern keys → user-friendly practice topics
+  const PATTERN_TOPICS = {
+    'false-friend':     'false friends and confusing Italian-Spanish pairs',
+    'divergence':       'words used differently in Italian vs Spanish',
+    'verb-essere':      'verbs that require essere as auxiliary',
+    'passato-prossimo': 'past tense actions using passato prossimo',
+    'clitic-placement': 'object pronouns and clitic placement',
+    'subjunctive':      'subjunctive mood in everyday sentences',
+    'geminates':        'words with double consonants',
+    'verb-general':     'Italian verb conjugations and forms',
+  };
 
   const CATEGORY_COLORS = {
     'cognate':      '#2E6B3E',
@@ -26,6 +37,11 @@
     'new':          'New word',
   };
 
+  const TYPE_COLORS = {
+    'grammar': '#B83232', 'spanish-transfer': '#B85C00',
+    'word-choice': '#0055AA', 'spelling': '#888',
+  };
+
   function $(id) { return document.getElementById(id); }
 
   function escapeHTML(s) {
@@ -36,24 +52,57 @@
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function normalizeIT(s) {
+    return (s || '').toLowerCase()
+      .replace(/[.,!?;:'"«»""''()\u2014\u2013\-]/g, '').trim();
+  }
+
+  function tokenizeIT(sentence) {
+    return (sentence || '').split(/\s+/).filter(Boolean);
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    const prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+      const curr = [i];
+      for (let j = 1; j <= n; j++) {
+        curr[j] = a[i-1] === b[j-1]
+          ? prev[j-1]
+          : 1 + Math.min(prev[j], curr[j-1], prev[j-1]);
+      }
+      prev.splice(0, prev.length, ...curr);
+    }
+    return prev[n];
+  }
+
   // ── DOM refs ──────────────────────────────────────────────────────────────
   const pracSetup         = $('prac-setup');
   if (!pracSetup) return;
 
   const pracDrill         = $('prac-drill');
   const pracDone          = $('prac-done');
-  const pracArticleSelect = $('prac-article-select');
-  const pracGenerateBtn   = $('prac-generate-btn');
   const pracStartBtn      = $('prac-start-btn');
+  const pracTopicInput    = $('prac-topic-input');
+  const pracWeakBtn       = $('prac-weak-btn');
   const pracModeBtns      = document.querySelectorAll('.prac-mode-btn');
+  const pracDiffBtns      = document.querySelectorAll('.prac-diff-btn');
   const pracProgressBar   = $('prac-progress-bar');
   const pracProgressLabel = $('prac-progress-label');
   const pracSentenceIT    = $('prac-sentence-it');
   const pracSentenceEN    = $('prac-sentence-en');
   const pracChoices       = $('prac-choices');
-  const pracTypeArea      = $('prac-type-area');
-  const pracTypeInput     = $('prac-type-input');
-  const pracTypeSubmit    = $('prac-type-submit');
   const pracFeedback      = $('prac-feedback');
   const pracNextBtn       = $('prac-next-btn');
   const pracDoneScore     = $('prac-done-score');
@@ -63,78 +112,58 @@
   const pracSaveMissed    = $('prac-save-missed-btn');
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let currentArticle = null;
-  let drillItems     = [];
-  let drillIndex     = 0;
-  let drillScore     = 0;
-  let drillMode      = 'choice';
-  let drillAnswered  = false;
-  let missedItems    = [];
+  let currentTopic      = '';
+  let currentDifficulty = 'B1';
+  let drillItems        = [];
+  let drillIndex        = 0;
+  let drillScore        = 0;
+  let drillMode         = 'choice';
+  let drillAnswered     = false;
+  let missedItems       = [];
 
   // SR-specific state
   let srDifficulty = 'wordbank';
-  let srBank       = []; // [{id, word}] tiles in bank
-  let srBuilt      = []; // [{id, word}] tiles in construction area
+  let srBank       = [];
+  let srBuilt      = [];
   let srAnswered   = false;
 
-  // ── Article selector ──────────────────────────────────────────────────────
-  function getStoredArticles() {
-    const articles = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(CACHE_PREFIX)) {
-        try {
-          const a = JSON.parse(localStorage.getItem(key));
-          if (a && a.title && Array.isArray(a.words) && a.words.length >= 3) {
-            a._cacheKey = key;
-            articles.push(a);
-          }
-        } catch (e) {}
-      }
-    }
-    return articles;
+  // ── Setup screen ──────────────────────────────────────────────────────────
+  function updateGenerateBtn() {
+    pracStartBtn.disabled = !pracTopicInput.value.trim();
   }
 
-  function populateSelector() {
-    const articles = getStoredArticles();
-    const prev = pracArticleSelect.value;
-    pracArticleSelect.innerHTML = '<option value="">Choose an article to practice…</option>';
-    articles.forEach((a) => {
-      const opt = document.createElement('option');
-      opt.value = a._cacheKey;
-      opt.textContent = a.title + ' (' + a.difficulty + ')';
-      pracArticleSelect.appendChild(opt);
+  pracTopicInput && pracTopicInput.addEventListener('input', updateGenerateBtn);
+
+  pracTopicInput && pracTopicInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !pracStartBtn.disabled) pracStartBtn.click();
+  });
+
+  pracWeakBtn && pracWeakBtn.addEventListener('click', () => {
+    let patterns = {};
+    try { patterns = JSON.parse(localStorage.getItem(EP_KEY) || '{}'); } catch (e) {}
+    const entries = Object.entries(patterns).filter(([, v]) => v && v.count > 0);
+    if (!entries.length) {
+      pracWeakBtn.textContent = '🎯 No weak areas yet — drill some flashcards first';
+      setTimeout(() => { pracWeakBtn.textContent = '🎯 Practice my weak areas'; }, 3000);
+      return;
+    }
+    entries.sort((a, b) => b[1].count - a[1].count);
+    const topKey   = entries[0][0];
+    const topTopic = PATTERN_TOPICS[topKey] || topKey.replace(/-/g, ' ');
+    pracTopicInput.value = topTopic;
+    currentTopic = topTopic;
+    updateGenerateBtn();
+    pracTopicInput.focus();
+  });
+
+  pracDiffBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      pracDiffBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDifficulty = btn.dataset.diff;
     });
-    if (prev && pracArticleSelect.querySelector(`[value="${CSS.escape(prev)}"]`)) {
-      pracArticleSelect.value = prev;
-    }
-    updateStartBtn();
-  }
-
-  function updateStartBtn() {
-    pracStartBtn.disabled = !pracArticleSelect.value;
-  }
-
-  pracArticleSelect.addEventListener('change', () => {
-    const key = pracArticleSelect.value;
-    if (!key) { currentArticle = null; updateStartBtn(); return; }
-    try {
-      currentArticle = JSON.parse(localStorage.getItem(key));
-    } catch (e) { currentArticle = null; }
-    updateStartBtn();
   });
 
-  pracGenerateBtn.addEventListener('click', () => {
-    const readerBtn = document.querySelector('[data-tab="reader"]');
-    if (readerBtn) readerBtn.click();
-  });
-
-  // Refresh selector whenever Practice tab nav is clicked
-  document.querySelectorAll('[data-tab="practice"]').forEach(btn => {
-    btn.addEventListener('click', populateSelector);
-  });
-
-  // ── Mode toggle ───────────────────────────────────────────────────────────
   const pracSRDiffRow  = $('prac-sr-diff-row');
   const pracSRDiffBtns = document.querySelectorAll('.prac-sr-diff-btn');
 
@@ -155,160 +184,103 @@
     });
   });
 
-  // ── Distractor fetching ───────────────────────────────────────────────────
-  async function fetchDistractors(word, sentence, category) {
-    const cacheKey = DISTRACTOR_PREFIX + word.toLowerCase().trim();
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) {}
-    }
-    try {
-      const resp = await fetch(API_BASE + '/api/distractors', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ word, sentence, category }),
-      });
-      const data = await resp.json();
-      if (Array.isArray(data.distractors) && data.distractors.length >= 3) {
-        localStorage.setItem(cacheKey, JSON.stringify(data.distractors));
-        return data.distractors;
-      }
-    } catch (e) {}
-    // Fallback: other article words
-    return buildFallbackDistractors(word, currentArticle ? currentArticle.words : []);
-  }
+  // ── Generate practice from API ────────────────────────────────────────────
+  async function generatePractice(topic, difficulty) {
+    const resp = await fetch(API_BASE + '/api/generate-practice', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ topic, difficulty }),
+    });
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const data = await resp.json();
+    const sentences = Array.isArray(data.sentences) ? data.sentences : [];
 
-  function buildFallbackDistractors(word, allWords) {
-    const others = shuffle(
-      (allWords || []).filter(w => w.w.toLowerCase() !== word.toLowerCase()).map(w => w.w)
-    ).slice(0, 3);
-    const fillers = ['è', 'ha', 'sono', 'era', 'può', 'deve', 'fa', 'viene', 'sa', 'dice'];
-    for (const f of fillers) {
-      if (others.length >= 3) break;
-      if (!others.includes(f) && f.toLowerCase() !== word.toLowerCase()) others.push(f);
-    }
-    return others;
-  }
+    return sentences.map(s => {
+      const words       = Array.isArray(s.words) ? s.words : [];
+      const distractors = Array.isArray(s.distractors) ? s.distractors : [];
+      const targetWord  = words[0] || '';
 
-  // ── Drill building ────────────────────────────────────────────────────────
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function splitSentences(text) {
-    if (!text) return [];
-    return text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
-  }
-
-  function findItemSentences(italianText, englishText, word) {
-    const itSents = splitSentences(italianText);
-    const enSents = splitSentences(englishText);
-    const lower   = word.toLowerCase();
-    for (let i = 0; i < itSents.length; i++) {
-      if (itSents[i].toLowerCase().includes(lower)) {
-        return { italian: itSents[i], english: enSents[i] || null };
-      }
-    }
-    return { italian: italianText, english: englishText || null };
-  }
-
-  async function buildDrillItems(article) {
-    const words = article.words || [];
-    const PRIO  = { 'false-friend': 0, 'divergence': 1, 'new': 2, 'cognate': 3 };
-    const sorted = words.slice().sort((a, b) => (PRIO[a.c] ?? 3) - (PRIO[b.c] ?? 3));
-
-    let candidates = sorted.filter(w => w.c !== 'cognate');
-    if (candidates.length < 5) candidates = sorted;
-    const selected = candidates.slice(0, 10);
-
-    const items = [];
-    for (const word of selected) {
-      const { italian, english } = findItemSentences(article.italian, article.english, word.w);
-      if (!italian) continue;
-
-      const itHtml = italian.replace(
-        new RegExp('(' + escapeRegex(word.w) + ')', 'i'),
-        '<span class="prac-blank">___</span>'
-      );
-
-      let enHtml = null;
-      if (english) {
-        const enWord = (word.en || '').split(/[\s/,]+/)[0].trim();
-        if (enWord) {
-          const replaced = english.replace(
-            new RegExp('\\b(' + escapeRegex(enWord) + ')\\b', 'i'),
-            '<span class="prac-blank-en">___</span>'
-          );
-          enHtml = replaced !== english ? replaced : english;
-        } else {
-          enHtml = english;
-        }
+      // Build Italian HTML with blank for MC mode
+      let itHtml = escapeHTML(s.italian);
+      if (targetWord) {
+        const replaced = s.italian.replace(
+          new RegExp('\\b' + escapeRegex(targetWord) + '\\b', 'i'),
+          '<span class="prac-blank">___</span>'
+        );
+        // fallback: match anywhere if word boundary didn't match (e.g. Italian accent chars)
+        itHtml = (replaced !== s.italian)
+          ? replaced
+          : s.italian.replace(
+              new RegExp('(' + escapeRegex(targetWord) + ')', 'i'),
+              '<span class="prac-blank">___</span>'
+            );
       }
 
-      items.push({
-        word:        word.w,
-        wordEN:      word.en || '',
-        category:    word.c,
-        note:        word.n || '',
-        sentence:    italian,
+      // Build word bank tiles: key words + distractors (equal counts), shuffled
+      const bankWords = shuffle([
+        ...words,
+        ...distractors.slice(0, words.length),
+      ]);
+      const bankTiles = bankWords.map((word, i) => ({ id: i, word }));
+      const tokens    = tokenizeIT(s.italian);
+
+      return {
+        english:     s.english  || '',
+        italian:     s.italian  || '',
+        sentence:    s.italian  || '',
+        word:        targetWord,
+        wordEN:      '',
+        category:    'new',
+        note:        '',
         itHtml,
-        enHtml,
-        distractors: [],
-      });
-    }
-
-    // Fetch all distractors in parallel (cached after first time)
-    await Promise.all(items.map(async (item) => {
-      item.distractors = await fetchDistractors(item.word, item.sentence, item.category);
-    }));
-
-    return shuffle(items);
+        enHtml:      escapeHTML(s.english || ''),
+        distractors: distractors.slice(0, 3),
+        tokens,
+        bankTiles,
+      };
+    });
   }
 
-  // ── Drill flow ────────────────────────────────────────────────────────────
+  // ── Start button ──────────────────────────────────────────────────────────
   pracStartBtn.addEventListener('click', async () => {
-    if (!currentArticle) return;
+    currentTopic = pracTopicInput ? pracTopicInput.value.trim() : '';
+    if (!currentTopic) return;
 
-    if (drillMode === 'rebuild') {
-      drillItems  = buildSRItems(currentArticle);
-      if (!drillItems.length) return;
-      drillIndex  = 0;
-      drillScore  = 0;
-      missedItems = [];
-      srAnswered  = false;
-      pracSetup.hidden = true;
-      pracDone.hidden  = true;
-      const pracSRDrill = $('prac-sr-drill');
-      if (pracSRDrill) pracSRDrill.hidden = false;
-      showSRItem();
+    pracStartBtn.disabled    = true;
+    pracStartBtn.textContent = 'Generating…';
+
+    try {
+      drillItems = await generatePractice(currentTopic, currentDifficulty);
+    } catch (e) {
+      pracStartBtn.disabled    = false;
+      pracStartBtn.textContent = 'Generate Practice →';
       return;
     }
 
-    pracStartBtn.disabled    = true;
-    pracStartBtn.textContent = 'Loading…';
-    try {
-      drillItems = await buildDrillItems(currentArticle);
-    } finally {
-      pracStartBtn.disabled    = false;
-      pracStartBtn.textContent = 'Start Practice →';
-    }
+    pracStartBtn.disabled    = false;
+    pracStartBtn.textContent = 'Generate Practice →';
+
     if (!drillItems.length) return;
+
     drillIndex    = 0;
     drillScore    = 0;
     missedItems   = [];
     drillAnswered = false;
-
+    srAnswered    = false;
     pracSetup.hidden = true;
     pracDone.hidden  = true;
-    pracDrill.hidden = false;
-    showDrillItem();
+
+    if (drillMode === 'choice') {
+      pracDrill.hidden = false;
+      showDrillItem();
+    } else {
+      const srDrill = $('prac-sr-drill');
+      if (srDrill) srDrill.hidden = false;
+      showSRItem();
+    }
   });
 
+  // ── Multiple Choice drill ─────────────────────────────────────────────────
   function showDrillItem() {
     if (drillIndex >= drillItems.length) { endDrill(); return; }
 
@@ -319,30 +291,25 @@
     pracProgressBar.style.width   = pct + '%';
     pracProgressLabel.textContent = (drillIndex + 1) + ' / ' + drillItems.length;
 
-    pracSentenceIT.innerHTML = item.itHtml;
-    if (item.enHtml) {
-      pracSentenceEN.innerHTML = item.enHtml;
+    // English sentence above, Italian with blank below
+    if (item.english) {
+      pracSentenceEN.textContent = item.english;
       pracSentenceEN.hidden = false;
     } else {
       pracSentenceEN.hidden = true;
     }
+    pracSentenceIT.innerHTML = item.itHtml;
 
     pracFeedback.hidden   = true;
     pracFeedback.innerHTML = '';
     pracNextBtn.hidden    = true;
     pracNextBtn.textContent = drillIndex + 1 >= drillItems.length ? 'See Results →' : 'Next →';
 
-    if (drillMode === 'choice') {
-      showChoiceMode(item);
-    } else {
-      showTypeMode(item);
-    }
+    showChoiceMode(item);
   }
 
   function showChoiceMode(item) {
-    pracTypeArea.hidden = true;
-    pracChoices.hidden  = false;
-
+    pracChoices.hidden = false;
     const options = shuffle([item.word, ...item.distractors]);
     pracChoices.innerHTML = options.map(opt =>
       `<button class="prac-choice" data-val="${escapeHTML(opt)}">${escapeHTML(opt)}</button>`
@@ -353,74 +320,23 @@
     });
   }
 
-  function showTypeMode(item) {
-    pracChoices.hidden  = true;
-    pracTypeArea.hidden = false;
-    pracTypeInput.value = '';
-    pracTypeInput.disabled = false;
-    pracTypeInput.classList.remove('correct', 'wrong');
-    pracTypeInput.focus();
-  }
-
-  pracTypeSubmit.addEventListener('click', () => {
-    if (drillAnswered) return;
-    const item = drillItems[drillIndex];
-    if (item) handleAnswer(pracTypeInput.value.trim(), item);
-  });
-
-  pracTypeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !drillAnswered) {
-      const item = drillItems[drillIndex];
-      if (item) handleAnswer(pracTypeInput.value.trim(), item);
-    }
-  });
-
-  function levenshtein(a, b) {
-    const m = a.length, n = b.length;
-    if (m === 0) return n;
-    if (n === 0) return m;
-    const prev = Array.from({ length: n + 1 }, (_, j) => j);
-    for (let i = 1; i <= m; i++) {
-      const curr = [i];
-      for (let j = 1; j <= n; j++) {
-        curr[j] = a[i-1] === b[j-1]
-          ? prev[j-1]
-          : 1 + Math.min(prev[j], curr[j-1], prev[j-1]);
-      }
-      prev.splice(0, prev.length, ...curr);
-    }
-    return prev[n];
-  }
-
   function handleAnswer(answer, item) {
     if (drillAnswered) return;
     drillAnswered = true;
 
     const ans    = answer.toLowerCase().trim();
     const target = item.word.toLowerCase().trim();
-    const isType = drillMode === 'type';
-    const correct = isType
-      ? (ans === target || levenshtein(ans, target) <= 1)
-      : ans === target;
+    const correct = ans === target;
 
-    if (correct) {
-      drillScore++;
-    } else {
-      missedItems.push(item);
-    }
+    if (correct) drillScore++;
+    else         missedItems.push(item);
 
-    if (drillMode === 'choice') {
-      pracChoices.querySelectorAll('.prac-choice').forEach(btn => {
-        btn.disabled = true;
-        const v = btn.dataset.val.toLowerCase();
-        if (v === target)               btn.classList.add('correct');
-        else if (v === ans && !correct) btn.classList.add('wrong');
-      });
-    } else {
-      pracTypeInput.disabled = true;
-      if (correct && ans !== target) pracTypeInput.value = item.word; // show exact spelling
-      pracTypeInput.classList.add(correct ? 'correct' : 'wrong');
-    }
+    pracChoices.querySelectorAll('.prac-choice').forEach(btn => {
+      btn.disabled = true;
+      const v = btn.dataset.val.toLowerCase();
+      if (v === target)               btn.classList.add('correct');
+      else if (v === ans && !correct) btn.classList.add('wrong');
+    });
 
     const color    = CATEGORY_COLORS[item.category] || '#888';
     const catLabel = CATEGORY_LABELS[item.category]  || item.category;
@@ -435,6 +351,13 @@
     pracFeedback.hidden = false;
     pracNextBtn.hidden  = false;
     pracNextBtn.focus();
+
+    // Auto-advance on correct after 1.5s
+    if (correct) {
+      setTimeout(() => {
+        if (drillAnswered) { drillIndex++; showDrillItem(); }
+      }, 1500);
+    }
   }
 
   pracNextBtn.addEventListener('click', () => { drillIndex++; showDrillItem(); });
@@ -445,8 +368,6 @@
     const pracSRDrill = $('prac-sr-drill');
     if (pracSRDrill) pracSRDrill.hidden = true;
     pracDone.hidden  = false;
-    pracProgressBar.style.width   = '100%';
-    pracProgressLabel.textContent = drillItems.length + ' / ' + drillItems.length;
 
     const pct = drillItems.length > 0 ? Math.round((drillScore / drillItems.length) * 100) : 0;
     pracDoneScore.textContent = `${drillScore} / ${drillItems.length} correct (${pct}%)`;
@@ -463,8 +384,8 @@
             const color = CATEGORY_COLORS[item.category] || '#888';
             const label = CATEGORY_LABELS[item.category] || item.category;
             return `<div class="prac-missed-word">
-              <strong>${escapeHTML(item.word)}</strong>
-              ${item.wordEN ? `<span class="prac-missed-en">${escapeHTML(item.wordEN)}</span>` : ''}
+              <strong>${escapeHTML(item.word || item.italian)}</strong>
+              ${item.english ? `<span class="prac-missed-en">${escapeHTML(item.english)}</span>` : ''}
               <span class="prac-cat-badge" style="border-color:${color};color:${color}">${label}</span>
             </div>`;
           }).join('') +
@@ -485,19 +406,24 @@
     try { cards = JSON.parse(localStorage.getItem(FC_KEY) || '[]'); } catch(e) {}
 
     let added = 0;
-    const now = new Date().toISOString();
+    const now    = new Date().toISOString();
+    const source = 'Practice: ' + currentTopic;
+
     for (const item of missedItems) {
-      const exists = cards.some(c => c.italian.toLowerCase() === item.word.toLowerCase());
+      const word   = item.word || item.italian || '';
+      const wordEN = item.wordEN || item.english || '';
+      if (!word) continue;
+      const exists = cards.some(c => c.italian.toLowerCase() === word.toLowerCase());
       if (!exists) {
         cards.push({
           id:            Date.now() + added,
-          italian:       item.word,
-          english:       item.wordEN,
+          italian:       word,
+          english:       wordEN,
           spanish:       '',
-          category:      item.category,
-          note:          item.note,
+          category:      item.category || 'new',
+          note:          item.note || '',
           savedAt:       now,
-          sourceArticle: currentArticle ? currentArticle.title : 'Practice',
+          sourceArticle: source,
           wordType:      'other',
           timesCorrect:  0,
           timesWrong:    0,
@@ -527,101 +453,45 @@
     }
   });
 
-  pracRetryBtn.addEventListener('click', async () => {
+  pracRetryBtn && pracRetryBtn.addEventListener('click', async () => {
     const pracSRDrill = $('prac-sr-drill');
-    if (drillMode === 'rebuild') {
-      drillItems  = buildSRItems(currentArticle);
-      drillIndex  = 0;
-      drillScore  = 0;
-      missedItems = [];
-      srAnswered  = false;
-      pracDone.hidden = true;
-      if (pracSRDrill) pracSRDrill.hidden = false;
-      showSRItem();
-      return;
-    }
-    pracDone.hidden  = true;
-    pracDrill.hidden = false;
+    pracDone.hidden = true;
+    drillIndex  = 0;
+    drillScore  = 0;
+    missedItems = [];
+    srAnswered  = false;
+    drillAnswered = false;
+
+    // Re-generate with same topic/difficulty
     pracRetryBtn.disabled    = true;
-    pracRetryBtn.textContent = 'Loading…';
+    pracRetryBtn.textContent = 'Generating…';
     try {
-      drillItems = await buildDrillItems(currentArticle);
+      drillItems = await generatePractice(currentTopic, currentDifficulty);
     } finally {
       pracRetryBtn.disabled    = false;
       pracRetryBtn.textContent = 'Try again';
     }
-    drillIndex    = 0;
-    drillScore    = 0;
-    missedItems   = [];
-    drillAnswered = false;
-    showDrillItem();
+    if (!drillItems.length) { pracDone.hidden = false; return; }
+
+    if (drillMode === 'choice') {
+      pracDrill.hidden = false;
+      showDrillItem();
+    } else {
+      if (pracSRDrill) pracSRDrill.hidden = false;
+      showSRItem();
+    }
   });
 
-  pracBackBtn.addEventListener('click', () => {
+  pracBackBtn && pracBackBtn.addEventListener('click', () => {
     const pracSRDrill = $('prac-sr-drill');
     pracDone.hidden  = true;
     pracDrill.hidden = true;
     if (pracSRDrill) pracSRDrill.hidden = true;
     pracSetup.hidden = false;
-    populateSelector();
   });
 
-  // ── Sentence Rebuild ─────────────────────────────────────────────────────
+  // ── Sentence Rebuild + Type It (shared prac-sr-drill panel) ──────────────
 
-  function normalizeIT(s) {
-    return (s || '').toLowerCase()
-      .replace(/[.,!?;:'"«»""''()\u2014\u2013\-]/g, '').trim();
-  }
-
-  function tokenizeIT(sentence) {
-    return sentence.split(/\s+/).filter(Boolean);
-  }
-
-  function buildWordBankTiles(correctTokens, article) {
-    const corrSet   = new Set(correctTokens.map(normalizeIT));
-    const otherWords = (article.italian || '').split(/\s+/)
-      .filter(w => w.length > 2 && !corrSet.has(normalizeIT(w)));
-    const distractors = shuffle(otherWords).slice(0, correctTokens.length);
-    const fillers = ['della', 'dello', 'nella', 'questo', 'quella', 'anche',
-                     'molto', 'però', 'così', 'sempre', 'quando', 'ancora', 'aveva', 'fare'];
-    for (const f of fillers) {
-      if (distractors.length >= correctTokens.length) break;
-      if (!corrSet.has(f) && !distractors.includes(f)) distractors.push(f);
-    }
-    const all = [...correctTokens, ...distractors.slice(0, correctTokens.length)];
-    return shuffle(all).map((word, i) => ({ id: i, word }));
-  }
-
-  function buildSRItems(article) {
-    const itSents = splitSentences(article.italian || '');
-    const enSents = splitSentences(article.english || '');
-    const words   = article.words || [];
-    const items   = [];
-
-    for (let i = 0; i < itSents.length && items.length < 8; i++) {
-      const itSent = itSents[i];
-      const enSent = enSents[i] || '';
-      if (!enSent) continue;
-      const itLower     = itSent.toLowerCase();
-      const matchedWord = words.find(w => itLower.includes(w.w.toLowerCase()));
-      if (!matchedWord) continue;
-      const tokens = tokenizeIT(itSent);
-      if (tokens.length < 3) continue;
-      items.push({
-        word:      matchedWord.w,
-        wordEN:    matchedWord.en || '',
-        category:  matchedWord.c,
-        note:      matchedWord.n || '',
-        sentence:  itSent,
-        english:   enSent,
-        tokens,
-        bankTiles: buildWordBankTiles(tokens, article),
-      });
-    }
-    return shuffle(items);
-  }
-
-  // SR DOM refs (resolved lazily inside functions since HTML may not exist on early runs)
   function srEl(id) { return $(id); }
 
   function renderSRBank() {
@@ -673,7 +543,7 @@
   function updateSRSubmit() {
     const btn = srEl('prac-sr-submit-btn');
     if (!btn) return;
-    if (srDifficulty === 'wordbank') {
+    if (drillMode === 'rebuild' && srDifficulty === 'wordbank') {
       btn.disabled = srBuilt.length === 0;
     } else {
       const inp = srEl('prac-sr-recall-input');
@@ -691,7 +561,7 @@
 
     const item = drillItems[drillIndex];
     srAnswered  = false;
-    srBank      = [...item.bankTiles];
+    srBank      = [...(item.bankTiles || [])];
     srBuilt     = [];
 
     const pct = Math.round((drillIndex / drillItems.length) * 100);
@@ -708,35 +578,36 @@
     const subEl  = srEl('prac-sr-submit-btn');
     if (fbEl)   { fbEl.hidden = true; fbEl.innerHTML = ''; }
     if (nextEl) { nextEl.hidden = true; nextEl.textContent = drillIndex + 1 >= drillItems.length ? 'See Results →' : 'Next →'; }
-    if (subEl)  { subEl.hidden = false; subEl.textContent = 'Check →'; }
+    if (subEl)  { subEl.hidden = false; subEl.textContent = 'Check →'; subEl.disabled = true; }
 
-    const wbUi  = srEl('prac-sr-wb-ui');
-    const rcUi  = srEl('prac-sr-recall-ui');
-    if (srDifficulty === 'wordbank') {
-      if (wbUi) wbUi.hidden = false;
-      if (rcUi) rcUi.hidden = true;
+    const wbUi = srEl('prac-sr-wb-ui');
+    const rcUi = srEl('prac-sr-recall-ui');
+
+    const useWordBank = (drillMode === 'rebuild' && srDifficulty === 'wordbank');
+    const useRecall   = (drillMode === 'rebuild' && srDifficulty === 'recall') || (drillMode === 'type');
+
+    if (wbUi) wbUi.hidden = !useWordBank;
+    if (rcUi) rcUi.hidden = !useRecall;
+
+    if (useWordBank) {
       renderSRBuilt();
       renderSRBank();
     } else {
-      if (wbUi) wbUi.hidden = true;
-      if (rcUi) rcUi.hidden = false;
       const inp = srEl('prac-sr-recall-input');
       if (inp) { inp.value = ''; inp.disabled = false; setTimeout(() => inp.focus(), 100); }
     }
     updateSRSubmit();
   }
 
-  // Submit handler
   const pracSRSubmitBtn = $('prac-sr-submit-btn');
   pracSRSubmitBtn && pracSRSubmitBtn.addEventListener('click', async () => {
     if (srAnswered) return;
     const item = drillItems[drillIndex];
     if (!item) return;
-    if (srDifficulty === 'wordbank') submitWordBank(item);
+    if (drillMode === 'rebuild' && srDifficulty === 'wordbank') submitWordBank(item);
     else await submitRecall(item);
   });
 
-  // Ctrl+Enter in recall textarea
   const pracSRRecallInput = $('prac-sr-recall-input');
   pracSRRecallInput && pracSRRecallInput.addEventListener('keydown', async (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !srAnswered) {
@@ -755,7 +626,6 @@
     if (correct) drillScore++;
     else         missedItems.push(item);
 
-    // Highlight tiles
     const builtEl = srEl('prac-sr-built');
     if (builtEl) {
       builtEl.querySelectorAll('.prac-sr-tile--built').forEach((btn, i) => {
@@ -781,29 +651,42 @@
     if (inp) inp.disabled = true;
     if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
 
-    let result = null;
-    try {
-      const resp = await fetch(API_BASE + '/api/check-sentence', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ english: item.english, userItalian, articleItalian: item.sentence }),
-      });
-      result = await resp.json();
-    } catch (e) {
-      result = { correct: false, score: 0, idealItalian: item.sentence, errors: [], encouragement: 'Keep practising!' };
+    let result   = null;
+    let isCorrect = false;
+
+    if (drillMode === 'type') {
+      // Local check: normalized string similarity
+      const userNorm  = normalizeIT(userItalian);
+      const idealNorm = normalizeIT(item.italian);
+      const dist = levenshtein(userNorm, idealNorm);
+      isCorrect = userNorm === idealNorm || dist <= Math.max(2, Math.floor(idealNorm.length * 0.12));
+      result = {
+        correct:      isCorrect,
+        score:        isCorrect ? 100 : Math.max(0, 100 - Math.round((dist / Math.max(idealNorm.length, 1)) * 100)),
+        idealItalian: item.italian,
+        errors:       [],
+        encouragement: isCorrect ? '' : 'Keep practising!',
+      };
+    } else {
+      // Free Recall: API check
+      try {
+        const resp = await fetch(API_BASE + '/api/check-sentence', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ english: item.english, userItalian, articleItalian: item.italian }),
+        });
+        result = await resp.json();
+      } catch (e) {
+        result = { correct: false, score: 0, idealItalian: item.italian, errors: [], encouragement: 'Keep practising!' };
+      }
+      isCorrect = result.correct || (result.score >= 75);
     }
 
-    const isCorrect = result.correct || (result.score >= 75);
     if (isCorrect) drillScore++;
     else           missedItems.push(item);
 
     showSRFeedback(isCorrect, item, result);
   }
-
-  const TYPE_COLORS = {
-    'grammar': '#B83232', 'spanish-transfer': '#B85C00',
-    'word-choice': '#0055AA', 'spelling': '#888',
-  };
 
   function showSRFeedback(correct, item, apiResult) {
     const fbEl  = srEl('prac-sr-feedback');
@@ -813,13 +696,13 @@
 
     let html = `<div class="prac-feedback-result ${correct ? 'correct' : 'wrong'}">${correct ? '✓ Correct!' : '✗ Not quite'}</div>`;
 
-    const ideal = (apiResult && apiResult.idealItalian) ? apiResult.idealItalian : item.sentence;
+    const ideal = (apiResult && apiResult.idealItalian) ? apiResult.idealItalian : item.italian;
     html += `<div class="prac-sr-ideal">
       <span class="prac-sr-ideal-label">Ideal:</span>
       <em class="prac-sr-ideal-text">${escapeHTML(ideal)}</em>
     </div>`;
 
-    if (apiResult && apiResult.errors && apiResult.errors.length > 0) {
+    if (apiResult && Array.isArray(apiResult.errors) && apiResult.errors.length > 0) {
       html += '<div class="prac-sr-errors">' +
         apiResult.errors.map(err => {
           const col = TYPE_COLORS[err.type] || '#888';
@@ -836,7 +719,7 @@
         '</div>';
     }
 
-    if (apiResult && apiResult.score !== undefined) {
+    if (apiResult && apiResult.score !== undefined && drillMode !== 'type') {
       html += `<div class="prac-sr-score">Score: ${apiResult.score}/100</div>`;
     }
     if (apiResult && apiResult.encouragement) {
@@ -854,8 +737,5 @@
     drillIndex++;
     showSRItem();
   });
-
-  // ── Init ─────────────────────────────────────────────────────────────────
-  populateSelector();
 
 })();

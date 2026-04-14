@@ -723,6 +723,48 @@ Return only the JSON array, no explanation.`;
   }
 });
 
+// ── Generate practice sentences ───────────────────────────────────────────
+// Body: { topic, difficulty }
+app.post('/api/generate-practice', async (req, res) => {
+  const { topic, difficulty } = req.body;
+  if (!topic || !topic.trim()) return res.status(400).json({ error: 'topic required' });
+  const diff = difficulty || 'B1';
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1400,
+      temperature: 0.8,
+      messages: [{
+        role: 'user',
+        content: `Generate 8 Italian translation exercises for a Spanish speaker learning Italian at ${diff} level.
+Topic: "${topic}".
+Write natural, conversational Italian — not textbook phrasing. Vary sentence structures.
+Return JSON only, no markdown:
+{
+  "sentences": [
+    {
+      "english": "the English sentence",
+      "italian": "the ideal Italian translation",
+      "words": ["key", "italian", "words"],
+      "distractors": ["wrong1", "wrong2", "wrong3", "wrong4"]
+    }
+  ]
+}
+words: 4-8 key content words from the Italian sentence (nouns, verbs, adjectives — not articles or prepositions)
+distractors: 4 plausible wrong Italian words targeting Spanish-speaker errors (wrong tense, Spanish cognate, gender/number mistake, false friend)`,
+      }],
+    });
+
+    let raw = message.content[0].text.trim().replace(/^```json\s*|\s*```$/g, '');
+    const result = JSON.parse(raw);
+    res.json(result);
+  } catch (err) {
+    console.error('/api/generate-practice error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Ponte server running on http://localhost:${PORT}`);
 });
