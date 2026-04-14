@@ -540,6 +540,11 @@ header {
   display: none;
 }
 
+/* Hide column labels until an article (or skeleton) is loaded */
+.reader:not(.reader-has-article) .column-label {
+  display: none;
+}
+
 .column {
   padding: 40px 44px;
 }

@@ -218,13 +218,14 @@
     state.article      = article;
     state.activeWordmap = wordmapOverride || buildWordmap(article.words);
 
+    readerEl.classList.add('reader-has-article');
     articleTitle.textContent      = article.title;
     articleDifficulty.textContent = article.difficulty;
     articleTopic.textContent      = article.topic;
     italianText.innerHTML         = tokenizeItalian(article.italian);
     updateTranslation();
     hideTooltip();
-    applyTranslationState(false, false); // always start Italian-only on new article
+    applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
   }
 
@@ -241,6 +242,8 @@
     surpriseBtn.disabled = on;
     generateBtn.textContent = on ? 'Generating…' : 'Generate';
     if (on) {
+      readerEl.classList.add('reader-has-article'); // show column labels during skeleton
+      quizTriggerBtn.hidden = true;                 // hide quiz button while generating
       italianText.innerHTML = [90, 85, 93, 78, 88, 82]
         .map((w) => `<div class="skeleton-line" style="width:${w}%"></div>`)
         .join('');
@@ -542,13 +545,11 @@
   }
 
   function initTranslationToggle() {
-    const saved = localStorage.getItem(LS_TRANSL);
-    // Default: collapsed (false). Only open if explicitly saved as '1'.
-    const open = saved === '1';
-    applyTranslationState(open, false);
+    // Always start collapsed — Italian-only is the default; never restore from localStorage
+    applyTranslationState(false, false);
 
     translToggleBtn.addEventListener('click', () => {
-      applyTranslationState(!state.translationOpen, true);
+      applyTranslationState(!state.translationOpen, false);
     });
   }
 
@@ -1179,5 +1180,4 @@
   initTranslationToggle();
   updateFlashcardBadge();
   syncFlashcardsFromServer(); // async; localStorage badge already shown above
-  renderArticle(articles[0], window.wordmap);
 })();
