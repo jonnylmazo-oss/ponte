@@ -172,6 +172,7 @@
     const topKey   = entries[0][0];
     const topTopic = PATTERN_TOPICS[topKey] || topKey.replace(/-/g, ' ');
     pracTopicInput.value = topTopic;
+    pracTopicInput.dispatchEvent(new Event('input'));
     currentTopic = topTopic;
     updateGenerateBtn();
     pracTopicInput.focus();
@@ -179,7 +180,10 @@
 
   pracSurpriseBtn && pracSurpriseBtn.addEventListener('click', () => {
     const topic = PRACTICE_SURPRISE_TOPICS[Math.floor(Math.random() * PRACTICE_SURPRISE_TOPICS.length)];
-    if (pracTopicInput) { pracTopicInput.value = topic; }
+    if (pracTopicInput) {
+      pracTopicInput.value = topic;
+      pracTopicInput.dispatchEvent(new Event('input'));
+    }
     currentTopic = topic;
     updateGenerateBtn();
   });
