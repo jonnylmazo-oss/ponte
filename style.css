@@ -1840,6 +1840,20 @@ header {
   padding: 0 20px;
 }
 
+.gr-verb-ref {
+  background: #F0EBE3;
+  border-left: 3px solid #0066CC;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+  border-radius: 0 4px 4px 0;
+}
+.gr-verb-ref-infinitive { font-weight: 600; color: var(--text); }
+.gr-verb-ref-meaning { color: var(--text-mid); }
+.gr-verb-ref-type { color: var(--text); }
+.gr-verb-ref-note { color: var(--text-mid); }
+
 .gr-drill-sentence {
   font-size: 18px;
   color: var(--text);

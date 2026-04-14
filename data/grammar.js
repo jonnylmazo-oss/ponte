@@ -921,7 +921,8 @@ const grammarDrills = [
     sentenceEN: "Yesterday morning Marco ___ to the market alone.",
     answer: "è andato",
     distractors: ["ha andato", "andava", "ha ito"],
-    explanation: "'Andare' is a motion verb — always essere in compound tenses: 'è andato'. 'Ha andato' is the direct Spanish-influenced error (using haber/avere for all verbs)."
+    explanation: "'Andare' is a motion verb — always essere in compound tenses: 'è andato'. 'Ha andato' is the direct Spanish-influenced error (using haber/avere for all verbs).",
+    verbRef: { infinitive: "andare", meaning: "to go", type: "essere verb", typeNote: "motion verbs always take essere in compound tenses" }
   },
   {
     id: 2,
@@ -930,7 +931,8 @@ const grammarDrills = [
     sentenceEN: "My parents ___ to Naples three years ago.",
     answer: "sono partiti",
     distractors: ["hanno partito", "partivano", "sono partire"],
-    explanation: "'Partire' (to depart) uses essere: 'sono partiti'. Agreement: partiti (m.pl.). 'Hanno partito' is the haber-influenced error."
+    explanation: "'Partire' (to depart) uses essere: 'sono partiti'. Agreement: partiti (m.pl.). 'Hanno partito' is the haber-influenced error.",
+    verbRef: { infinitive: "partire", meaning: "to depart / to leave", type: "essere verb", typeNote: "motion verbs always take essere in compound tenses" }
   },
 
   // Card 5 — Stare + Gerundio restriction
@@ -941,7 +943,8 @@ const grammarDrills = [
     sentenceEN: "Don't interrupt me — I ___ right now.",
     answer: "sto lavorando",
     distractors: ["sono lavorando", "lavoro adesso", "stavo lavorando"],
-    explanation: "Stare + gerundio expresses action in progress right now. 'Sono lavorando' is not Italian — essere is not used with gerundio. 'Sto lavorando' = I'm working (right now)."
+    explanation: "Stare + gerundio expresses action in progress right now. 'Sono lavorando' is not Italian — essere is not used with gerundio. 'Sto lavorando' = I'm working (right now).",
+    verbRef: { infinitive: "lavorare", meaning: "to work", type: "avere verb", typeNote: "stare + gerundio = snapshot right now; essere is never used with gerundio" }
   },
   {
     id: 4,
@@ -950,7 +953,8 @@ const grammarDrills = [
     sentenceEN: "Luca ___ in Milan for two years.",
     answer: "vive",
     distractors: ["sta vivendo", "è vivendo", "ha vissuto"],
-    explanation: "Italian doesn't use stare + gerundio for extended ongoing states. Use simple present + da: 'vive a Milano da due anni'. 'Sta vivendo' would mean he's in the process of moving in right now."
+    explanation: "Italian doesn't use stare + gerundio for extended ongoing states. Use simple present + da: 'vive a Milano da due anni'. 'Sta vivendo' would mean he's in the process of moving in right now.",
+    verbRef: { infinitive: "vivere", meaning: "to live", type: "avere verb", typeNote: "extended ongoing states use simple present + da, not stare + gerundio" }
   },
 
   // Card 6 — Da + present
@@ -961,7 +965,8 @@ const grammarDrills = [
     sentenceEN: "I ___ this restaurant since I was twenty years old.",
     answer: "Frequento",
     distractors: ["Ho frequentato", "Frequentavo", "Sto frequentando"],
-    explanation: "For an action ongoing from the past to now, Italian uses present tense + da. 'Ho frequentato' (passato prossimo) implies the action is over."
+    explanation: "For an action ongoing from the past to now, Italian uses present tense + da. 'Ho frequentato' (passato prossimo) implies the action is over.",
+    verbRef: { infinitive: "frequentare", meaning: "to frequent / to attend", type: "avere verb", typeNote: "use simple present + da for actions ongoing from the past up to now" }
   },
 
   // Card 11 — Ne
@@ -1036,7 +1041,8 @@ const grammarDrills = [
     sentenceEN: "I think Marco ___ late tomorrow.",
     answer: "sia",
     distractors: ["è", "sarà", "sarebbe"],
-    explanation: "After 'penso che', Italian always uses congiuntivo: 'sia' (congiuntivo presente di essere). 'È' (indicativo) is a Spanish-influenced error — Italian requires subjunctive here regardless of register."
+    explanation: "After 'penso che', Italian always uses congiuntivo: 'sia' (congiuntivo presente di essere). 'È' (indicativo) is a Spanish-influenced error — Italian requires subjunctive here regardless of register.",
+    verbRef: { infinitive: "essere", meaning: "to be", type: "essere verb", typeNote: "congiuntivo presente: sia, sia, sia, siamo, siate, siano — required after penso/credo che" }
   },
   {
     id: 13,
@@ -1045,7 +1051,8 @@ const grammarDrills = [
     sentenceEN: "I don't believe they ___ the truth.",
     answer: "dicano",
     distractors: ["dicono", "diceranno", "diranno"],
-    explanation: "'Non credo che' triggers congiuntivo: 'dicano' (3rd pl. congiuntivo presente di dire). 'Dicono' is indicativo — never used after 'non credo che' in Italian."
+    explanation: "'Non credo che' triggers congiuntivo: 'dicano' (3rd pl. congiuntivo presente di dire). 'Dicono' is indicativo — never used after 'non credo che' in Italian.",
+    verbRef: { infinitive: "dire", meaning: "to say / to tell", type: "avere verb", typeNote: "congiuntivo presente required after non credo che — never use indicativo" }
   },
 
   // Card 21 — Benché + congiuntivo
@@ -1056,7 +1063,8 @@ const grammarDrills = [
     sentenceEN: "Although he ___ tired, Luca went out for a run.",
     answer: "fosse",
     distractors: ["era", "è", "sia"],
-    explanation: "'Benché' always requires congiuntivo. The main clause is past → use congiuntivo imperfetto: 'fosse'. 'Era' (imperfetto indicativo) is grammatically impossible after benché."
+    explanation: "'Benché' always requires congiuntivo. The main clause is past → use congiuntivo imperfetto: 'fosse'. 'Era' (imperfetto indicativo) is grammatically impossible after benché.",
+    verbRef: { infinitive: "essere", meaning: "to be", type: "essere verb", typeNote: "benché always triggers congiuntivo; past main clause → congiuntivo imperfetto (fosse)" }
   },
 
   // Card 22 — Prima che + congiuntivo
@@ -1067,7 +1075,8 @@ const grammarDrills = [
     sentenceEN: "Call me before you ___ the house.",
     answer: "esca",
     distractors: ["esci", "uscire", "uscirai"],
-    explanation: "'Prima che' + different subject → congiuntivo. 'Esca' is 2nd person congiuntivo presente of 'uscire'. 'Esci' is indicativo — wrong after 'prima che'."
+    explanation: "'Prima che' + different subject → congiuntivo. 'Esca' is 2nd person congiuntivo presente of 'uscire'. 'Esci' is indicativo — wrong after 'prima che'.",
+    verbRef: { infinitive: "uscire", meaning: "to leave / to go out", type: "essere verb", typeNote: "motion verb; prima che + different subject always requires congiuntivo" }
   },
 
   // Card 25 — Reflexive + essere
@@ -1078,7 +1087,8 @@ const grammarDrills = [
     sentenceEN: "This morning I ___ very late.",
     answer: "sono svegliato",
     distractors: ["ho svegliato", "sono svegliata", "ho svegliata"],
-    explanation: "Reflexive verbs always use essere: 'mi sono svegliato'. 'Mi ho svegliato' is ungrammatical. (Note: 'mi sono svegliata' would be correct for a female speaker.)"
+    explanation: "Reflexive verbs always use essere: 'mi sono svegliato'. 'Mi ho svegliato' is ungrammatical. (Note: 'mi sono svegliata' would be correct for a female speaker.)",
+    verbRef: { infinitive: "svegliarsi", meaning: "to wake up", type: "reflexive verb — always essere", typeNote: "all reflexive verbs use essere; participle agrees with subject" }
   },
   {
     id: 17,
@@ -1087,7 +1097,8 @@ const grammarDrills = [
     sentenceEN: "The girls ___ early so as not to miss the train.",
     answer: "si sono alzate",
     distractors: ["si hanno alzate", "si sono alzati", "hanno alzato"],
-    explanation: "'Alzarsi' is reflexive → essere auxiliary. And the participle agrees: 'alzate' (f.pl.) because 'le ragazze' is feminine plural. 'Alzati' would be masculine/mixed group."
+    explanation: "'Alzarsi' is reflexive → essere auxiliary. And the participle agrees: 'alzate' (f.pl.) because 'le ragazze' is feminine plural. 'Alzati' would be masculine/mixed group.",
+    verbRef: { infinitive: "alzarsi", meaning: "to get up / to rise", type: "reflexive verb — always essere", typeNote: "participle agrees with subject: alzate (f.pl.) for le ragazze" }
   },
 
   // Card 28 — Reciprocal reflexives
@@ -1098,7 +1109,8 @@ const grammarDrills = [
     sentenceEN: "Giulia and I haven't ___ for almost two months.",
     answer: "ci siamo visti",
     distractors: ["ci abbiamo visti", "abbiamo visto", "siamo visti"],
-    explanation: "Reciprocal 'vedersi' uses essere: 'ci siamo visti'. 'Ci abbiamo visti' mixes the wrong auxiliary. 'Siamo visti' is missing the reflexive ci."
+    explanation: "Reciprocal 'vedersi' uses essere: 'ci siamo visti'. 'Ci abbiamo visti' mixes the wrong auxiliary. 'Siamo visti' is missing the reflexive ci.",
+    verbRef: { infinitive: "vedersi", meaning: "to see each other", type: "reciprocal reflexive — always essere", typeNote: "reciprocal reflexives use essere; ci is the reciprocal marker" }
   },
 
   // Card 29 — A vs In
@@ -1162,7 +1174,8 @@ const grammarDrills = [
     sentenceEN: "I ___ go to the party last night.",
     answer: "sono potuto",
     distractors: ["ho potuto", "potevo", "sono potuta"],
-    explanation: "'Potere' with an essere-verb ('andare') → compound takes essere: 'sono potuto/a andare'. (Note: 'sono potuta' for female speaker.) 'Ho potuto andare' is common in speech but essere is the precise form."
+    explanation: "'Potere' with an essere-verb ('andare') → compound takes essere: 'sono potuto/a andare'. (Note: 'sono potuta' for female speaker.) 'Ho potuto andare' is common in speech but essere is the precise form.",
+    verbRef: { infinitive: "potere", meaning: "to be able to / can", type: "modal verb — auxiliary follows the infinitive", typeNote: "potere + essere-verb (andare) → uses essere: sono potuto andare" }
   },
 
   // Card 39 — Riuscire a vs Potere
@@ -1173,7 +1186,8 @@ const grammarDrills = [
     sentenceEN: "I tried for hours but I couldn't ___ open the jar.",
     answer: "riuscivo ad",
     distractors: ["potevo", "sapevo", "sono riuscito a"],
-    explanation: "'Riuscire a' expresses trying but not managing. 'Non riuscivo ad aprire' = I couldn't manage to open it (despite effort). 'Non potevo' would imply impossibility or lack of permission — different nuance."
+    explanation: "'Riuscire a' expresses trying but not managing. 'Non riuscivo ad aprire' = I couldn't manage to open it (despite effort). 'Non potevo' would imply impossibility or lack of permission — different nuance.",
+    verbRef: { infinitive: "riuscire a", meaning: "to manage to / to succeed in", type: "avere verb", typeNote: "riuscire a = effort toward a goal; non riuscivo = kept failing despite trying" }
   },
 
   // Card 40 — Sapere vs Conoscere
@@ -1184,7 +1198,8 @@ const grammarDrills = [
     sentenceEN: "___ where Marta lives?",
     answer: "Sai",
     distractors: ["Conosci", "Conosco", "Sa"],
-    explanation: "'Sapere' is used for knowing facts and clauses: 'sapere dove' = to know where. 'Conosci' would work for knowing a person, but not for knowing a fact or indirect question."
+    explanation: "'Sapere' is used for knowing facts and clauses: 'sapere dove' = to know where. 'Conosci' would work for knowing a person, but not for knowing a fact or indirect question.",
+    verbRef: { infinitive: "sapere", meaning: "to know (a fact / how to)", type: "avere verb", typeNote: "sapere = facts, indirect questions, and how to do things" }
   },
   {
     id: 27,
@@ -1193,7 +1208,8 @@ const grammarDrills = [
     sentenceEN: "I ___ Rome well — I grew up there.",
     answer: "Conosco",
     distractors: ["So", "Sapevo", "Riconosco"],
-    explanation: "'Conoscere' expresses familiarity with places and people: 'Conosco Roma' = I know Rome well. 'So Roma' would mean 'I know of Rome' as a fact — unnatural. 'Conosco' = familiarity from experience."
+    explanation: "'Conoscere' expresses familiarity with places and people: 'Conosco Roma' = I know Rome well. 'So Roma' would mean 'I know of Rome' as a fact — unnatural. 'Conosco' = familiarity from experience.",
+    verbRef: { infinitive: "conoscere", meaning: "to know (a person / place)", type: "avere verb", typeNote: "conoscere = familiarity from direct experience with people or places" }
   },
 
   // Card 12 — Ci with pensare
@@ -1215,7 +1231,8 @@ const grammarDrills = [
     sentenceEN: "I ___ a croissant and a coffee, please.",
     answer: "Volevo",
     distractors: ["Voglio", "Vorrò", "Vorevo"],
-    explanation: "Both 'volevo' (imperfetto) and 'vorrei' (condizionale) work as polite requests. 'Voglio' (present) sounds blunt. 'Vorrò' is future. 'Volevo' uses the distinctly Italian imperfetto-as-softener in shops and cafés."
+    explanation: "Both 'volevo' (imperfetto) and 'vorrei' (condizionale) work as polite requests. 'Voglio' (present) sounds blunt. 'Vorrò' is future. 'Volevo' uses the distinctly Italian imperfetto-as-softener in shops and cafés.",
+    verbRef: { infinitive: "volere", meaning: "to want", type: "avere verb", typeNote: "imperfetto softens requests in cafés and shops; more natural than vorrei for everyday orders" }
   },
 
   // Card 3 — PP vs Imperfetto
@@ -1226,7 +1243,8 @@ const grammarDrills = [
     sentenceEN: "While I ___ dinner, the phone rang.",
     answer: "preparavo",
     distractors: ["ho preparato", "preparai", "stavo preparando"],
-    explanation: "The ongoing background action uses imperfetto: 'preparavo'. The interrupting completed action uses passato prossimo: 'ha squillato'. 'Ho preparato' for the background would make the two actions sound sequential rather than simultaneous."
+    explanation: "The ongoing background action uses imperfetto: 'preparavo'. The interrupting completed action uses passato prossimo: 'ha squillato'. 'Ho preparato' for the background would make the two actions sound sequential rather than simultaneous.",
+    verbRef: { infinitive: "preparare", meaning: "to prepare", type: "avere verb", typeNote: "background ongoing action uses imperfetto; the interrupting event uses passato prossimo" }
   }
 
 ];

@@ -87,6 +87,7 @@
   const drillProgress    = document.getElementById('gr-drill-progress');
   const drillProgressBar = document.getElementById('gr-drill-progress-bar');
   const drillCard        = document.getElementById('gr-drill-card');
+  const drillVerbRef     = document.getElementById('gr-verb-ref');
   const drillSentence    = document.getElementById('gr-drill-sentence');
   const drillSentenceEN  = document.getElementById('gr-drill-sentence-en');
   const drillOptions     = document.getElementById('gr-drill-options');
@@ -365,6 +366,17 @@
 
     drillProgress.textContent = `${drillIndex + 1} / ${total}`;
     drillProgressBar.style.width = Math.round((drillIndex / total) * 100) + '%';
+
+    if (drillVerbRef) {
+      if (drill.verbRef) {
+        drillVerbRef.innerHTML =
+          `<div><span class="gr-verb-ref-infinitive">Verb:</span> ${esc(drill.verbRef.infinitive)} <span class="gr-verb-ref-meaning">(${esc(drill.verbRef.meaning)})</span></div>` +
+          `<div><span class="gr-verb-ref-type">Type:</span> <span class="gr-verb-ref-note">${esc(drill.verbRef.type)} — ${esc(drill.verbRef.typeNote)}</span></div>`;
+        drillVerbRef.hidden = false;
+      } else {
+        drillVerbRef.hidden = true;
+      }
+    }
 
     drillSentence.innerHTML = drill.sentence.replace(/___/g, '<span class="gr-blank">___</span>');
     if (drillSentenceEN) {
