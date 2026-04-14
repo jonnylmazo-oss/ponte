@@ -2146,6 +2146,19 @@ header {
   font-weight: 700;
   color: var(--text);
 }
+.fc-card-base {
+  font-size: 12px;
+  color: #9B8470;
+  font-style: italic;
+  margin-bottom: 4px;
+  margin-top: 1px;
+}
+.fc-flip-base {
+  font-size: 12px;
+  color: #9B8470;
+  font-style: italic;
+  margin: 2px 0 6px;
+}
 .fc-card-en {
   font-size: 13px;
   color: var(--text-mid);

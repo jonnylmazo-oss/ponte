@@ -56,6 +56,7 @@
   const fcFlipWordBack = $('fc-flip-word-back');
   const fcFlipAnswer  = $('fc-flip-answer');
   const fcFlipNote    = $('fc-flip-note');
+  const fcFlipBase    = $('fc-flip-base');
   const fcGotBtn      = $('fc-got-btn');
   const fcTrickyBtn   = $('fc-tricky-btn');
   const fcDrillScore  = $('fc-drill-score');
@@ -167,6 +168,7 @@
               <span class="fc-card-italian">${escapeHTML(card.italian)}</span>
               <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
             </div>
+            ${card.baseForm ? `<div class="fc-card-base">Base: ${escapeHTML(card.baseForm)} · ${escapeHTML(card.baseFormEN)}</div>` : ''}
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
             ${card.spanish ? `<div class="fc-card-es">${escapeHTML(card.spanish)}</div>` : ''}
             ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
@@ -333,6 +335,10 @@
       if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = true;
 
       fcFlipWordBack.textContent = card.italian;
+      if (fcFlipBase) {
+        fcFlipBase.textContent = card.baseForm ? `Base: ${card.baseForm} · ${card.baseFormEN}` : '';
+        fcFlipBase.hidden = !card.baseForm;
+      }
       fcFlipAnswer.innerHTML =
         `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
       fcFlipNote.textContent = card.note || '';
@@ -345,6 +351,10 @@
       if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = false;
 
       fcFlipWordBack.textContent = card.italian;
+      if (fcFlipBase) {
+        fcFlipBase.textContent = card.baseForm ? `Base: ${card.baseForm} · ${card.baseFormEN}` : '';
+        fcFlipBase.hidden = !card.baseForm;
+      }
       fcFlipAnswer.innerHTML = `
         <div class="fc-flip-en">${escapeHTML(card.english)}</div>
         ${card.spanish ? `<div class="fc-flip-es">${escapeHTML(card.spanish)}</div>` : ''}
