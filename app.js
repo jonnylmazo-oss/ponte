@@ -307,14 +307,16 @@
   }
 
   // ── Generate — SSE streaming with localStorage cache ──────────────────
-  function generateArticle(topic, difficulty) {
+  function generateArticle(topic, difficulty, forceRefresh = false) {
     const cacheKey = CACHE_PREFIX + topic.toLowerCase().trim() + '_' + difficulty;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        renderArticle(JSON.parse(cached));
-        return;
-      } catch { /* corrupt entry — re-fetch */ }
+    if (!forceRefresh) {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          renderArticle(JSON.parse(cached));
+          return;
+        } catch { /* corrupt entry — re-fetch */ }
+      }
     }
 
     setLoading(true);
@@ -676,9 +678,26 @@
   });
 
   surpriseBtn.addEventListener('click', () => {
-    const topic = SURPRISE_TOPICS[Math.floor(Math.random() * SURPRISE_TOPICS.length)];
+    const RECENT_KEY = 'ponte_recent_topics';
+    const RECENT_MAX = 10;
+    let recent = [];
+    try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { recent = []; }
+
+    // Exclude recently seen topics; fall back to full list if all have been seen
+    let pool = SURPRISE_TOPICS.filter(t => !recent.includes(t));
+    if (pool.length === 0) { pool = SURPRISE_TOPICS.slice(); recent = []; }
+
+    // Fisher-Yates pick: shuffle pool, take first
+    const idx = Math.floor(Math.random() * pool.length);
+    const topic = pool[idx];
+
+    // Update recent list (cap at RECENT_MAX)
+    recent.push(topic);
+    if (recent.length > RECENT_MAX) recent.shift();
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+
     topicInput.value = topic;
-    generateArticle(topic, difficultySelect.value);
+    generateArticle(topic, difficultySelect.value, true); // forceRefresh — always fresh
   });
 
   topicInput.addEventListener('keydown', (e) => {
