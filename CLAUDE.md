@@ -318,16 +318,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | #37 | Pronunciation lab | P3 |
 | #38 | Collaborative deck sharing | P3 |
 
-### Gaps — built with no issue
-- Safe Cognates section (200 entries, sub-tab UI, drill mode, green palette)
-- Grammar tab 4-stage redesign (tiles → card list, stage progress, "See more examples →")
-- Verb reference card in Grammar Pattern Drills (verbRef on 18 of 30 drills)
-- Base form line on all flashcards (library + drill back face; backfill on 92 existing cards)
-- Reverse drill mode (EN→IT flip, localStorage toggle)
-- Fullscreen immersive drill mode (body.drill-fullscreen, shared header)
-- Translate tab bidirectional lookup + EN→IT endpoint
-- Flashcard drill score tracking (session stats bar, accuracy badges, word-type filter, Reset Scores)
-- Practice tab cloze mode (fill-in-the-blank from generated articles, AI distractors, miss-to-flashcards)
+### Gaps — retroactive issues created and closed in this audit
+- **#40** Safe Cognates section (200 entries, sub-tab UI, drill mode, green palette)
+- **#41** Grammar 4-stage learning path redesign (tiles → card list, stage progress, "See more examples →")
+- **#42** Reverse drill mode (EN→IT flip, localStorage toggle)
+- **#43** Fullscreen immersive drill mode (body.drill-fullscreen, shared header)
+- **#44** Bidirectional Translate tab (IT↔EN, random word, history chips, save to flashcards)
+- **#45** Drill score tracking and accuracy badges (session stats, per-card %, word-type filter, Reset Scores)
+- **#46** Practice tab cloze mode (fill-in-the-blank from generated articles, AI distractors, miss-to-flashcards)
+- **#47** Base form on flashcards (library + drill back face; backfill on 92 existing cards)
+- **#48** Verb reference card in pattern drills (verbRef on 18 of 30 drills)
 
 ## Backlog (open issues)
 
