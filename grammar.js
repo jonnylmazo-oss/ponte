@@ -53,6 +53,25 @@
   };
   function catLabel(cat) { return CAT_LABELS[cat] || cat.toUpperCase(); }
 
+  const EP_KEY = 'ponte_error_patterns';
+
+  // Maps pattern key → { label, drillCat, studyStage }
+  const PATTERN_META = {
+    'false-friend':     { label: 'False Friends',       drillCat: null,          studyStage: 2 },
+    'divergence':       { label: 'Divergent Usage',     drillCat: null,          studyStage: 1 },
+    'verb-essere':      { label: 'Essere Auxiliary',    drillCat: 'tense',       studyStage: 1 },
+    'passato-prossimo': { label: 'Passato Prossimo',    drillCat: 'tense',       studyStage: 1 },
+    'clitic-placement': { label: 'Clitic Placement',    drillCat: 'pronoun',     studyStage: 3 },
+    'subjunctive':      { label: 'Subjunctive',         drillCat: 'subjunctive', studyStage: 3 },
+    'geminates':        { label: 'Geminate Consonants', drillCat: 'geminate',    studyStage: 4 },
+    'verb-general':     { label: 'Verb Conjugation',    drillCat: 'tense',       studyStage: 1 },
+  };
+
+  function loadErrorPatterns() {
+    try { return JSON.parse(localStorage.getItem(EP_KEY) || '{}'); }
+    catch { return {}; }
+  }
+
   // ── State ─────────────────────────────────────────────────────────────────
   let activePanel    = 'stages';
   let drillQueue     = [];
@@ -68,9 +87,10 @@
   const tabGrammar   = document.getElementById('tab-grammar');
   if (!tabGrammar) return;
 
-  const panelStages  = document.getElementById('grammar-panel-stages');
-  const panelDrills  = document.getElementById('grammar-panel-drills');
-  const panelReading = document.getElementById('grammar-panel-reading');
+  const panelWeakAreas = document.getElementById('grammar-panel-weakareas');
+  const panelStages    = document.getElementById('grammar-panel-stages');
+  const panelDrills    = document.getElementById('grammar-panel-drills');
+  const panelReading   = document.getElementById('grammar-panel-reading');
 
   const subTabBtns   = tabGrammar.querySelectorAll('.grammar-subtab');
 
@@ -101,12 +121,96 @@
   function switchPanel(id) {
     activePanel = id;
     subTabBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === id));
-    panelStages.hidden  = (id !== 'stages');
-    panelDrills.hidden  = (id !== 'drills');
-    panelReading.hidden = (id !== 'reading');
+    panelWeakAreas.hidden = (id !== 'weakareas');
+    panelStages.hidden    = (id !== 'stages');
+    panelDrills.hidden    = (id !== 'drills');
+    panelReading.hidden   = (id !== 'reading');
+    if (id === 'weakareas') renderWeakAreas();
   }
 
   subTabBtns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
+
+  // ── Weak Areas panel ──────────────────────────────────────────────────────
+  function formatRelativeDate(isoStr) {
+    if (!isoStr) return '';
+    const diff = Date.now() - new Date(isoStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 30)  return `${days} days ago`;
+    const months = Math.floor(days / 30);
+    return `${months} month${months > 1 ? 's' : ''} ago`;
+  }
+
+  function renderWeakAreas() {
+    const stored  = loadErrorPatterns();
+    const entries = Object.entries(stored).sort((a, b) => b[1].count - a[1].count);
+
+    if (entries.length === 0) {
+      panelWeakAreas.innerHTML = `
+        <div class="gr-weak-empty">
+          <div class="gr-weak-empty-icon">📊</div>
+          <p>Complete some flashcard drills to see your weak areas.</p>
+          <p class="gr-weak-empty-hint">When you answer <strong>Again</strong> or <strong>Hard</strong>, patterns are tracked here.</p>
+        </div>`;
+      return;
+    }
+
+    panelWeakAreas.innerHTML = `
+      <div class="gr-weak-header">
+        <h2 class="gr-weak-title">Your Weak Areas</h2>
+        <p class="gr-weak-subtitle">Based on flashcard drill history — most-missed patterns first.</p>
+      </div>
+      <div class="gr-weak-list">
+        ${entries.map(([key, data], i) => {
+          const meta    = PATTERN_META[key] || {};
+          const label   = data.label || meta.label || key;
+          const count   = data.count || 0;
+          const variant = count >= 5 ? 'red' : count >= 2 ? 'yellow' : 'grey';
+          const studyBtn = meta.studyStage
+            ? `<button class="gr-weak-study-btn" data-stage="${meta.studyStage}">Study →</button>`
+            : '';
+          const drillBtn = meta.drillCat
+            ? `<button class="gr-weak-drill-btn" data-cat="${meta.drillCat}">Drill →</button>`
+            : '';
+          return `
+            <div class="gr-weak-row gr-weak-${variant}">
+              <span class="gr-weak-rank">#${i + 1}</span>
+              <div class="gr-weak-info">
+                <span class="gr-weak-label">${esc(label)}</span>
+                <span class="gr-weak-meta">${count} miss${count !== 1 ? 'es' : ''} · last ${formatRelativeDate(data.lastSeen)}</span>
+              </div>
+              <div class="gr-weak-actions">${studyBtn}${drillBtn}</div>
+            </div>`;
+        }).join('')}
+      </div>`;
+
+    // Wire Study → buttons
+    panelWeakAreas.querySelectorAll('.gr-weak-study-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const stageId = parseInt(btn.dataset.stage, 10);
+        switchPanel('stages');
+        openStage(stageId);
+      });
+    });
+
+    // Wire Drill → buttons
+    panelWeakAreas.querySelectorAll('.gr-weak-drill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.cat;
+        switchPanel('drills');
+        drillCatFilter = cat;
+        drillCardId    = null;
+        drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+        startDrills();
+      });
+    });
+  }
+
+  // Re-render if Weak Areas panel is currently open
+  window.addEventListener('ponte:error-patterns-updated', () => {
+    if (activePanel === 'weakareas') renderWeakAreas();
+  });
 
   // ── Stage tiles ───────────────────────────────────────────────────────────
   function getStageCards(stageId) {

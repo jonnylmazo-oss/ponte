@@ -636,6 +636,47 @@ Stay warm, in-character, and encouraging throughout.`;
   }
 });
 
+// ── Detect grammar patterns for a flashcard ────────────────────────────────
+app.post('/api/detect-patterns', async (req, res) => {
+  const { italian, english, category, note } = req.body;
+  if (!italian) return res.status(400).json({ error: 'italian required' });
+
+  const prompt = `Given this Italian flashcard, identify which grammar/vocabulary error patterns it relates to.
+
+Italian: "${italian}"
+English: "${english || ''}"
+Category: "${category || ''}"
+Note: "${note || ''}"
+
+Return ONLY a JSON array of pattern keys from this list (return empty array [] if none apply):
+- "false-friend" — word is a false cognate with Spanish
+- "divergence" — used differently than Spanish equivalent
+- "verb-essere" — uses essere as auxiliary in perfect tenses
+- "passato-prossimo" — passato prossimo conjugation
+- "clitic-placement" — clitic or object pronoun placement
+- "subjunctive" — subjunctive / congiuntivo mood
+- "geminates" — double consonant / geminate spelling
+- "verb-general" — verb conjugation (any other aspect not covered above)
+
+Return only the JSON array, no explanation.`;
+
+  try {
+    const message = await client.messages.create({
+      model:       'claude-sonnet-4-20250514',
+      max_tokens:  100,
+      temperature: 0.1,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    let patterns = [];
+    try { patterns = JSON.parse(message.content[0].text.trim()); } catch (e) {}
+    if (!Array.isArray(patterns)) patterns = [];
+    res.json({ patterns });
+  } catch (err) {
+    console.error('Detect patterns error:', err.message);
+    res.status(500).json({ error: 'Failed to detect patterns' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Ponte server running on http://localhost:${PORT}`);
 });

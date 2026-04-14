@@ -2,6 +2,7 @@
   'use strict';
 
   const FC_KEY  = 'ponte_flashcards';
+  const EP_KEY  = 'ponte_error_patterns';
   const API_BASE = (
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1'
@@ -40,6 +41,86 @@
 
   function escapeHTML(str) {
     return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  const PATTERN_LABELS = {
+    'false-friend':     'False Friends',
+    'divergence':       'Divergent Usage',
+    'verb-essere':      'Essere Auxiliary',
+    'passato-prossimo': 'Passato Prossimo',
+    'clitic-placement': 'Clitic Placement',
+    'subjunctive':      'Subjunctive',
+    'geminates':        'Geminate Consonants',
+    'verb-general':     'Verb Conjugation',
+  };
+
+  // ── Error pattern tracking ──────────────────────────────────────────────
+  function loadErrorPatterns() {
+    try { return JSON.parse(localStorage.getItem(EP_KEY) || '{}'); }
+    catch { return {}; }
+  }
+
+  function saveErrorPatterns(patterns) {
+    localStorage.setItem(EP_KEY, JSON.stringify(patterns));
+    window.dispatchEvent(new CustomEvent('ponte:error-patterns-updated'));
+  }
+
+  function detectErrorPatterns(card) {
+    // Rule-based detection from card fields
+    const patterns = [];
+    const note = (card.note || '').toLowerCase();
+    if (card.category === 'false-friend')           patterns.push('false-friend');
+    if (card.category === 'divergence')             patterns.push('divergence');
+    if (note.includes('essere'))                    patterns.push('verb-essere');
+    if (note.includes('passato prossimo'))          patterns.push('passato-prossimo');
+    if (note.includes('clitic') || note.includes('pronoun')) patterns.push('clitic-placement');
+    if (note.includes('subjunctive') || note.includes('congiuntivo')) patterns.push('subjunctive');
+    if (note.includes('geminate') || note.includes('double consonant')) patterns.push('geminates');
+    // Merge with Claude-detected patterns stored on card
+    if (Array.isArray(card.grammarPatterns)) {
+      card.grammarPatterns.forEach((p) => { if (!patterns.includes(p)) patterns.push(p); });
+    }
+    // Fallback: if wordType is verb and no patterns yet, tag verb-general
+    if (patterns.length === 0 && card.wordType === 'verb') patterns.push('verb-general');
+    return patterns;
+  }
+
+  function recordErrorPatterns(card) {
+    const patterns = detectErrorPatterns(card);
+    if (patterns.length === 0) return;
+    const stored = loadErrorPatterns();
+    const now    = new Date().toISOString();
+    patterns.forEach((key) => {
+      if (!stored[key]) stored[key] = { count: 0, lastSeen: now, label: PATTERN_LABELS[key] || key };
+      stored[key].count++;
+      stored[key].lastSeen = now;
+      stored[key].label    = PATTERN_LABELS[key] || key;
+    });
+    saveErrorPatterns(stored);
+  }
+
+  // ── Sort due cards: top-3 error patterns first, then by accuracy ─────────
+  function sortDueByPatterns(due) {
+    const stored   = loadErrorPatterns();
+    const ranked   = Object.entries(stored)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 3)
+      .map(([key]) => key);
+
+    function accuracy(card) {
+      const t = (card.timesCorrect || 0) + (card.timesWrong || 0);
+      return t === 0 ? 0.5 : (card.timesCorrect || 0) / t;
+    }
+
+    function matchesTop(card) {
+      if (ranked.length === 0) return false;
+      const cardPatterns = detectErrorPatterns(card);
+      return cardPatterns.some((p) => ranked.includes(p));
+    }
+
+    const priority = due.filter(matchesTop).sort((a, b) => accuracy(a) - accuracy(b));
+    const rest     = due.filter((c) => !matchesTop(c)).sort((a, b) => accuracy(a) - accuracy(b));
+    return [...priority, ...rest];
   }
 
   // ── SM-2 algorithm ─────────────────────────────────────────────────────
@@ -422,8 +503,8 @@
         showNoDueScreen(notDue);
         return;
       }
-      // Due cards first (shuffled), then not-due cards (shuffled)
-      queue = [...shuffle(due), ...shuffle(notDue)];
+      // Due cards first (sorted by error patterns + accuracy), then not-due cards (shuffled)
+      queue = [...sortDueByPatterns(due), ...shuffle(notDue)];
     }
 
     drillQueue          = queue;
@@ -590,6 +671,7 @@
         interval: cards[idx].interval,
       });
     }
+    if (rating === 'hard') recordErrorPatterns(card);
     drillCorrect++;
     sessionCorrect++;
     updateSessionStats();
@@ -614,6 +696,7 @@
         interval: cards[idx].interval,
       });
     }
+    recordErrorPatterns(card);
     sessionAgain++;
     updateSessionStats();
     if (!trickyCards.find((c) => c.id === card.id)) trickyCards.push(card);

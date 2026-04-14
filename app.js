@@ -969,6 +969,7 @@
     cards.push(card);
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
     persistFlashcardsToServer(cards);
+    detectAndSavePatterns(card.id, card.italian, card.english, card.category, card.note);
 
     // Brief flash animation
     tooltipSaveBtn.textContent = 'Saved!';
@@ -981,6 +982,26 @@
     updateFlashcardBadge();
     window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
   });
+
+  // ── Detect and persist grammar patterns for a newly saved card ───────────
+  function detectAndSavePatterns(cardId, italian, english, category, note) {
+    fetch(API_BASE + '/api/detect-patterns', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ italian, english, category, note }),
+    })
+      .then((r) => r.json())
+      .then(({ patterns }) => {
+        if (!Array.isArray(patterns) || patterns.length === 0) return;
+        const cards = loadFlashcards();
+        const idx   = cards.findIndex((c) => c.id === cardId);
+        if (idx === -1) return;
+        cards[idx].grammarPatterns = patterns;
+        localStorage.setItem(FC_KEY, JSON.stringify(cards));
+        persistFlashcardsToServer(cards);
+      })
+      .catch(() => {}); // fire-and-forget
+  }
 
   // ── Init ───────────────────────────────────────────────────────────────
   initTabs();

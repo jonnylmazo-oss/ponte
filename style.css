@@ -1811,6 +1811,107 @@ header {
   border-bottom-color: #0055AA;
 }
 
+/* ── Weak Areas panel ─────────────────────────────────────────────────────── */
+#grammar-panel-weakareas {
+  padding: 0 0 60px;
+}
+.gr-weak-header {
+  padding: 20px 20px 0;
+}
+.gr-weak-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.gr-weak-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 16px;
+}
+.gr-weak-list {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gr-weak-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.gr-weak-red    { border-left-color: #B83232; }
+.gr-weak-yellow { border-left-color: #B85C00; }
+.gr-weak-grey   { border-left-color: #9B8470; }
+.gr-weak-rank {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  min-width: 24px;
+  flex-shrink: 0;
+}
+.gr-weak-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gr-weak-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.gr-weak-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.gr-weak-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.gr-weak-study-btn,
+.gr-weak-drill-btn {
+  padding: 5px 11px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: #0055AA;
+  transition: background 0.15s;
+}
+.gr-weak-study-btn:hover,
+.gr-weak-drill-btn:hover {
+  background: #E8D9BC;
+}
+.gr-weak-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-mid);
+}
+.gr-weak-empty-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+.gr-weak-empty p {
+  font-size: 14px;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.gr-weak-empty-hint {
+  color: var(--text-dim);
+  font-size: 13px !important;
+}
+
 /* Toolbar */
 .gr-toolbar {
   display: flex;
