@@ -206,32 +206,38 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Service worker bumped to `ponte-v4` (drill score tracking)
 
 ## Practice tab (issues #6, #39, #33 closed)
-- `practice.js`: IIFE — three drill modes from generated articles stored in localStorage
-- **Article selector:** dropdown of all `ponte_article_*` keys; "Generate new" switches to Reader tab; selector refreshes on tab click
+- `practice.js`: IIFE — fully independent from Reader; generates custom practice sentences via Claude
+- **No article dependency** — article selector and `+ Generate new` button removed
+- **Setup screen:** topic text input → difficulty (B1/B2) → mode → "Generate Practice →"
+  - "🎯 Practice my weak areas" button reads `ponte_error_patterns`, maps top error key to a topic string via `PATTERN_TOPICS` map, pre-fills input
+  - Enter in topic input submits; button disabled when input empty
+- **Backend:** `POST /api/generate-practice` — `{ topic, difficulty }` → Claude returns 8 sentences: `{ sentences: [{ english, italian, words, distractors }] }`; `max_tokens: 1400`, `temperature: 0.8`
+  - `words`: 4–8 key content words from the Italian sentence
+  - `distractors`: 4 plausible wrong words targeting Spanish-speaker errors
 - **Mode selector:** Multiple Choice (default) / Type It / Sentence Rebuild — pill buttons; Sentence Rebuild shows difficulty sub-row (Word Bank / Free Recall)
+- **Difficulty selector:** B1 / B2 pill buttons (separate from mode row)
 
-### Multiple Choice + Type It modes
-- **Word selection:** from `article.words`; priority: false-friend > divergence > new > cognate; min 5 / max 10 blanks; cognates only if fewer than 5 non-cognates
-- **Sentence extraction:** splits Italian + English on sentence boundaries; shows English sentence in muted text below Italian
-- **Multiple choice mode** (default): 4 options (correct + 3 AI distractors); auto-advance 1.5s on correct; Next button on wrong
-- **Type it mode:** text input + Enter/Check; Levenshtein ≤1 accepted as correct (shows exact spelling on close typo)
-- **AI distractors:** `POST /api/distractors` — Claude generates 3 plausible wrong answers targeting Spanish-speaker confusion (wrong tense, Spanish cognate, transfer errors); cached in localStorage as `ponte_dist_{word}`; falls back to other article words if API fails
-- **Loading state:** Start button shows "Loading…" while distractors are fetched in parallel via `Promise.all`
+### Multiple Choice mode (`prac-drill` panel)
+- English sentence shown above; Italian sentence with blank below
+- 4 options: `words[0]` (correct) + first 3 distractors; auto-advance 1.5s on correct
+- Feedback: correct/wrong result + category badge
 
-### Sentence Rebuild mode (issue #33, closed)
-- **Source:** article sentences with ≥1 annotated word; max 8 items per session
-- **Word Bank (intermediate):** shuffled tile bank (correct tokens + equal-count distractors from article + Italian filler words); tap tile → moves to build area; tap built tile → returns to bank; submit compares normalized token sequence (correct / wrong highlights per tile)
-- **Free Recall (advanced):** textarea for open Italian translation; `POST /api/check-sentence` — Claude evaluates `{english, userItalian, articleItalian}`; returns `{correct, score, idealItalian, errors[], encouragement}`; `score ≥ 75` = correct
-- `server.js` `/api/check-sentence`: `max_tokens: 600`, `temperature: 0.2`; strips markdown from JSON response; returns per-error cards with type badges (Grammar / Spanish Transfer / Word Choice etc.)
-- **Feedback:** ideal sentence (label + italic cyan), per-error cards (strikethrough wrong → green fix + explanation + type badge), score, encouragement
-- Missed sentences reuse `missedItems` structure → same end-screen save-to-flashcards flow
+### Type It mode (`prac-sr-drill` panel — recall UI)
+- English sentence shown; user types full Italian sentence
+- Local Levenshtein check: correct if normalized strings match or distance ≤ max(2, 12% of target length)
+- Shows ideal Italian in feedback; no API call
+
+### Sentence Rebuild mode (`prac-sr-drill` panel — issue #33, closed)
+- **Word Bank (intermediate):** tiles = `words` + equal-count `distractors` from API response, shuffled; tap to build; submit compares normalized token sequence
+- **Free Recall (advanced):** textarea → `POST /api/check-sentence`; score ≥ 75 = correct; per-error cards with type badges
 
 ### Shared
 - **Missed words tracker:** `missedItems` array tracks wrong answers throughout session
-- **End screen:** score + missed words list (Italian, English, category badge) + "Save N missed words to Flashcards ★" button
-- **Save missed to flashcards:** writes directly to `ponte_flashcards` localStorage, syncs to server, fires `ponte:flashcard-saved` event
+- **End screen:** score + missed words list + "Save N missed words to Flashcards ★"
+  - `sourceArticle: 'Practice: [topic]'` on saved cards
+- **Retry:** re-generates from same topic/difficulty (new sentences each time)
 - **Progress bar** + X/Y counter at top
-- sw.js bumped to `ponte-v21`
+- sw.js bumped to `ponte-v22`
 
 ## Conversation tab (issue #31, closed)
 - `conversation.js`: IIFE — AI conversation simulator; Claude plays native Italian speaker
