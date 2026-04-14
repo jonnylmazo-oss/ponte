@@ -10,6 +10,7 @@ ponte/
 ├── app.js              — reader logic: tokenizer, tooltips, generator UI, API calls, flashcard save
 ├── false-friends.js    — False Friends tab UI IIFE
 ├── grammar.js          — Grammar tab UI IIFE
+├── conversation.js     — Conversation Simulator tab UI IIFE
 ├── flashcards.js       — Flashcards tab UI IIFE (library + drill)
 ├── style.css           — Kindle sepia design system
 ├── data/
@@ -102,7 +103,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
 
 ## Tab navigation
-- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 7 nav tabs (icon + label)
+- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 8 nav tabs (icon + label)
 - Collapsed sidebar: 54px wide, icon-only; expanded: 200px; state in `localStorage` (`ponte_sidebar`)
 - Bottom tab bar on mobile (≤820px): icons + short labels, fixed to bottom (58px)
 - Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
@@ -199,6 +200,21 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Progress bar** + X/Y counter at top
 - sw.js bumped to `ponte-v14`
 
+## Conversation tab (issue #31, closed)
+- `conversation.js`: IIFE — AI conversation simulator; Claude plays native Italian speaker
+- **Setup screen:** dropdown of 10 scenarios (Al bar, Dal fruttivendolo, Con un amico, Chiedere indicazioni, Al ristorante, Una discussione, Raccontare un aneddoto, Conoscere qualcuno, Dal medico, Fare un reclamo); "Start Conversation →" button
+- **Chat screen:** alternating bubbles (Claude left, user right); `conv-chat-topbar` with scenario label + "End session" button; scrollable `conv-messages` area; text input + "Invia" button; Enter key sends
+- **Claude bubbles:** sepia card style, 🔊 button (top-right) triggers `window.ponteSpeak`; loading state shows 3-dot bounce animation
+- **User bubbles:** `#0055AA` blue background, white text
+- **Feedback notes:** shown below Claude bubbles; `---` separator parsed from API response; errors shown with left border; `conv-feedback-ok` (green) for "✓ Ottimo!"
+- **Session summary:** exchange count, numbered error cards, "Save flagged words to Flashcards ★" button (hidden if no errors), "Start new conversation" button
+- **Save to flashcards:** extracts Italian word/phrase from error note (regex: quoted "right" form); saves as `wordType: 'phrase'`, `category: 'new'`, `sourceArticle: 'Conversation: [scenario]'`; fires `ponte:flashcard-saved` event
+- **History management:** stores only clean Italian in history (no feedback); caps at 40 messages (20 exchanges); persisted in `localStorage` as `ponte_conversation_session`
+- **Backend:** `POST /api/conversation` — `{ scenario, history, userMessage }`; system prompt has Claude respond in Italian + add `---` + feedback note; first message injected as "Ciao!" if history empty; `max_tokens: 400`, `temperature: 0.8`
+- **Tab position:** between Practice and Flashcards; icon 💬; mobile label "Chat"
+- Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
+- sw.js bumped to `ponte-v15`
+
 ## Mobile drill scroll fix (issues #28/#29, closed)
 - Both flashcard and false friends drill back faces use shared flex column layout
 - Card containers use `height: clamp(280px, 65vh, 520px)`; inners use `height: 100%`; faces use `position: absolute; inset: 0`; back face has `padding: 0; gap: 0; overflow: hidden`
@@ -254,7 +270,6 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## Backlog (open issues)
 
 ### P1 — High priority
-- **#31** Conversation simulator — AI chat mode: Claude plays Italian speaker, user replies in Italian, corrections after each turn; no scripts
 - **#32** Error-to-drill engine: track error pattern types across drill sessions, surface in Grammar tab as personalized weak areas
 - **#33** Sentence rebuilding mode: show English sentence, user reconstructs full Italian from memory; third mode in Practice tab
 

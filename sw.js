@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v14';
+const CACHE_NAME = 'ponte-v15';
 
 const PRECACHE = [
   '/',
@@ -12,6 +12,7 @@ const PRECACHE = [
   '/flashcards.js',
   '/practice.js',
   '/dictionary.js',
+  '/conversation.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
