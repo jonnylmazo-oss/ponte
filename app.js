@@ -130,6 +130,27 @@
   const appWrapper      = $('app-wrapper');
   const sidebarToggleBtn = $('sidebar-toggle');
 
+  const quizTriggerRow   = $('quiz-trigger-row');
+  const quizTriggerBtn   = $('quiz-trigger-btn');
+  const quizOverlay      = $('quiz-overlay');
+  const quizModal        = $('quiz-modal');
+  const quizClosBtn      = $('quiz-close-btn');
+  const quizArticleTitle = $('quiz-article-title');
+  const quizLoading      = $('quiz-loading');
+  const quizQuestionScr  = $('quiz-question-screen');
+  const quizProgressBar  = $('quiz-progress-bar');
+  const quizProgressLbl  = $('quiz-progress-label');
+  const quizQuestionText = $('quiz-question-text');
+  const quizOptions      = $('quiz-options');
+  const quizFeedback     = $('quiz-feedback');
+  const quizNextBtn      = $('quiz-next-btn');
+  const quizScoreScr     = $('quiz-score-screen');
+  const quizScoreCircle  = $('quiz-score-circle');
+  const quizScoreLbl     = $('quiz-score-label');
+  const quizScoreHistory = $('quiz-score-history');
+  const quizRetakeBtn    = $('quiz-retake-btn');
+  const quizDoneBtn      = $('quiz-done-btn');
+
   // Track the word/entry currently shown in the tooltip so save button can access it
   let currentTooltipWord  = '';
   let currentTooltipEntry = null;
@@ -204,6 +225,7 @@
     italianText.innerHTML         = tokenizeItalian(article.italian);
     updateTranslation();
     hideTooltip();
+    quizTriggerRow.hidden = false;
   }
 
   function updateTranslation() {
@@ -1002,6 +1024,154 @@
       })
       .catch(() => {}); // fire-and-forget
   }
+
+  // ── Post-reading Quiz ──────────────────────────────────────────────────
+  const QUIZ_SCORES_KEY = 'ponte_quiz_scores';
+
+  let quizQuestions = [];
+  let quizCurrent   = 0;
+  let quizCorrect   = 0;
+  let quizAnswered  = false;
+
+  function openQuiz() {
+    if (!state.article) return;
+    quizOverlay.hidden = false;
+    document.body.classList.add('quiz-open');
+    quizArticleTitle.textContent = state.article.title || '';
+    quizLoading.hidden = false;
+    quizQuestionScr.hidden = true;
+    quizScoreScr.hidden = true;
+    quizQuestions = [];
+    quizCurrent   = 0;
+    quizCorrect   = 0;
+    quizAnswered  = false;
+    fetch('/api/reading-quiz', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        italian: state.article.italian,
+        english: state.article.english,
+        title:   state.article.title,
+      }),
+    })
+      .then((r) => r.json())
+      .then(({ questions, error }) => {
+        if (error || !Array.isArray(questions) || questions.length === 0) {
+          quizLoading.innerHTML = '<p style="color:#B83232">Could not generate quiz. Try again.</p>';
+          return;
+        }
+        quizQuestions = questions;
+        quizLoading.hidden = true;
+        quizQuestionScr.hidden = false;
+        renderQuizQuestion();
+      })
+      .catch(() => {
+        quizLoading.innerHTML = '<p style="color:#B83232">Network error. Try again.</p>';
+      });
+  }
+
+  function closeQuiz() {
+    quizOverlay.hidden = true;
+    document.body.classList.remove('quiz-open');
+  }
+
+  function renderQuizQuestion() {
+    const q = quizQuestions[quizCurrent];
+    const total = quizQuestions.length;
+    quizProgressBar.style.width = `${(quizCurrent / total) * 100}%`;
+    quizProgressLbl.textContent = `${quizCurrent + 1} / ${total}`;
+    quizQuestionText.textContent = q.question;
+    quizOptions.innerHTML = '';
+    quizFeedback.hidden = true;
+    quizNextBtn.hidden  = true;
+    quizAnswered = false;
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option-btn';
+      btn.textContent = opt;
+      btn.dataset.idx = i;
+      btn.addEventListener('click', () => handleQuizAnswer(i));
+      quizOptions.appendChild(btn);
+    });
+  }
+
+  function handleQuizAnswer(idx) {
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const q = quizQuestions[quizCurrent];
+    const correct = idx === q.correct;
+    if (correct) quizCorrect++;
+    // Style options
+    quizOptions.querySelectorAll('.quiz-option-btn').forEach((btn) => {
+      const i = parseInt(btn.dataset.idx, 10);
+      btn.disabled = true;
+      if (i === q.correct) btn.classList.add('quiz-opt-correct');
+      else if (i === idx && !correct) btn.classList.add('quiz-opt-wrong');
+    });
+    // Show feedback
+    quizFeedback.hidden = false;
+    quizFeedback.className = 'quiz-feedback ' + (correct ? 'quiz-feedback-correct' : 'quiz-feedback-wrong');
+    quizFeedback.textContent = correct ? 'Correct!' : `Not quite — the answer is: ${q.options[q.correct]}`;
+    quizNextBtn.hidden = false;
+    quizNextBtn.textContent = quizCurrent + 1 < quizQuestions.length ? 'Next →' : 'See results';
+  }
+
+  function showQuizScore() {
+    quizQuestionScr.hidden = true;
+    quizScoreScr.hidden = false;
+    const total = quizQuestions.length;
+    const pct   = Math.round((quizCorrect / total) * 100);
+    quizScoreCircle.textContent = `${quizCorrect}/${total}`;
+    quizScoreCircle.className = 'quiz-score-circle ' +
+      (pct >= 80 ? 'quiz-score-great' : pct >= 60 ? 'quiz-score-ok' : 'quiz-score-low');
+    const msgs = ['Keep reading!', 'Getting there!', 'Good effort!', 'Nice work!', 'Great job!', 'Perfect!'];
+    quizScoreLbl.textContent = pct >= 80 ? 'Great comprehension!' : pct >= 60 ? 'Good effort!' : 'Keep practicing!';
+    quizProgressBar.style.width = '100%';
+    quizProgressLbl.textContent = `${quizCurrent + 1} / ${quizQuestions.length}`;
+    // Save score to localStorage
+    const key = QUIZ_SCORES_KEY;
+    const scores = JSON.parse(localStorage.getItem(key) || '[]');
+    scores.unshift({ date: new Date().toISOString(), title: state.article?.title || '', score: quizCorrect, total });
+    if (scores.length > 20) scores.length = 20;
+    localStorage.setItem(key, JSON.stringify(scores));
+    // Show recent history (last 5)
+    const recent = scores.slice(1, 6);
+    if (recent.length > 0) {
+      quizScoreHistory.innerHTML = '<div class="quiz-history-label">Previous quizzes</div>' +
+        recent.map((s) => {
+          const d = new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          const p = Math.round((s.score / s.total) * 100);
+          return `<div class="quiz-history-row"><span>${d}</span><span class="quiz-history-title">${s.title}</span><span class="quiz-history-score">${s.score}/${s.total} (${p}%)</span></div>`;
+        }).join('');
+    } else {
+      quizScoreHistory.innerHTML = '';
+    }
+  }
+
+  // Wire up quiz events
+  quizTriggerBtn.addEventListener('click', openQuiz);
+  quizClosBtn.addEventListener('click', closeQuiz);
+  quizOverlay.addEventListener('click', (e) => { if (e.target === quizOverlay) closeQuiz(); });
+  quizNextBtn.addEventListener('click', () => {
+    quizCurrent++;
+    if (quizCurrent < quizQuestions.length) {
+      renderQuizQuestion();
+    } else {
+      showQuizScore();
+    }
+  });
+  quizRetakeBtn.addEventListener('click', () => {
+    quizCurrent  = 0;
+    quizCorrect  = 0;
+    quizAnswered = false;
+    quizScoreScr.hidden    = true;
+    quizQuestionScr.hidden = false;
+    renderQuizQuestion();
+  });
+  quizDoneBtn.addEventListener('click', closeQuiz);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !quizOverlay.hidden) closeQuiz();
+  });
 
   // ── Init ───────────────────────────────────────────────────────────────
   initTabs();

@@ -124,6 +124,10 @@
           <span class="generate-error" id="generate-error" hidden></span>
         </div>
 
+        <div class="quiz-trigger-row" id="quiz-trigger-row" hidden>
+          <button class="quiz-trigger-btn" id="quiz-trigger-btn">Test yourself</button>
+        </div>
+
         <main class="reader" id="reader">
           <div class="column column-translation">
             <div class="column-label" id="translation-label">English</div>
@@ -865,5 +869,46 @@
       if (banner) banner.hidden = false;
     })();
   </script>
+
+  <!-- ── Quiz Modal ─────────────────────────────────────────────────────── -->
+  <div class="quiz-overlay" id="quiz-overlay" hidden>
+    <div class="quiz-modal" id="quiz-modal">
+      <!-- Header -->
+      <div class="quiz-modal-header">
+        <div class="quiz-modal-title-row">
+          <span class="quiz-modal-label">Quick Quiz</span>
+          <span class="quiz-modal-article-title" id="quiz-article-title"></span>
+        </div>
+        <button class="quiz-close-btn" id="quiz-close-btn" aria-label="Close quiz">&times;</button>
+      </div>
+
+      <!-- Loading state -->
+      <div class="quiz-loading" id="quiz-loading">
+        <div class="quiz-spinner"></div>
+        <p>Generating questions…</p>
+      </div>
+
+      <!-- Question screen -->
+      <div class="quiz-question-screen" id="quiz-question-screen" hidden>
+        <div class="quiz-progress-bar-wrap">
+          <div class="quiz-progress-bar" id="quiz-progress-bar"></div>
+        </div>
+        <div class="quiz-progress-label" id="quiz-progress-label"></div>
+        <div class="quiz-question-text" id="quiz-question-text"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback" id="quiz-feedback" hidden></div>
+        <button class="quiz-next-btn" id="quiz-next-btn" hidden>Next →</button>
+      </div>
+
+      <!-- Score screen -->
+      <div class="quiz-score-screen" id="quiz-score-screen" hidden>
+        <div class="quiz-score-circle" id="quiz-score-circle"></div>
+        <div class="quiz-score-label" id="quiz-score-label"></div>
+        <div class="quiz-score-history" id="quiz-score-history"></div>
+        <button class="quiz-retake-btn" id="quiz-retake-btn">Retake Quiz</button>
+        <button class="quiz-done-btn" id="quiz-done-btn">Done</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

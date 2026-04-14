@@ -771,6 +771,64 @@ distractors: 4 plausible wrong Italian words targeting Spanish-speaker errors (w
   }
 });
 
+// ── Post-reading quiz ─────────────────────────────────────────────────────
+// Body: { italian, english, title }
+app.post('/api/reading-quiz', async (req, res) => {
+  const { italian, english, title } = req.body;
+  if (!italian || !english) return res.status(400).json({ error: 'italian and english required' });
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 800,
+      temperature: 0.5,
+      messages: [{
+        role: 'user',
+        content: `You are a comprehension quiz generator for an Italian reading app. Given an Italian article and its English translation, generate 5 comprehension questions that test whether the reader understood the content.
+
+Article title: "${title || 'Italian article'}"
+
+Italian text:
+${italian}
+
+English translation:
+${english}
+
+Generate 5 questions. Mix question types: 3 multiple choice (4 options each) and 2 true/false.
+Questions must be answerable from the article content — no outside knowledge needed.
+For multiple choice, exactly one option is correct. Make distractors plausible but clearly wrong to a careful reader.
+
+Return JSON only, no markdown:
+{
+  "questions": [
+    {
+      "type": "mc",
+      "question": "question text in English",
+      "options": ["option A", "option B", "option C", "option D"],
+      "correct": 0
+    },
+    {
+      "type": "tf",
+      "question": "True or false: statement in English",
+      "options": ["True", "False"],
+      "correct": 0
+    }
+  ]
+}
+For mc: "correct" is 0-indexed position of the correct option.
+For tf: "correct" is 0 for True, 1 for False.`,
+      }],
+    });
+
+    let raw = message.content[0].text.trim().replace(/^```json\s*|\s*```$/g, '');
+    const result = JSON.parse(raw);
+    res.json(result);
+  } catch (err) {
+    console.error('/api/reading-quiz error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Ponte server running on http://localhost:${PORT}`);
 });
