@@ -92,6 +92,8 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
 - `baseForm` / `baseFormEN`: dictionary/infinitive form + English meaning, from `/api/translate`; shown as italic grey "Base: [form] · [meaning]" line below Italian word in library and drill back face; absent on older saved cards (shows nothing)
+- **Backfill:** `POST /api/backfill-flashcards` — reads `flashcards.json`, calls Claude for each card missing `baseForm` (500ms delay between calls, `max_tokens: 100`), writes back atomically; returns `{ updated, skipped, errors[] }`
+- **Backfill button:** `#fc-backfill-btn` in fc-toolbar-right — shown only when any card lacks `baseForm` (count in label); on click calls endpoint, syncs result back to localStorage, hides itself when done; `updateBackfillBtn()` called on init and every `ponte:flashcard-saved`
 - `lastDrilled`: ISO timestamp set on every Got it / Tricky action in drill mode
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
 - Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
