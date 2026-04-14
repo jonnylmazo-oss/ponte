@@ -109,12 +109,17 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
 - Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
 - Cross-module sync: `app.js` fires `window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'))` on save/delete; `flashcards.js` listens to re-render
-- `flashcards.js` IIFE: library view (search, category filter, card grid, delete), drill mode (3D CSS flip, Got it/Tricky, score + tricky list)
+- `flashcards.js` IIFE: library view (search, dropdown filters, card grid, delete), drill mode (3D CSS flip, Again/Hard/Easy, score)
+- **Library filters (dropdown style):**
+  - **Type dropdown:** multi-select checkboxes — Same in Spanish / False Friend / Used differently / New word; button label updates to show active selections; blue border when filtered
+  - **Status dropdown:** multi-select checkboxes — Due today / New (reviewCount===0) / Upcoming / Mastered (easeFactor>3.5 AND interval>30); uses `getCardStatus(card)` helper
+  - Both filters combine with AND logic; if all items in a filter are selected, that filter is off
+  - `activeCats` Set and `activeStatuses` Set are the filter state; checkboxes reset to all-selected if last item is deselected
 - **Drill score tracking (issues #21/#22/#23, closed):**
-  - Session stats bar in drill panel: "X correct · Y tricky · Z% this session" (resets each drill start)
+  - Session stats bar in drill panel: "X correct · Y again · Z% this session" (resets each drill start)
   - Accuracy badge on library cards if drilled ≥1 time: 🟢 80%+, 🟡 50–79%, 🔴 <50%
-  - Word type filter row in toolbar: All / Nouns / Verbs / Adjectives / Phrases (filters drill queue by `wordType` field)
   - Reset Scores button in toolbar: confirms then zeros `timesCorrect`, `timesWrong`, `lastDrilled` for all cards
+- **Drill setup screen:** shown when clicking "🃏 Drill mode"; lets user select word type (All/Nouns/Verbs/Adjectives/Phrases as radio buttons) before starting; applies on top of library filters; "Cancel" returns to library
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
 
 ## Tab navigation
