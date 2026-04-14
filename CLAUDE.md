@@ -255,6 +255,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
 - sw.js bumped to `ponte-v15`
 
+## Post-reading Quiz (issue #24, closed)
+- **Trigger:** "Test yourself" button appears (top-right, muted pill) after any article renders; hidden on initial load
+- **Modal:** overlay with backdrop blur; header shows article title + "Quick Quiz" label + × close; ESC and overlay click also close
+- **Question generation:** `POST /api/reading-quiz` with `{ italian, english, title }`; returns 5 questions (3 MC + 2 TF); `max_tokens: 800`, `temperature: 0.5`
+- **Question flow:** progress bar + X/Y counter; question text; option buttons; immediate feedback on answer (correct = green, wrong = red strikethrough + reveal correct); Next/See results button
+- **Score screen:** colored circle (green ≥80%, amber ≥60%, red <60%) + encouragement label + last 5 quiz history rows
+- **Score persistence:** `ponte_quiz_scores` localStorage key — array of `{ date, title, score, total }`, max 20 entries, most recent first
+- **Retake quiz:** reruns same questions without re-fetching; Done returns to reader
+- sw.js bumped to `ponte-v28`
+
 ## Error-to-drill engine (issue #32, closed)
 - **Error pattern tracking:** `ponte_error_patterns` localStorage key maps pattern keys → `{ count, lastSeen, label }`
   - Patterns: `false-friend`, `divergence`, `verb-essere`, `passato-prossimo`, `clitic-placement`, `subjunctive`, `geminates`, `verb-general`
@@ -368,7 +378,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | #13 | Mobile layout polish | P3 |
 | #14 | Public false friend SEO page | P3 |
 | #18 | Flashcard visual images via Unsplash | P2 |
-| #24 | Post-reading quiz (comprehension Qs) | P1 |
+| ~~#24~~ | ~~Post-reading quiz (comprehension Qs)~~ | closed |
 | #26 | Classic literature content category | P1 |
 | #32 | Error-to-drill engine | P1 |
 | ~~#33~~ | ~~Sentence rebuilding mode~~ | closed |
@@ -394,7 +404,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ### P1 — High priority (ranked by learning impact)
 - ~~**#32** Error-to-drill engine~~ — **closed, built** (see Error-to-Drill section below)
 - ~~**#33** Sentence rebuilding mode~~ — **closed, built** (see Sentence Rebuild section in Practice tab)
-- **#24** Post-reading quiz ⭐ #3: comprehension questions immediately after reading; strikes consolidation window while context is fresh
+- ~~**#24** Post-reading quiz~~ — **closed, built** (see Post-reading Quiz section)
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
 ### P2 — Medium priority
