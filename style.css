@@ -4590,6 +4590,277 @@ body.drill-fullscreen .ff-flip-card {
 
 
 /* ═══════════════════════════════════════════════════════════════
+   Sentence Rebuild mode (Practice tab)
+   ═══════════════════════════════════════════════════════════════ */
+
+.prac-sr-diff-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.prac-sr-diff-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.prac-sr-diff-btn.active {
+  background: rgba(0, 85, 170, 0.1);
+  border-color: rgba(0, 85, 170, 0.4);
+  color: #0055AA;
+}
+.prac-sr-diff-btn:hover:not(.active) { background: rgba(0,0,0,0.04); }
+
+/* SR drill container */
+.prac-sr-drill {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 24px 60px;
+}
+
+.prac-sr-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.prac-sr-prompt-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.prac-sr-english {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 20px;
+}
+
+/* Build area (word bank mode) */
+.prac-sr-build-area {
+  border: 2px dashed var(--border-mid);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  min-height: 54px;
+  margin-bottom: 14px;
+  background: var(--bg);
+}
+
+.prac-sr-built {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.prac-sr-built-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  align-self: center;
+}
+
+.prac-sr-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.prac-sr-tile {
+  padding: 6px 13px;
+  border-radius: 16px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s;
+}
+.prac-sr-tile:hover { background: var(--bg-italian); }
+
+.prac-sr-tile--built {
+  border-color: rgba(0, 85, 170, 0.5);
+  background: rgba(0, 85, 170, 0.07);
+  color: #0055AA;
+}
+
+.prac-sr-tile--correct {
+  border-color: #2E6B3E;
+  background: rgba(46, 107, 62, 0.1);
+  color: #2E6B3E;
+  cursor: default;
+}
+
+.prac-sr-tile--wrong {
+  border-color: #B83232;
+  background: rgba(184, 50, 50, 0.08);
+  color: #B83232;
+  cursor: default;
+}
+
+/* Free recall mode */
+.prac-sr-recall-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  transition: border-color 0.12s;
+}
+.prac-sr-recall-input:focus {
+  outline: none;
+  border-color: #0055AA;
+}
+
+.prac-sr-recall-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+/* Submit button */
+.prac-sr-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0055AA;
+  border: 1px solid #003D80;
+  color: #FFFFFF;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.prac-sr-submit-btn:hover:not(:disabled) { background: #003D80; }
+.prac-sr-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Feedback section */
+.prac-sr-feedback {
+  padding-top: 6px;
+}
+
+.prac-sr-ideal {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.prac-sr-ideal strong {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.prac-sr-ideal em {
+  color: #0055AA;
+  font-style: italic;
+}
+
+.prac-sr-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.prac-sr-error-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.prac-sr-error-correction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.prac-sr-error-wrong {
+  color: #B83232;
+  text-decoration: line-through;
+}
+
+.prac-sr-error-arrow {
+  color: var(--text-dim);
+}
+
+.prac-sr-error-fix {
+  color: #2E6B3E;
+  font-weight: 600;
+}
+
+.prac-sr-error-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(0, 85, 170, 0.1);
+  color: #0055AA;
+  margin-left: auto;
+}
+
+.prac-sr-error-exp {
+  color: var(--text-mid);
+  line-height: 1.45;
+}
+
+.prac-sr-score {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.prac-sr-encouragement {
+  font-size: 14px;
+  color: var(--text-mid);
+  font-style: italic;
+  margin-bottom: 18px;
+}
+
+/* SR next button — reuse prac-next-btn style */
+.prac-sr-next-btn {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  color: var(--text-mid);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.prac-sr-next-btn:hover { background: var(--bg-italian); border-color: var(--border); }
+
+/* ═══════════════════════════════════════════════════════════════
    Conversation tab
    ═══════════════════════════════════════════════════════════════ */
 

@@ -450,6 +450,12 @@
             <span class="prac-mode-label">Mode:</span>
             <button class="prac-mode-btn active" data-mode="choice">Multiple choice</button>
             <button class="prac-mode-btn" data-mode="type">Type it</button>
+            <button class="prac-mode-btn" data-mode="rebuild">Sentence Rebuild</button>
+          </div>
+          <div class="prac-sr-diff-row" id="prac-sr-diff-row" hidden>
+            <span class="prac-mode-label">Level:</span>
+            <button class="prac-sr-diff-btn active" data-diff="wordbank">Word Bank</button>
+            <button class="prac-sr-diff-btn" data-diff="recall">Free Recall</button>
           </div>
           <button id="prac-start-btn" class="prac-start-btn" disabled>Start Practice →</button>
         </div>
@@ -472,6 +478,40 @@
             </div>
             <div class="prac-feedback" id="prac-feedback" hidden></div>
             <button class="prac-next-btn" id="prac-next-btn" hidden>Next →</button>
+          </div>
+        </div>
+
+        <!-- Sentence Rebuild drill screen -->
+        <div id="prac-sr-drill" class="prac-sr-drill" hidden>
+          <div class="prac-progress-track">
+            <div class="prac-progress-fill" id="prac-sr-progress-bar"></div>
+          </div>
+          <div class="prac-progress-label" id="prac-sr-progress-label"></div>
+          <div class="prac-sr-card">
+            <p class="prac-sr-prompt-label">Translate into Italian:</p>
+            <div class="prac-sr-english" id="prac-sr-english"></div>
+
+            <!-- Word Bank sub-mode -->
+            <div id="prac-sr-wb-ui" hidden>
+              <div class="prac-sr-build-area">
+                <div class="prac-sr-built" id="prac-sr-built">
+                  <span class="prac-sr-built-hint">Tap words below to build the sentence</span>
+                </div>
+              </div>
+              <div class="prac-sr-bank" id="prac-sr-bank"></div>
+            </div>
+
+            <!-- Free Recall sub-mode -->
+            <div id="prac-sr-recall-ui" hidden>
+              <textarea id="prac-sr-recall-input" class="prac-sr-recall-input"
+                placeholder="Scrivi la frase completa in italiano…" rows="3"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+              <p class="prac-sr-recall-hint">Press Ctrl+Enter to submit</p>
+            </div>
+
+            <button class="prac-sr-submit-btn" id="prac-sr-submit-btn">Check →</button>
+            <div class="prac-sr-feedback" id="prac-sr-feedback" hidden></div>
+            <button class="prac-next-btn prac-sr-next-btn" id="prac-sr-next-btn" hidden>Next →</button>
           </div>
         </div>
 

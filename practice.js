@@ -71,6 +71,12 @@
   let drillAnswered  = false;
   let missedItems    = [];
 
+  // SR-specific state
+  let srDifficulty = 'wordbank';
+  let srBank       = []; // [{id, word}] tiles in bank
+  let srBuilt      = []; // [{id, word}] tiles in construction area
+  let srAnswered   = false;
+
   // ── Article selector ──────────────────────────────────────────────────────
   function getStoredArticles() {
     const articles = [];
@@ -129,11 +135,23 @@
   });
 
   // ── Mode toggle ───────────────────────────────────────────────────────────
+  const pracSRDiffRow  = $('prac-sr-diff-row');
+  const pracSRDiffBtns = document.querySelectorAll('.prac-sr-diff-btn');
+
   pracModeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       pracModeBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       drillMode = btn.dataset.mode;
+      if (pracSRDiffRow) pracSRDiffRow.hidden = (drillMode !== 'rebuild');
+    });
+  });
+
+  pracSRDiffBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      pracSRDiffBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      srDifficulty = btn.dataset.diff;
     });
   });
 
@@ -255,6 +273,22 @@
   // ── Drill flow ────────────────────────────────────────────────────────────
   pracStartBtn.addEventListener('click', async () => {
     if (!currentArticle) return;
+
+    if (drillMode === 'rebuild') {
+      drillItems  = buildSRItems(currentArticle);
+      if (!drillItems.length) return;
+      drillIndex  = 0;
+      drillScore  = 0;
+      missedItems = [];
+      srAnswered  = false;
+      pracSetup.hidden = true;
+      pracDone.hidden  = true;
+      const pracSRDrill = $('prac-sr-drill');
+      if (pracSRDrill) pracSRDrill.hidden = false;
+      showSRItem();
+      return;
+    }
+
     pracStartBtn.disabled    = true;
     pracStartBtn.textContent = 'Loading…';
     try {
@@ -408,6 +442,8 @@
   // ── End screen ────────────────────────────────────────────────────────────
   function endDrill() {
     pracDrill.hidden = true;
+    const pracSRDrill = $('prac-sr-drill');
+    if (pracSRDrill) pracSRDrill.hidden = true;
     pracDone.hidden  = false;
     pracProgressBar.style.width   = '100%';
     pracProgressLabel.textContent = drillItems.length + ' / ' + drillItems.length;
@@ -492,6 +528,18 @@
   });
 
   pracRetryBtn.addEventListener('click', async () => {
+    const pracSRDrill = $('prac-sr-drill');
+    if (drillMode === 'rebuild') {
+      drillItems  = buildSRItems(currentArticle);
+      drillIndex  = 0;
+      drillScore  = 0;
+      missedItems = [];
+      srAnswered  = false;
+      pracDone.hidden = true;
+      if (pracSRDrill) pracSRDrill.hidden = false;
+      showSRItem();
+      return;
+    }
     pracDone.hidden  = true;
     pracDrill.hidden = false;
     pracRetryBtn.disabled    = true;
@@ -510,10 +558,301 @@
   });
 
   pracBackBtn.addEventListener('click', () => {
+    const pracSRDrill = $('prac-sr-drill');
     pracDone.hidden  = true;
     pracDrill.hidden = true;
+    if (pracSRDrill) pracSRDrill.hidden = true;
     pracSetup.hidden = false;
     populateSelector();
+  });
+
+  // ── Sentence Rebuild ─────────────────────────────────────────────────────
+
+  function normalizeIT(s) {
+    return (s || '').toLowerCase()
+      .replace(/[.,!?;:'"«»""''()\u2014\u2013\-]/g, '').trim();
+  }
+
+  function tokenizeIT(sentence) {
+    return sentence.split(/\s+/).filter(Boolean);
+  }
+
+  function buildWordBankTiles(correctTokens, article) {
+    const corrSet   = new Set(correctTokens.map(normalizeIT));
+    const otherWords = (article.italian || '').split(/\s+/)
+      .filter(w => w.length > 2 && !corrSet.has(normalizeIT(w)));
+    const distractors = shuffle(otherWords).slice(0, correctTokens.length);
+    const fillers = ['della', 'dello', 'nella', 'questo', 'quella', 'anche',
+                     'molto', 'però', 'così', 'sempre', 'quando', 'ancora', 'aveva', 'fare'];
+    for (const f of fillers) {
+      if (distractors.length >= correctTokens.length) break;
+      if (!corrSet.has(f) && !distractors.includes(f)) distractors.push(f);
+    }
+    const all = [...correctTokens, ...distractors.slice(0, correctTokens.length)];
+    return shuffle(all).map((word, i) => ({ id: i, word }));
+  }
+
+  function buildSRItems(article) {
+    const itSents = splitSentences(article.italian || '');
+    const enSents = splitSentences(article.english || '');
+    const words   = article.words || [];
+    const items   = [];
+
+    for (let i = 0; i < itSents.length && items.length < 8; i++) {
+      const itSent = itSents[i];
+      const enSent = enSents[i] || '';
+      if (!enSent) continue;
+      const itLower     = itSent.toLowerCase();
+      const matchedWord = words.find(w => itLower.includes(w.w.toLowerCase()));
+      if (!matchedWord) continue;
+      const tokens = tokenizeIT(itSent);
+      if (tokens.length < 3) continue;
+      items.push({
+        word:      matchedWord.w,
+        wordEN:    matchedWord.en || '',
+        category:  matchedWord.c,
+        note:      matchedWord.n || '',
+        sentence:  itSent,
+        english:   enSent,
+        tokens,
+        bankTiles: buildWordBankTiles(tokens, article),
+      });
+    }
+    return shuffle(items);
+  }
+
+  // SR DOM refs (resolved lazily inside functions since HTML may not exist on early runs)
+  function srEl(id) { return $(id); }
+
+  function renderSRBank() {
+    const bank = srEl('prac-sr-bank');
+    if (!bank) return;
+    bank.innerHTML = srBank.map(tile =>
+      `<button class="prac-sr-tile" data-id="${tile.id}">${escapeHTML(tile.word)}</button>`
+    ).join('');
+    bank.querySelectorAll('.prac-sr-tile').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (srAnswered) return;
+        const id   = Number(btn.dataset.id);
+        const tile = srBank.find(t => t.id === id);
+        if (!tile) return;
+        srBank  = srBank.filter(t => t.id !== id);
+        srBuilt = [...srBuilt, tile];
+        renderSRBuilt();
+        renderSRBank();
+        updateSRSubmit();
+      });
+    });
+  }
+
+  function renderSRBuilt() {
+    const built = srEl('prac-sr-built');
+    if (!built) return;
+    if (srBuilt.length === 0) {
+      built.innerHTML = '<span class="prac-sr-built-hint">Tap words below to build the sentence</span>';
+      return;
+    }
+    built.innerHTML = srBuilt.map(tile =>
+      `<button class="prac-sr-tile prac-sr-tile--built" data-id="${tile.id}">${escapeHTML(tile.word)}</button>`
+    ).join('');
+    built.querySelectorAll('.prac-sr-tile--built').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (srAnswered) return;
+        const id   = Number(btn.dataset.id);
+        const tile = srBuilt.find(t => t.id === id);
+        if (!tile) return;
+        srBuilt = srBuilt.filter(t => t.id !== id);
+        srBank  = [...srBank, tile];
+        renderSRBuilt();
+        renderSRBank();
+        updateSRSubmit();
+      });
+    });
+  }
+
+  function updateSRSubmit() {
+    const btn = srEl('prac-sr-submit-btn');
+    if (!btn) return;
+    if (srDifficulty === 'wordbank') {
+      btn.disabled = srBuilt.length === 0;
+    } else {
+      const inp = srEl('prac-sr-recall-input');
+      btn.disabled = !(inp && inp.value.trim());
+    }
+  }
+
+  function showSRItem() {
+    if (drillIndex >= drillItems.length) {
+      const srBar = srEl('prac-sr-progress-bar');
+      if (srBar) srBar.style.width = '100%';
+      endDrill();
+      return;
+    }
+
+    const item = drillItems[drillIndex];
+    srAnswered  = false;
+    srBank      = [...item.bankTiles];
+    srBuilt     = [];
+
+    const pct = Math.round((drillIndex / drillItems.length) * 100);
+    const srBar = srEl('prac-sr-progress-bar');
+    const srLbl = srEl('prac-sr-progress-label');
+    if (srBar) srBar.style.width = pct + '%';
+    if (srLbl) srLbl.textContent = (drillIndex + 1) + ' / ' + drillItems.length;
+
+    const engEl = srEl('prac-sr-english');
+    if (engEl) engEl.textContent = item.english;
+
+    const fbEl   = srEl('prac-sr-feedback');
+    const nextEl = srEl('prac-sr-next-btn');
+    const subEl  = srEl('prac-sr-submit-btn');
+    if (fbEl)   { fbEl.hidden = true; fbEl.innerHTML = ''; }
+    if (nextEl) { nextEl.hidden = true; nextEl.textContent = drillIndex + 1 >= drillItems.length ? 'See Results →' : 'Next →'; }
+    if (subEl)  { subEl.hidden = false; subEl.textContent = 'Check →'; }
+
+    const wbUi  = srEl('prac-sr-wb-ui');
+    const rcUi  = srEl('prac-sr-recall-ui');
+    if (srDifficulty === 'wordbank') {
+      if (wbUi) wbUi.hidden = false;
+      if (rcUi) rcUi.hidden = true;
+      renderSRBuilt();
+      renderSRBank();
+    } else {
+      if (wbUi) wbUi.hidden = true;
+      if (rcUi) rcUi.hidden = false;
+      const inp = srEl('prac-sr-recall-input');
+      if (inp) { inp.value = ''; inp.disabled = false; setTimeout(() => inp.focus(), 100); }
+    }
+    updateSRSubmit();
+  }
+
+  // Submit handler
+  const pracSRSubmitBtn = $('prac-sr-submit-btn');
+  pracSRSubmitBtn && pracSRSubmitBtn.addEventListener('click', async () => {
+    if (srAnswered) return;
+    const item = drillItems[drillIndex];
+    if (!item) return;
+    if (srDifficulty === 'wordbank') submitWordBank(item);
+    else await submitRecall(item);
+  });
+
+  // Ctrl+Enter in recall textarea
+  const pracSRRecallInput = $('prac-sr-recall-input');
+  pracSRRecallInput && pracSRRecallInput.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !srAnswered) {
+      const item = drillItems[drillIndex];
+      if (item) await submitRecall(item);
+    }
+  });
+  pracSRRecallInput && pracSRRecallInput.addEventListener('input', updateSRSubmit);
+
+  function submitWordBank(item) {
+    srAnswered = true;
+    const builtNorm   = srBuilt.map(t => normalizeIT(t.word)).join(' ');
+    const correctNorm = item.tokens.map(normalizeIT).join(' ');
+    const correct     = builtNorm === correctNorm;
+
+    if (correct) drillScore++;
+    else         missedItems.push(item);
+
+    // Highlight tiles
+    const builtEl = srEl('prac-sr-built');
+    if (builtEl) {
+      builtEl.querySelectorAll('.prac-sr-tile--built').forEach((btn, i) => {
+        const got  = normalizeIT(srBuilt[i] ? srBuilt[i].word : '');
+        const want = normalizeIT(item.tokens[i] || '');
+        btn.classList.add(got === want ? 'prac-sr-tile--correct' : 'prac-sr-tile--wrong');
+        btn.disabled = true;
+      });
+    }
+    const bankEl = srEl('prac-sr-bank');
+    if (bankEl) bankEl.querySelectorAll('.prac-sr-tile').forEach(b => { b.disabled = true; });
+
+    showSRFeedback(correct, item, null);
+  }
+
+  async function submitRecall(item) {
+    srAnswered = true;
+    const inp  = srEl('prac-sr-recall-input');
+    const btn  = srEl('prac-sr-submit-btn');
+    const userItalian = inp ? inp.value.trim() : '';
+    if (!userItalian) { srAnswered = false; return; }
+
+    if (inp) inp.disabled = true;
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+
+    let result = null;
+    try {
+      const resp = await fetch(API_BASE + '/api/check-sentence', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ english: item.english, userItalian, articleItalian: item.sentence }),
+      });
+      result = await resp.json();
+    } catch (e) {
+      result = { correct: false, score: 0, idealItalian: item.sentence, errors: [], encouragement: 'Keep practising!' };
+    }
+
+    const isCorrect = result.correct || (result.score >= 75);
+    if (isCorrect) drillScore++;
+    else           missedItems.push(item);
+
+    showSRFeedback(isCorrect, item, result);
+  }
+
+  const TYPE_COLORS = {
+    'grammar': '#B83232', 'spanish-transfer': '#B85C00',
+    'word-choice': '#0055AA', 'spelling': '#888',
+  };
+
+  function showSRFeedback(correct, item, apiResult) {
+    const fbEl  = srEl('prac-sr-feedback');
+    const subEl = srEl('prac-sr-submit-btn');
+    const nxtEl = srEl('prac-sr-next-btn');
+    if (!fbEl) return;
+
+    let html = `<div class="prac-feedback-result ${correct ? 'correct' : 'wrong'}">${correct ? '✓ Correct!' : '✗ Not quite'}</div>`;
+
+    const ideal = (apiResult && apiResult.idealItalian) ? apiResult.idealItalian : item.sentence;
+    html += `<div class="prac-sr-ideal">
+      <span class="prac-sr-ideal-label">Ideal:</span>
+      <em class="prac-sr-ideal-text">${escapeHTML(ideal)}</em>
+    </div>`;
+
+    if (apiResult && apiResult.errors && apiResult.errors.length > 0) {
+      html += '<div class="prac-sr-errors">' +
+        apiResult.errors.map(err => {
+          const col = TYPE_COLORS[err.type] || '#888';
+          return `<div class="prac-sr-error-card">
+            <div class="prac-sr-error-correction">
+              <span class="prac-sr-error-wrong">${escapeHTML(err.userText)}</span>
+              <span class="prac-sr-error-arrow">→</span>
+              <span class="prac-sr-error-fix">${escapeHTML(err.correction)}</span>
+              <span class="prac-sr-error-badge" style="color:${col};border-color:${col}">${err.type || 'error'}</span>
+            </div>
+            <p class="prac-sr-error-exp">${escapeHTML(err.explanation)}</p>
+          </div>`;
+        }).join('') +
+        '</div>';
+    }
+
+    if (apiResult && apiResult.score !== undefined) {
+      html += `<div class="prac-sr-score">Score: ${apiResult.score}/100</div>`;
+    }
+    if (apiResult && apiResult.encouragement) {
+      html += `<p class="prac-sr-encouragement">${escapeHTML(apiResult.encouragement)}</p>`;
+    }
+
+    fbEl.innerHTML = html;
+    fbEl.hidden    = false;
+    if (subEl) subEl.hidden = true;
+    if (nxtEl) { nxtEl.hidden = false; nxtEl.focus(); }
+  }
+
+  const pracSRNextBtn = $('prac-sr-next-btn');
+  pracSRNextBtn && pracSRNextBtn.addEventListener('click', () => {
+    drillIndex++;
+    showSRItem();
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
