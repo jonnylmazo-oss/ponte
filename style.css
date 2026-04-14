@@ -1068,7 +1068,7 @@ header {
   background: var(--bg);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 22;
 }
 .ff-subtab {
   flex: 1;
@@ -1137,7 +1137,7 @@ header {
 
 .ff-toolbar {
   position: sticky;
-  top: 0;
+  top: 44px;
   z-index: 18;
   display: flex;
   align-items: center;
@@ -1617,8 +1617,11 @@ header {
 /* ─── False friends responsive ───────────────────────────────── */
 
 @media (max-width: 820px) {
+  .ff-subtabs {
+    top: var(--header-h); /* sit below sticky tab-topbar */
+  }
   .ff-toolbar {
-    top: var(--header-h); /* accounts for sticky tab-topbar above */
+    top: calc(var(--header-h) + 44px); /* tab-topbar + subtabs */
     padding: 8px 16px;
   }
 
