@@ -238,14 +238,20 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Mobile media queries add `.fc-flip-back { padding: 0; }` and `.ff-flip-back { padding: 0; }` to override `.fc-flip-face` padding rule
 
 ## SM-2 spaced repetition (issue #10, closed)
-- `applySmTwo(card, correct)` in `flashcards.js`: correct → interval 1→6→round(interval×easeFactor), easeFactor += 0.1 (min 1.3); wrong → interval = 1, easeFactor -= 0.2 (min 1.3); sets `dueDate`, `reviewCount`, `lastReviewed`
+- `applySmTwo(card, rating)` in `flashcards.js` — rating: `'again'` | `'hard'` | `'easy'`
+  - **Again** (wrong): interval=1, easeFactor-=0.2 (min 1.3), card re-queued
+  - **Hard** (correct, struggled): interval 1→3→round(iv×1.2), easeFactor unchanged
+  - **Easy** (correct, instant): interval 1→6→round(iv×ef×1.3), easeFactor+=0.15 (max 4.0)
+  - All three: increment `reviewCount`, set `lastReviewed`, set `dueDate`
 - `backfillDueDates()` runs on init: cards missing `dueDate` get `dueDate = now` so all existing cards appear due immediately
 - `isDue(card)`: true if `!dueDate` or `dueDate ≤ now`
 - **Drill queue:** due cards shuffled first, not-due cards shuffled after; if no due cards → "No cards due" screen with soonest due date + "Drill anyway →" button (`startDrill(true)` bypasses due check)
-- **Due badges:** `fc-due-badge-sidebar` / `fc-due-badge-bottom` — red pill showing due count; hidden when 0; updated by `updateBadge()`
+- **Due badges:** sidebar shows `fc-due-label-sidebar` — "N due today" text label in small red (`#B83232`) on new line below count; bottom nav shows `fc-due-badge-bottom` red pill + `title` tooltip "N cards due for review"; both hidden when dueCount === 0
 - **Library card indicators:** "New" (blue, `reviewCount === 0`), "Due today" (red, `isDue`), "Due in Xd" (muted, upcoming)
 - **Drill done screen:** "Next review" section shows up to 6 cards with `next review tomorrow / in N days`; populated from `sessionDrilledCards` Map (id → {italian, interval})
-- sw.js bumped to `ponte-v16`
+- Drill buttons: `fc-again-btn` (red `#B83232`) / `fc-hard-btn` (amber `#CC6600`) / `fc-easy-btn` (green `#2E6B3E`); each `flex: 1` across `.drill-card-buttons`
+- Session stats: "X correct · Y again · Z% this session" (`sessionAgain` replaces old `sessionTricky`)
+- sw.js bumped to `ponte-v17`
 
 ## Reverse drill mode (issue #29, closed)
 - `Reverse 🔄` toggle button in `.fc-drill-topbar` next to Exit; state in `localStorage` (`ponte_drill_reverse`)
