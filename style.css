@@ -2346,17 +2346,22 @@ header {
   z-index: 10;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  padding: 14px 28px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 12px 20px 10px;
 }
 
-.fc-toolbar-left {
+.fc-toolbar-row {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.fc-filter-dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
 }
 
 .fc-search {
@@ -2374,29 +2379,150 @@ header {
 .fc-search:focus { border-color: #0055AA; }
 .fc-search::placeholder { color: var(--text-dim); }
 
-.fc-filters {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+/* ── Flashcard dropdown filters ─────────────────────────────────────────── */
+.fc-dropdown-wrap {
+  position: relative;
 }
 
-.fc-filter {
-  background: transparent;
+.fc-dropdown-btn {
+  background: var(--bg-card);
   border: 1px solid var(--border-mid);
-  border-radius: 20px;
+  border-radius: var(--radius);
   color: var(--text-mid);
   font-family: var(--font);
-  font-size: 12px;
-  padding: 4px 12px;
+  font-size: 13px;
+  padding: 6px 12px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s;
 }
-.fc-filter:hover { background: var(--bg-card-hover); color: var(--text); }
-.fc-filter.active {
-  background: rgba(46, 107, 62, 0.1);
-  border-color: rgba(46, 107, 62, 0.35);
-  color: #2E6B3E;
+.fc-dropdown-btn:hover { border-color: #0055AA; color: var(--text); }
+.fc-dropdown-btn--active {
+  border-color: #0055AA;
+  color: #0055AA;
+  background: rgba(0, 85, 170, 0.06);
 }
+
+.fc-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 10px 12px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fc-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  transition: background 0.1s;
+  user-select: none;
+}
+.fc-dropdown-item:hover { background: var(--bg); }
+.fc-dropdown-item input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #0055AA;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Drill setup screen ─────────────────────────────────────────────────── */
+.fc-drill-setup {
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+.fc-drill-setup-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.fc-drill-setup-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.fc-drill-setup-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 20px;
+}
+.fc-drill-setup-types {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.fc-drill-type-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  user-select: none;
+}
+.fc-drill-type-item:hover { background: var(--bg); border-color: var(--border-mid); }
+.fc-drill-type-item input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #0055AA;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.fc-drill-setup-actions {
+  display: flex;
+  gap: 8px;
+}
+.fc-drill-start-btn {
+  flex: 1;
+  background: #0055AA;
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-drill-start-btn:hover { background: #0044AA; }
+.fc-drill-setup-cancel {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fc-drill-setup-cancel:hover { background: var(--bg); }
 
 .fc-count {
   font-size: 12px;
@@ -3048,43 +3174,11 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 
 /* ─── Flashcard drill: word type filter + session stats + accuracy badges ── */
 
-.fc-toolbar-right {
+.fc-toolbar-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-}
-
-.fc-word-type-filter {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.fc-type-label {
-  font-size: 11px;
-  color: var(--text-dim);
-  white-space: nowrap;
-  margin-right: 2px;
-}
-
-.fc-type-btn {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: transparent;
-  color: var(--text-mid);
-  cursor: pointer;
-  transition: all 0.12s;
-  white-space: nowrap;
-}
-.fc-type-btn:hover { background: rgba(0,0,0,0.05); }
-.fc-type-btn.active {
-  background: rgba(0, 85, 170, 0.1);
-  border-color: rgba(0, 85, 170, 0.4);
-  color: #0055AA;
+  flex-shrink: 0;
 }
 
 .fc-reset-scores-btn {

@@ -269,33 +269,110 @@
   });
 
   // ── State ────────────────────────────────────────────────────────────────
-  let activeFilter        = 'all';
+  let activeCats          = new Set(['cognate', 'false-friend', 'divergence', 'new']);
+  let activeStatuses      = new Set(['due', 'new-card', 'upcoming', 'mastered']);
+  let openDropdownId      = null;
   let searchQuery         = '';
   let drillQueue          = [];
   let drillTotal          = 0;
   let drillCorrect        = 0;
   let trickyCards         = [];
-  let drillWordType       = 'all';
   let sessionCorrect      = 0;
   let sessionAgain        = 0;
   let sessionDrilledCards = new Map(); // id → { italian, interval }
   let drillReverse        = localStorage.getItem('ponte_drill_reverse') === 'true';
 
   // ── Filter helpers ────────────────────────────────────────────────────────
+  const ALL_CATS     = ['cognate', 'false-friend', 'divergence', 'new'];
+  const ALL_STATUSES = ['due', 'new-card', 'upcoming', 'mastered'];
+
+  const CAT_NAMES = {
+    'cognate':      'Same in Spanish',
+    'false-friend': 'False Friend',
+    'divergence':   'Used differently',
+    'new':          'New word',
+  };
+  const STATUS_NAMES = {
+    'due':      'Due today',
+    'new-card': 'New',
+    'upcoming': 'Upcoming',
+    'mastered': 'Mastered',
+  };
+
+  function getCardStatus(card) {
+    if (!card.reviewCount) return 'new-card';
+    if (isDue(card))       return 'due';
+    if ((card.easeFactor || 2.5) > 3.5 && (card.interval || 0) > 30) return 'mastered';
+    return 'upcoming';
+  }
+
   function getFiltered() {
-    const cards = loadCards();
+    const cards       = loadCards();
+    const allCatsOn   = ALL_CATS.every(c => activeCats.has(c));
+    const allStatusOn = ALL_STATUSES.every(s => activeStatuses.has(s));
     return cards.filter((c) => {
-      if (activeFilter !== 'all' && c.category !== activeFilter) return false;
+      if (!allCatsOn && !activeCats.has(c.category || 'new')) return false;
+      if (!allStatusOn && !activeStatuses.has(getCardStatus(c))) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
           c.italian.toLowerCase().includes(q) ||
           c.english.toLowerCase().includes(q) ||
-          c.spanish.toLowerCase().includes(q)
+          (c.spanish || '').toLowerCase().includes(q)
         );
       }
       return true;
     });
+  }
+
+  // ── Dropdown helpers ──────────────────────────────────────────────────────
+  function updateCatBtn() {
+    const btn = $('fc-cat-btn');
+    if (!btn) return;
+    const allOn = ALL_CATS.every(c => activeCats.has(c));
+    if (allOn) {
+      btn.textContent = 'Type: All ▾';
+      btn.classList.remove('fc-dropdown-btn--active');
+    } else {
+      const labels = ALL_CATS.filter(c => activeCats.has(c)).map(c => CAT_NAMES[c]);
+      btn.textContent = labels.length ? `Type: ${labels.join(', ')} ▾` : 'Type: None ▾';
+      btn.classList.toggle('fc-dropdown-btn--active', labels.length > 0);
+    }
+  }
+
+  function updateStatusBtn() {
+    const btn = $('fc-status-btn');
+    if (!btn) return;
+    const allOn = ALL_STATUSES.every(s => activeStatuses.has(s));
+    if (allOn) {
+      btn.textContent = 'Status: All ▾';
+      btn.classList.remove('fc-dropdown-btn--active');
+    } else {
+      const labels = ALL_STATUSES.filter(s => activeStatuses.has(s)).map(s => STATUS_NAMES[s]);
+      btn.textContent = labels.length ? `Status: ${labels.join(', ')} ▾` : 'Status: None ▾';
+      btn.classList.toggle('fc-dropdown-btn--active', labels.length > 0);
+    }
+  }
+
+  function closeDropdowns() {
+    const cp = $('fc-cat-panel'), sp = $('fc-status-panel');
+    if (cp) cp.hidden = true;
+    if (sp) sp.hidden = true;
+    openDropdownId = null;
+  }
+
+  function toggleDropdown(which) {
+    const targetPanel = which === 'cat' ? $('fc-cat-panel') : $('fc-status-panel');
+    const otherPanel  = which === 'cat' ? $('fc-status-panel') : $('fc-cat-panel');
+    if (!targetPanel) return;
+    if (openDropdownId === which) {
+      targetPanel.hidden = true;
+      openDropdownId = null;
+    } else {
+      if (otherPanel) otherPanel.hidden = true;
+      targetPanel.hidden = false;
+      openDropdownId = which;
+    }
   }
 
   // ── Library render ────────────────────────────────────────────────────────
@@ -373,12 +450,44 @@
     window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
   });
 
-  // ── Filters ───────────────────────────────────────────────────────────────
-  document.querySelectorAll('.fc-filter').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.fc-filter').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter = btn.dataset.cat;
+  // ── Dropdown filter wiring ────────────────────────────────────────────────
+  const catBtn    = $('fc-cat-btn');
+  const statusBtn = $('fc-status-btn');
+
+  catBtn && catBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('cat'); });
+  statusBtn && statusBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('status'); });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.fc-dropdown-wrap')) closeDropdowns();
+  });
+
+  // Category checkboxes
+  document.querySelectorAll('.fc-cat-check').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) activeCats.add(cb.dataset.cat);
+      else            activeCats.delete(cb.dataset.cat);
+      // If nothing selected, reset to all
+      if (activeCats.size === 0) {
+        ALL_CATS.forEach(c => activeCats.add(c));
+        document.querySelectorAll('.fc-cat-check').forEach(c => { c.checked = true; });
+      }
+      updateCatBtn();
+      renderLibrary();
+    });
+  });
+
+  // Status checkboxes
+  document.querySelectorAll('.fc-status-check').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) activeStatuses.add(cb.dataset.status);
+      else            activeStatuses.delete(cb.dataset.status);
+      // If nothing selected, reset to all
+      if (activeStatuses.size === 0) {
+        ALL_STATUSES.forEach(s => activeStatuses.add(s));
+        document.querySelectorAll('.fc-status-check').forEach(c => { c.checked = true; });
+      }
+      updateStatusBtn();
       renderLibrary();
     });
   });
@@ -386,15 +495,6 @@
   fcSearch.addEventListener('input', () => {
     searchQuery = fcSearch.value.trim();
     renderLibrary();
-  });
-
-  // ── Word type filter ──────────────────────────────────────────────────────
-  document.querySelectorAll('.fc-type-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.fc-type-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      drillWordType = btn.dataset.type;
-    });
   });
 
   // ── Badge update ──────────────────────────────────────────────────────────
@@ -477,20 +577,27 @@
 
   function showNoDueScreen(notDue) {
     if (!fcNoDue) return;
-    // Find soonest due card
     const soonest = [...notDue].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
     if (fcNoDueMsg && soonest) {
       fcNoDueMsg.textContent = `Next card due: ${formatAbsDate(soonest.dueDate)}`;
     }
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
     fcBrowse.hidden  = true;
     fcToolbar.hidden = false;
     fcNoDue.hidden   = false;
   }
 
   function startDrill(drillAll) {
+    // Read selected word type from radio button (if drill setup was shown)
+    const typeRadio   = document.querySelector('.fc-drill-type-radio:checked');
+    const wordType    = typeRadio ? typeRadio.value : 'all';
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
+
     let filtered = getFiltered();
-    if (drillWordType !== 'all') {
-      filtered = filtered.filter((c) => (c.wordType || 'other') === drillWordType);
+    if (wordType !== 'all') {
+      filtered = filtered.filter((c) => (c.wordType || 'other') === wordType);
     }
     if (!filtered.length) return;
 
@@ -626,6 +733,8 @@
     fcDrill.hidden     = true;
     fcDrillDone.hidden = true;
     if (fcNoDue) fcNoDue.hidden = true;
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
     fcToolbar.hidden   = false;
     fcBrowse.hidden    = false;
     leaveDrillFullscreen();
@@ -715,7 +824,31 @@
   // Easy — correct, knew it instantly
   fcEasyBtn && fcEasyBtn.addEventListener('click', () => handleCorrect('easy'));
 
-  fcDrillToggle.addEventListener('click', () => startDrill(false));
+  // Show drill setup screen before entering drill
+  fcDrillToggle.addEventListener('click', () => {
+    closeDropdowns();
+    const fcDrillSetup = $('fc-drill-setup');
+    if (!fcDrillSetup) { startDrill(false); return; }
+    // Reset radio to "all"
+    const allRadio = document.querySelector('.fc-drill-type-radio[value="all"]');
+    if (allRadio) allRadio.checked = true;
+    fcBrowse.hidden    = true;
+    fcToolbar.hidden   = true;
+    fcDrillSetup.hidden = false;
+  });
+
+  const fcDrillStartBtn    = $('fc-drill-start-btn');
+  const fcDrillSetupCancel = $('fc-drill-setup-cancel');
+
+  fcDrillStartBtn && fcDrillStartBtn.addEventListener('click', () => startDrill(false));
+
+  fcDrillSetupCancel && fcDrillSetupCancel.addEventListener('click', () => {
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
+    fcBrowse.hidden  = false;
+    fcToolbar.hidden = false;
+  });
+
   fcExitDrill.addEventListener('click', exitDrill);
   fcDrillRestart.addEventListener('click', () => startDrill(false));
 

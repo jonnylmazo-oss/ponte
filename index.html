@@ -545,29 +545,55 @@
 
         <!-- Toolbar -->
         <div class="fc-toolbar" id="fc-toolbar">
-          <div class="fc-toolbar-left">
+          <div class="fc-toolbar-row">
             <input type="text" id="fc-search" class="fc-search"
-              placeholder="Search Italian, English, or Spanish…" autocomplete="off" />
-            <div class="fc-filters">
-              <button class="fc-filter active" data-cat="all">All</button>
-              <button class="fc-filter" data-cat="cognate">Same in Spanish</button>
-              <button class="fc-filter" data-cat="false-friend">False Friend</button>
-              <button class="fc-filter" data-cat="divergence">Used differently</button>
-              <button class="fc-filter" data-cat="new">New word</button>
+              placeholder="Search cards…" autocomplete="off" />
+            <div class="fc-filter-dropdowns">
+              <!-- Type dropdown -->
+              <div class="fc-dropdown-wrap" id="fc-cat-wrap">
+                <button class="fc-dropdown-btn" id="fc-cat-btn">Type: All ▾</button>
+                <div class="fc-dropdown-panel" id="fc-cat-panel" hidden>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-cat-check" data-cat="cognate" checked> Same in Spanish</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-cat-check" data-cat="false-friend" checked> False Friend</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-cat-check" data-cat="divergence" checked> Used differently</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-cat-check" data-cat="new" checked> New word</label>
+                </div>
+              </div>
+              <!-- Status dropdown -->
+              <div class="fc-dropdown-wrap" id="fc-status-wrap">
+                <button class="fc-dropdown-btn" id="fc-status-btn">Status: All ▾</button>
+                <div class="fc-dropdown-panel" id="fc-status-panel" hidden>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-status-check" data-status="due" checked> Due today</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-status-check" data-status="new-card" checked> New (never drilled)</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-status-check" data-status="upcoming" checked> Upcoming</label>
+                  <label class="fc-dropdown-item"><input type="checkbox" class="fc-status-check" data-status="mastered" checked> Mastered</label>
+                </div>
+              </div>
+              <span class="fc-count" id="fc-count"></span>
             </div>
-            <span class="fc-count" id="fc-count"></span>
+            <div class="fc-toolbar-actions">
+              <button class="fc-drill-toggle" id="fc-drill-toggle">🃏 Drill mode</button>
+              <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
+            </div>
           </div>
-          <div class="fc-toolbar-right">
-            <div class="fc-word-type-filter">
-              <span class="fc-type-label">Drill:</span>
-              <button class="fc-type-btn active" data-type="all">All</button>
-              <button class="fc-type-btn" data-type="noun">Nouns</button>
-              <button class="fc-type-btn" data-type="verb">Verbs</button>
-              <button class="fc-type-btn" data-type="adjective">Adjectives</button>
-              <button class="fc-type-btn" data-type="phrase">Phrases</button>
+        </div>
+
+        <!-- Drill setup screen -->
+        <div class="fc-drill-setup" id="fc-drill-setup" hidden>
+          <div class="fc-drill-setup-inner">
+            <h3 class="fc-drill-setup-title">What do you want to drill?</h3>
+            <p class="fc-drill-setup-sub">Applies on top of active library filters</p>
+            <div class="fc-drill-setup-types">
+              <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="all" checked> All word types</label>
+              <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="noun"> Nouns</label>
+              <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="verb"> Verbs</label>
+              <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="adjective"> Adjectives</label>
+              <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="phrase"> Phrases</label>
             </div>
-            <button class="fc-drill-toggle" id="fc-drill-toggle">🃏 Drill mode</button>
-            <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
+            <div class="fc-drill-setup-actions">
+              <button class="fc-drill-start-btn" id="fc-drill-start-btn">Start Drill →</button>
+              <button class="fc-drill-setup-cancel" id="fc-drill-setup-cancel">Cancel</button>
+            </div>
           </div>
         </div>
 
