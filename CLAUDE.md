@@ -59,9 +59,17 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## False Friends tab (issue #5)
 - `data/false-friends.js`: 100 entries with fields: `id`, `italian`, `italianMeaning`, `spanishLookalike`, `spanishMeaning`, `englishMeaning`, `category`, `danger` (high/medium/low), `example`, `exampleEN`, `tip`
-- `false-friends.js`: vanilla JS IIFE — search, danger filter, card grid with expand/collapse (grid-template-rows animation), drill mode
+- `false-friends.js`: vanilla JS IIFE — two sub-tabs (⚠️ False Friends / ✅ Safe Cognates); each has independent search, filter, card grid, and drill mode
 - Drill mode: CSS 3D flip, Got it / Tricky queue management, first-try score at end; respects active filter/search
-- Script load order: `data/false-friends.js` → `app.js` → `false-friends.js`
+- Script load order: `data/false-friends.js` → `data/safe-cognates.js` → `app.js` → `false-friends.js`
+
+## Safe Cognates (in False Friends tab)
+- `data/safe-cognates.js`: 200 entries (`safeCognates` array) with fields `{ id, italian, spanish, english, similarity, example, exampleEN }`
+  - `similarity`: `"identical"` (same spelling), `"near-identical"` (1–3 char diff), `"similar-root"` (clearly same root, more different form)
+  - Categories covered: daily life, adjectives, places, academic, food/drink, arts/culture/tech, nature, body, people/professions, verbs/abstract
+- Italian word shown in green (`#2E6B3E`); similarity badge color-coded (dark/medium/light green)
+- Expand card → shows example sentence + English translation
+- Drill: same flip mechanic as False Friends; back face shows English meaning, Spanish equivalent, similarity badge, example
 
 ## Grammar tab — 4-stage learning path
 - `data/grammar.js`: 45 cards (original 40 + 5 new: IDs 41-45) with fields `{ id, title, category, difficulty, stageId, english, italian, example, exampleEN, trap, spanishShortcut, tip? }`
