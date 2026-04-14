@@ -7,6 +7,7 @@ Ponte is a vanilla HTML/CSS/JS Italian reading web app for intermediate English 
 ```
 ponte/
 ├── index.html          — single-page reader UI
+├── utils.js            — shared utilities (ponteEsc HTML escaping)
 ├── app.js              — reader logic: tokenizer, tooltips, generator UI, API calls, flashcard save
 ├── false-friends.js    — False Friends tab UI IIFE
 ├── grammar.js          — Grammar tab UI IIFE
@@ -173,10 +174,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Fallback article (`articles[0]`) only loads on generation error, not on init
 - `quizTriggerBtn` hidden during `setLoading(true)`, revealed in `renderArticle`
 
+## Shared utilities (utils.js)
+- `utils.js` loaded first via `<script>` before all data files and modules
+- Exposes `window.ponteEsc(str)` — HTML-escapes `&`, `<`, `>`, `"` and handles null/undefined
+- All modules reference it as `const escapeHTML = window.ponteEsc` or `const esc = window.ponteEsc` (no local duplicates)
+- Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
+
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v30`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v32`; precaches all static assets (including `utils.js` and `data/safe-cognates.js`) on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
