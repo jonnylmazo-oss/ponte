@@ -69,7 +69,7 @@
         </button>
         <button class="nav-item" data-tab="flashcards">
           <span class="nav-icon">🃏</span>
-          <span class="nav-label">Flashcards <span class="fc-badge" id="fc-badge-sidebar" hidden></span></span>
+          <span class="nav-label">Flashcards <span class="fc-badge" id="fc-badge-sidebar" hidden></span><span class="fc-due-badge" id="fc-due-badge-sidebar" hidden></span></span>
         </button>
         <button class="nav-item" data-tab="shadowing">
           <span class="nav-icon">🎙️</span>
@@ -577,6 +577,14 @@
           </div>
         </div>
 
+        <!-- No cards due screen -->
+        <div class="fc-no-due" id="fc-no-due" hidden>
+          <div class="fc-no-due-icon">✅</div>
+          <h3 class="fc-no-due-title">No cards due for review today</h3>
+          <p class="fc-no-due-msg" id="fc-no-due-msg"></p>
+          <button class="fc-drill-anyway" id="fc-drill-anyway">Drill anyway →</button>
+        </div>
+
         <!-- Drill mode -->
         <div class="fc-drill" id="fc-drill" hidden>
           <div class="fc-drill-topbar">
@@ -625,6 +633,10 @@
           <h2 class="fc-drill-done-title">Deck complete!</h2>
           <p class="fc-drill-score" id="fc-drill-score"></p>
           <div class="fc-tricky-list" id="fc-tricky-list"></div>
+          <div class="fc-next-review" id="fc-next-review" hidden>
+            <p class="fc-next-review-label">Next review</p>
+            <div class="fc-next-review-list" id="fc-next-review-list"></div>
+          </div>
           <button class="fc-drill-restart" id="fc-drill-restart">Drill again</button>
         </div>
       </div><!-- #tab-flashcards -->
@@ -682,7 +694,7 @@
     </button>
     <button class="bottom-nav-item" data-tab="flashcards">
       <span class="bottom-nav-icon">🃏</span>
-      <span class="bottom-nav-label">Cards <span class="fc-badge" id="fc-badge-bottom" hidden></span></span>
+      <span class="bottom-nav-label">Cards <span class="fc-badge" id="fc-badge-bottom" hidden></span><span class="fc-due-badge" id="fc-due-badge-bottom" hidden></span></span>
     </button>
     <button class="bottom-nav-item" data-tab="shadowing">
       <span class="bottom-nav-icon">🎙️</span>

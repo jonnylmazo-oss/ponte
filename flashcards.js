@@ -38,12 +38,92 @@
     }).catch(function(err) { console.warn('Flashcard sync failed:', err.message); });
   }
 
+  function escapeHTML(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ── SM-2 algorithm ───────────────────────────────────────────────────────
+  function applySmTwo(card, correct) {
+    const iv  = card.interval    !== undefined ? card.interval    : 0;
+    const ef  = card.easeFactor  !== undefined ? card.easeFactor  : 2.5;
+    const rc  = card.reviewCount !== undefined ? card.reviewCount : 0;
+
+    let newInterval, newEF;
+
+    if (correct) {
+      if (rc === 0)      newInterval = 1;
+      else if (rc === 1) newInterval = 6;
+      else               newInterval = Math.round(iv * ef);
+      newEF = Math.max(1.3, ef + 0.1);
+    } else {
+      newInterval = 1;
+      newEF = Math.max(1.3, ef - 0.2);
+    }
+
+    const due = new Date();
+    due.setDate(due.getDate() + newInterval);
+
+    card.interval     = newInterval;
+    card.easeFactor   = newEF;
+    card.dueDate      = due.toISOString();
+    card.reviewCount  = rc + 1;
+    card.lastReviewed = new Date().toISOString();
+  }
+
+  // ── Backfill: set dueDate = now for any card missing it ──────────────────
+  function backfillDueDates() {
+    const cards = loadCards();
+    let changed = false;
+    const now = new Date().toISOString();
+    cards.forEach((c) => {
+      if (!c.dueDate) {
+        c.dueDate     = now;
+        c.interval    = c.interval    !== undefined ? c.interval    : 0;
+        c.easeFactor  = c.easeFactor  !== undefined ? c.easeFactor  : 2.5;
+        c.reviewCount = c.reviewCount !== undefined ? c.reviewCount : 0;
+        changed = true;
+      }
+    });
+    if (changed) saveCards(cards);
+  }
+
+  // ── Due helpers ──────────────────────────────────────────────────────────
+  function isDue(card) {
+    if (!card.dueDate) return true;
+    return new Date(card.dueDate).getTime() <= Date.now();
+  }
+
+  function countDue(cards) {
+    return cards.filter(isDue).length;
+  }
+
+  function formatDueLabel(card) {
+    if (!card.reviewCount) {
+      return '<span class="fc-due-new">New</span>';
+    }
+    if (isDue(card)) {
+      return '<span class="fc-due-today">Due today</span>';
+    }
+    const diffMs   = new Date(card.dueDate).getTime() - Date.now();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return `<span class="fc-due-future">Due in ${diffDays}d</span>`;
+  }
+
+  function formatAbsDate(isoStr) {
+    if (!isoStr) return 'soon';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
   // ── DOM refs ─────────────────────────────────────────────────────────────
   const fcSearch      = $('fc-search');
   const fcCount       = $('fc-count');
   const fcGrid        = $('fc-grid');
   const fcEmpty       = $('fc-empty');
   const fcBrowse      = $('fc-browse');
+  const fcNoDue       = $('fc-no-due');
+  const fcNoDueMsg    = $('fc-no-due-msg');
+  const fcDrillAnyway = $('fc-drill-anyway');
   const fcDrill       = $('fc-drill');
   const fcDrillDone   = $('fc-drill-done');
   const fcDrillToggle = $('fc-drill-toggle');
@@ -100,16 +180,17 @@
   });
 
   // ── State ────────────────────────────────────────────────────────────────
-  let activeFilter   = 'all';
-  let searchQuery    = '';
-  let drillQueue     = [];
-  let drillTotal     = 0;
-  let drillCorrect   = 0;
-  let trickyCards    = [];
-  let drillWordType  = 'all';
-  let sessionCorrect = 0;
-  let sessionTricky  = 0;
-  let drillReverse   = localStorage.getItem('ponte_drill_reverse') === 'true';
+  let activeFilter        = 'all';
+  let searchQuery         = '';
+  let drillQueue          = [];
+  let drillTotal          = 0;
+  let drillCorrect        = 0;
+  let trickyCards         = [];
+  let drillWordType       = 'all';
+  let sessionCorrect      = 0;
+  let sessionTricky       = 0;
+  let sessionDrilledCards = new Map(); // id → { italian, interval }
+  let drillReverse        = localStorage.getItem('ponte_drill_reverse') === 'true';
 
   // ── Filter helpers ────────────────────────────────────────────────────────
   function getFiltered() {
@@ -156,10 +237,12 @@
       const drillAttempts = (card.timesCorrect || 0) + (card.timesWrong || 0);
       if (drillAttempts > 0) {
         const pct = Math.round((card.timesCorrect / drillAttempts) * 100);
-        const tier = pct >= 80 ? 'green' : pct >= 50 ? 'yellow' : 'red';
         const dot  = pct >= 80 ? '🟢' : pct >= 50 ? '🟡' : '🔴';
-        accuracyBadge = `<span class="fc-accuracy-badge fc-accuracy-${tier}" title="${card.timesCorrect}/${drillAttempts} correct">${dot} ${pct}%</span>`;
+        accuracyBadge = `<span class="fc-accuracy-badge" title="${card.timesCorrect}/${drillAttempts} correct">${dot} ${pct}%</span>`;
       }
+
+      // Due date indicator
+      const dueLabel = formatDueLabel(card);
 
       return `
         <div class="fc-card" data-id="${card.id}">
@@ -175,6 +258,7 @@
             <div class="fc-card-foot">
               <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>
               ${accuracyBadge}
+              ${dueLabel}
               <span class="fc-card-source">${escapeHTML(source)}</span>
               <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
             </div>
@@ -183,13 +267,8 @@
     }).join('');
   }
 
-  function escapeHTML(str) {
-    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
   // ── Delete / Library speak ────────────────────────────────────────────────
   fcGrid.addEventListener('click', (e) => {
-    // Speak button in library card
     const speakBtn = e.target.closest('.fc-card-speak-btn');
     if (speakBtn) {
       if (window.ponteSpeak) window.ponteSpeak(speakBtn.dataset.word);
@@ -231,12 +310,22 @@
 
   // ── Badge update ──────────────────────────────────────────────────────────
   function updateBadge() {
-    const count = loadCards().length;
+    const cards    = loadCards();
+    const count    = cards.length;
+    const dueCount = countDue(cards);
+
     ['fc-badge-sidebar', 'fc-badge-bottom'].forEach((id) => {
       const el = $(id);
       if (!el) return;
       el.textContent = count;
       el.hidden = count === 0;
+    });
+
+    ['fc-due-badge-sidebar', 'fc-due-badge-bottom'].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = dueCount;
+      el.hidden = dueCount === 0;
     });
   }
 
@@ -289,38 +378,71 @@
     fcSessionStats.textContent = `${sessionCorrect} correct · ${sessionTricky} tricky · ${pct}% this session`;
   }
 
-  function startDrill() {
+  function showNoDueScreen(notDue) {
+    if (!fcNoDue) return;
+    // Find soonest due card
+    const soonest = [...notDue].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
+    if (fcNoDueMsg && soonest) {
+      fcNoDueMsg.textContent = `Next card due: ${formatAbsDate(soonest.dueDate)}`;
+    }
+    fcBrowse.hidden  = true;
+    fcToolbar.hidden = false;
+    fcNoDue.hidden   = false;
+  }
+
+  function startDrill(drillAll) {
     let filtered = getFiltered();
-    // Apply word type filter
     if (drillWordType !== 'all') {
       filtered = filtered.filter((c) => (c.wordType || 'other') === drillWordType);
     }
     if (!filtered.length) return;
-    drillQueue    = shuffle([...filtered]);
-    drillTotal    = drillQueue.length;
-    drillCorrect  = 0;
-    trickyCards   = [];
-    sessionCorrect = 0;
-    sessionTricky  = 0;
+
+    let queue;
+    if (drillAll) {
+      queue = shuffle([...filtered]);
+    } else {
+      const due    = filtered.filter(isDue);
+      const notDue = filtered.filter((c) => !isDue(c));
+      if (due.length === 0) {
+        showNoDueScreen(notDue);
+        return;
+      }
+      // Due cards first (shuffled), then not-due cards (shuffled)
+      queue = [...shuffle(due), ...shuffle(notDue)];
+    }
+
+    drillQueue          = queue;
+    drillTotal          = drillQueue.length;
+    drillCorrect        = 0;
+    trickyCards         = [];
+    sessionCorrect      = 0;
+    sessionTricky       = 0;
+    sessionDrilledCards = new Map();
     updateSessionStats();
 
-    fcBrowse.hidden   = true;
-    fcToolbar.hidden  = true;
+    if (fcNoDue) fcNoDue.hidden = true;
+    fcBrowse.hidden    = true;
+    fcToolbar.hidden   = true;
     fcDrillDone.hidden = true;
     if (fcFlipCard) fcFlipCard.style.visibility = 'hidden';
-    fcDrill.hidden    = false;
+    fcDrill.hidden = false;
     showDrillCard();
     if (fcFlipCard) fcFlipCard.style.visibility = '';
     enterDrillFullscreen();
   }
+
+  fcDrillAnyway && fcDrillAnyway.addEventListener('click', () => {
+    if (fcNoDue) fcNoDue.hidden = true;
+    startDrill(true);
+  });
 
   function showDrillCard() {
     if (!drillQueue.length) {
       endDrill();
       return;
     }
-    const card = drillQueue[0];
-    const done = drillTotal - drillQueue.length;
+    const card  = drillQueue[0];
+    const done  = drillTotal - drillQueue.length;
     const color = CATEGORY_COLORS[card.category] || CATEGORY_COLORS['new'];
     const label = CATEGORY_LABELS[card.category]  || card.category;
 
@@ -328,7 +450,6 @@
     syncFsStatus(`${done} / ${drillTotal}`);
 
     if (drillReverse) {
-      // Front: English word; Back: Italian + category badge + note
       fcFlipWord.textContent     = card.english;
       fcFlipSource.textContent   = '';
       if (fcFlipPrompt) fcFlipPrompt.textContent = 'What is this in Italian?';
@@ -344,7 +465,6 @@
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden = !card.note;
     } else {
-      // Front: Italian word; Back: English + Spanish + category badge + note
       fcFlipWord.textContent     = card.italian;
       fcFlipSource.textContent   = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
       if (fcFlipPrompt) fcFlipPrompt.textContent = 'What does this mean?';
@@ -363,17 +483,35 @@
       fcFlipNote.hidden = !card.note;
     }
 
-    // Reset flip
     fcFlipInner.classList.remove('flipped');
     fcFlipBtn.disabled = false;
   }
 
   function endDrill() {
-    fcDrill.hidden    = true;
+    fcDrill.hidden     = true;
     fcDrillDone.hidden = false;
 
     const pct = drillTotal > 0 ? Math.round((drillCorrect / drillTotal) * 100) : 0;
     fcDrillScore.textContent = `${drillCorrect} / ${drillTotal} correct (${pct}%)`;
+
+    // Next review dates for cards drilled this session
+    const fcNextReview     = $('fc-next-review');
+    const fcNextReviewList = $('fc-next-review-list');
+    if (fcNextReview && fcNextReviewList) {
+      if (sessionDrilledCards.size > 0) {
+        const items = [...sessionDrilledCards.values()].slice(0, 6);
+        fcNextReviewList.innerHTML = items.map(({ italian, interval }) => {
+          const when = interval === 1 ? 'tomorrow' : `in ${interval} day${interval !== 1 ? 's' : ''}`;
+          return `<div class="fc-next-review-item">
+            <span class="fc-next-review-word">${escapeHTML(italian)}</span>
+            <span class="fc-next-review-when">next review ${when}</span>
+          </div>`;
+        }).join('');
+        fcNextReview.hidden = false;
+      } else {
+        fcNextReview.hidden = true;
+      }
+    }
 
     if (trickyCards.length) {
       fcTrickyList.innerHTML =
@@ -390,37 +528,36 @@
   function exitDrill() {
     fcDrill.hidden     = true;
     fcDrillDone.hidden = true;
+    if (fcNoDue) fcNoDue.hidden = true;
     fcToolbar.hidden   = false;
     fcBrowse.hidden    = false;
     leaveDrillFullscreen();
     renderLibrary();
+    updateBadge();
   }
 
   // Flip
   fcFlipBtn.addEventListener('click', () => {
     fcFlipInner.classList.add('flipped');
     fcFlipBtn.disabled = true;
-    // Auto-pronounce after card turns (CSS flip ~350ms)
     if (drillQueue.length && window.ponteSpeak) {
       setTimeout(() => window.ponteSpeak(drillQueue[0].italian), 350);
     }
   });
 
-  // Front face: pronounce before flipping
   fcFrontSpeakBtn && fcFrontSpeakBtn.addEventListener('click', () => {
     if (drillQueue.length && window.ponteSpeak) {
       window.ponteSpeak(drillQueue[0].italian);
     }
   });
 
-  // Back face: replay pronunciation
   fcSpeakBtn && fcSpeakBtn.addEventListener('click', () => {
     if (drillQueue.length && window.ponteSpeak) {
       window.ponteSpeak(drillQueue[0].italian);
     }
   });
 
-  // Got it
+  // Got it — correct answer
   fcGotBtn.addEventListener('click', () => {
     if (!fcFlipInner.classList.contains('flipped')) return;
     const card = drillQueue.shift();
@@ -428,10 +565,15 @@
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
-      cards[idx].timesCorrect++;
-      cards[idx].lastSeen    = now;
-      cards[idx].lastDrilled = now;
+      applySmTwo(cards[idx], true);
+      cards[idx].timesCorrect = (cards[idx].timesCorrect || 0) + 1;
+      cards[idx].lastSeen     = now;
+      cards[idx].lastDrilled  = now;
       saveCards(cards);
+      sessionDrilledCards.set(card.id, {
+        italian:  cards[idx].italian,
+        interval: cards[idx].interval,
+      });
     }
     drillCorrect++;
     sessionCorrect++;
@@ -439,7 +581,7 @@
     showDrillCard();
   });
 
-  // Tricky — put back in random later position
+  // Tricky — wrong answer, re-queue
   fcTrickyBtn.addEventListener('click', () => {
     if (!fcFlipInner.classList.contains('flipped')) return;
     const card = drillQueue.shift();
@@ -447,26 +589,30 @@
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
-      cards[idx].timesWrong++;
+      applySmTwo(cards[idx], false);
+      cards[idx].timesWrong  = (cards[idx].timesWrong || 0) + 1;
       cards[idx].lastSeen    = now;
       cards[idx].lastDrilled = now;
       saveCards(cards);
+      sessionDrilledCards.set(card.id, {
+        italian:  cards[idx].italian,
+        interval: cards[idx].interval,
+      });
     }
     sessionTricky++;
     updateSessionStats();
     if (!trickyCards.find((c) => c.id === card.id)) trickyCards.push(card);
-    // Re-insert at a random position ≥ 2 places ahead (or at end if short queue)
     const pos = drillQueue.length <= 2
       ? drillQueue.length
       : 2 + Math.floor(Math.random() * (drillQueue.length - 1));
     drillQueue.splice(pos, 0, card);
-    drillTotal++; // count this attempt separately
+    drillTotal++;
     showDrillCard();
   });
 
-  fcDrillToggle.addEventListener('click', startDrill);
+  fcDrillToggle.addEventListener('click', () => startDrill(false));
   fcExitDrill.addEventListener('click', exitDrill);
-  fcDrillRestart.addEventListener('click', startDrill);
+  fcDrillRestart.addEventListener('click', () => startDrill(false));
 
   // ── Listen for saves from app.js ──────────────────────────────────────────
   window.addEventListener('ponte:flashcard-saved', () => {
@@ -475,6 +621,7 @@
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
+  backfillDueDates();
   renderLibrary();
   updateBadge();
 })();
