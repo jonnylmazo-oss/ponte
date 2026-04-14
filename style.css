@@ -1089,24 +1089,30 @@ header {
 }
 .ff-subtab:hover:not(.active) { color: var(--text-mid); }
 
-/* ─── Safe Cognates cards ────────────────────────────────────── */
-
-.sc-it-word {
-  color: #2E6B3E;
-}
+/* ─── Safe Cognates cards (badges also used in drill back face) ─ */
 
 .sc-sim-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 10px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: none;
 }
-.sc-simidentical    { background: #2E6B3E; color: #fff; }
-.sc-simnearidentical{ background: #4A9B5F; color: #fff; }
-.sc-simsimilarroot  { background: #85C29A; color: #fff; }
+/* Class suffix matches JS: 'sc-sim-' + similarity.replace('-','') */
+.sc-sim-identical {
+  background: #2E6B3E;
+  color: #fff;
+}
+.sc-sim-nearidentical {
+  background: #4CAF7D;
+  color: #fff;
+}
+.sc-sim-similarroot {
+  background: #A8D5B5;
+  color: #1B5E20;
+}
 
 .sc-flip-english {
   font-size: 22px;
@@ -1392,6 +1398,134 @@ header {
   padding-top: 2px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Safe Cognates panel — green palette (scoped to #ff-panel-cognates)
+   ═══════════════════════════════════════════════════════════════ */
+
+#ff-panel-cognates .ff-grid {
+  gap: 16px;
+}
+
+#ff-panel-cognates .ff-search {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+#ff-panel-cognates .ff-search:focus {
+  border-color: #C9B898;
+}
+
+/* Filter chips: sepia like .ff-filter; active = cognate green */
+.sc-filter {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.sc-filter:hover {
+  color: var(--text-mid);
+  background: var(--bg-card-hover);
+}
+.sc-filter.active {
+  background: rgba(46, 107, 62, 0.1);
+  border-color: rgba(46, 107, 62, 0.35);
+  color: #2E6B3E;
+}
+
+#sc-drill-toggle.active {
+  background: rgba(46, 107, 62, 0.1);
+  border-color: rgba(46, 107, 62, 0.35);
+  color: #2E6B3E;
+}
+
+#ff-panel-cognates .sc-card {
+  background: #F4FAF6;
+  border: 1px solid #C8E6C9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+  overflow: hidden;
+}
+#ff-panel-cognates .sc-card:hover {
+  border-color: #4CAF7D;
+  background: #F0FAF4;
+}
+#ff-panel-cognates .sc-card.expanded {
+  border-color: #7CB89A;
+  box-shadow: inset 4px 0 0 #A8D5B5;
+}
+
+#ff-panel-cognates .sc-card .ff-card-main {
+  padding: 16px 20px;
+}
+
+#ff-panel-cognates .sc-card .ff-it-word {
+  color: #2E6B3E;
+}
+
+#ff-panel-cognates .sc-card .ff-card-es-line {
+  color: #6B5744;
+}
+#ff-panel-cognates .sc-card .ff-es-inline {
+  color: #3B2D1F;
+  font-weight: 600;
+}
+
+#ff-panel-cognates .sc-card .ff-card-it-line {
+  color: #3B2D1F;
+}
+#ff-panel-cognates .sc-card .ff-it-inline {
+  color: #3B2D1F;
+  font-weight: 600;
+}
+
+#ff-panel-cognates .sc-card.expanded .ff-chevron {
+  color: #2E6B3E;
+}
+
+#ff-panel-cognates .sc-card .ff-card-detail-inner {
+  padding: 0 20px;
+}
+#ff-panel-cognates .sc-card.expanded .ff-card-detail-inner {
+  padding: 0 20px 16px;
+}
+
+#ff-panel-cognates .sc-card .ff-detail-example {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: rgba(76, 175, 125, 0.08);
+  border: none;
+  border-left: 4px solid #4CAF7D;
+  border-radius: 4px;
+}
+
+/* Safe Cognates drill: same green vibe as browse cards */
+#ff-panel-cognates .ff-flip-word {
+  color: #2E6B3E;
+}
+#ff-panel-cognates .ff-flip-btn {
+  background: #2E6B3E;
+  border-color: #2E6B3E;
+}
+#ff-panel-cognates .ff-flip-btn:hover {
+  opacity: 0.92;
+}
+#ff-panel-cognates .ff-flip-face.ff-flip-front {
+  background: #F4FAF6;
+  border-color: #C8E6C9;
+}
+#ff-panel-cognates .ff-flip-face.ff-flip-back {
+  background: #F4FAF6;
+  border-color: #C8E6C9;
+}
+
 
 /* ─── Drill mode ─────────────────────────────────────────────── */
 
@@ -1639,6 +1773,7 @@ header {
 
 @media (max-width: 480px) {
   .ff-filters .ff-filter { padding: 5px 7px; font-size: 10px; }
+  .ff-filters .sc-filter { padding: 5px 7px; font-size: 10px; }
   .ff-drill-toggle { font-size: 12px; padding: 6px 10px; }
 }
 
