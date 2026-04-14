@@ -230,6 +230,25 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
 - sw.js bumped to `ponte-v15`
 
+## Error-to-drill engine (issue #32, closed)
+- **Error pattern tracking:** `ponte_error_patterns` localStorage key maps pattern keys → `{ count, lastSeen, label }`
+  - Patterns: `false-friend`, `divergence`, `verb-essere`, `passato-prossimo`, `clitic-placement`, `subjunctive`, `geminates`, `verb-general`
+  - `recordErrorPatterns(card)` called in `flashcards.js` on Again or Hard answers — rule-based detection from card.category + card.note + card.grammarPatterns
+  - Fires `ponte:error-patterns-updated` custom event after write; grammar.js listens to re-render Weak Areas panel if open
+- **Claude pattern detection on save:** `POST /api/detect-patterns` (`{ italian, english, category, note }` → `{ patterns: [] }`); `max_tokens: 100`, `temperature: 0.1`
+  - `detectAndSavePatterns(cardId, ...)` in `app.js`: fire-and-forget; updates `card.grammarPatterns` in localStorage + re-syncs to server
+- **Weak Areas sub-tab** (first sub-tab in Grammar, before Learn):
+  - `#grammar-panel-weakareas`, rendered by `renderWeakAreas()` in `grammar.js`
+  - Ranked list sorted by miss count; left-border color: red ≥5, yellow 2-4, grey 1
+  - Each row: rank, label, miss count + last-seen date, "Study →" (opens grammar stage) and "Drill →" (filters Pattern Drills) buttons
+  - Empty state: "Complete some flashcard drills to see your weak areas."
+  - `PATTERN_META` map: pattern key → `{ label, drillCat, studyStage }` for button routing
+- **Smart drill ordering:** `sortDueByPatterns(due)` replaces `shuffle(due)` in `startDrill()`
+  - Top-3 error patterns (by count) → matching cards first, sorted by accuracy ascending
+  - Remaining due cards: sorted by accuracy ascending
+  - `drillAll` mode still uses shuffle (intentional for variety)
+- sw.js bumped to `ponte-v18`
+
 ## Mobile drill scroll fix (issues #28/#29, closed)
 - Both flashcard and false friends drill back faces use shared flex column layout
 - Card containers use `height: clamp(280px, 65vh, 520px)`; inners use `height: 100%`; faces use `position: absolute; inset: 0`; back face has `padding: 0; gap: 0; overflow: hidden`
@@ -348,8 +367,8 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## Backlog (open issues)
 
 ### P1 — High priority (ranked by learning impact)
-- **#32** Error-to-drill engine ⭐ #1: connects Tricky cards to targeted grammar cards; personalizes every session over time
-- **#33** Sentence rebuilding mode ⭐ #2: completes production triangle (reading + cloze + full reconstruction); hardest and most effective recall exercise
+- ~~**#32** Error-to-drill engine~~ — **closed, built** (see Error-to-Drill section below)
+- **#33** Sentence rebuilding mode ⭐ #1: completes production triangle (reading + cloze + full reconstruction); hardest and most effective recall exercise
 - **#24** Post-reading quiz ⭐ #3: comprehension questions immediately after reading; strikes consolidation window while context is fresh
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
