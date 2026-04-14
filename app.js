@@ -13,18 +13,41 @@
   const FC_KEY      = 'ponte_flashcards';
 
   const SURPRISE_TOPICS = [
-    'mercato', 'calcio', 'caffè', 'spiaggia', 'lavoro',
-    'famiglia', 'treno', 'weekend', 'cucina italiana', 'aperitivo',
-    'vacanze', 'musica', 'città', 'amici', 'università',
-    'estate', 'inverno', 'viaggio', 'tecnologia', 'cinema',
-    'una scena dall\'Odissea con Ulisse',
-    'Ulisse e il Ciclope in italiano',
+    // Everyday life
+    'mercato', 'caffè al bar', 'aperitivo', 'cucina italiana',
+    'treno in ritardo', 'ufficio postale italiano', 'fare la spesa',
+    // Work & city
+    'lavoro', 'università', 'tecnologia', 'città di notte',
+    // Travel & leisure
+    'spiaggia d\'estate', 'vacanze in montagna',
+    'cinema italiano', 'concerto dal vivo',
+    // Sport & culture
+    'calcio — la partita decisiva', 'la domenica in famiglia',
+    'musica italiana anni \'90', 'il dibattito pizza napoletana vs romana',
+    'identità regionale italiana — Nord vs Sud',
+    // Emotional & relational
+    'una lite tra amici che si risolve', 'dare un consiglio a un amico nei guai',
+    'flirtare in italiano — un appuntamento imbarazzante',
+    'una telefonata con la nonna', 'lamentarsi del traffico con i vicini',
+    // Storytelling & anecdotes
+    'un\'infanzia italiana — ricordi di estate',
+    'una barzelletta italiana — l\'equivoco in ufficio',
+    'aneddoto — quando ho sbagliato strada a Roma',
+    'un pomeriggio pigro di domenica',
+    // Humor & wordplay
+    'i doppi sensi della lingua italiana',
+    'l\'ironia italiana — dire una cosa e intenderne un\'altra',
+    // Formal register
+    'una richiesta formale all\'ufficio comunale',
+    'scrivere un\'email professionale in italiano',
+    // Classic literature & history
+    'Ulisse e il Ciclope — una scena dall\'Odissea',
     'Ettore e Achille dall\'Iliade',
     'una scena dalla Divina Commedia',
-    'una favola di Esopo in italiano',
     'una storia dal Decameron di Boccaccio',
     'Romolo e Remo — la fondazione di Roma',
-    'Giulio Cesare — una scena storica',
+    'Giulio Cesare — il dado è tratto',
+    'una favola di Esopo in italiano',
   ];
 
   // ── Speech synthesis ───────────────────────────────────────────────────
