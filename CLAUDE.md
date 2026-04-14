@@ -159,8 +159,8 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Translation column toggle
 - Toggle button in header (▶/◀) collapses/shows the English column
-- Default state: **collapsed** (Italian-only view)
-- State persisted in `localStorage` under key `ponte_translation`
+- Default state: **collapsed** (Italian-only view); `renderArticle` always calls `applyTranslationState(false, false)` so every new article resets to Italian-only regardless of saved state
+- State persisted in `localStorage` under key `ponte_translation` (for within-session use; overridden on each new article)
 - On mobile, collapse has no effect — both columns always stack
 
 ## PWA (Progressive Web App)
@@ -256,14 +256,14 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - sw.js bumped to `ponte-v15`
 
 ## Post-reading Quiz (issue #24, closed)
-- **Trigger:** "Test yourself" button appears (top-right, muted pill) after any article renders; hidden on initial load
+- **Trigger:** "Test yourself" button in `header-right` (next to EN toggle), hidden until first article renders; `renderArticle` shows it and also resets translation to Italian-only (collapsed)
 - **Modal:** overlay with backdrop blur; header shows article title + "Quick Quiz" label + × close; ESC and overlay click also close
 - **Question generation:** `POST /api/reading-quiz` with `{ italian, english, title }`; returns 5 questions (3 MC + 2 TF); `max_tokens: 800`, `temperature: 0.5`
 - **Question flow:** progress bar + X/Y counter; question text; option buttons; immediate feedback on answer (correct = green, wrong = red strikethrough + reveal correct); Next/See results button
 - **Score screen:** colored circle (green ≥80%, amber ≥60%, red <60%) + encouragement label + last 5 quiz history rows
 - **Score persistence:** `ponte_quiz_scores` localStorage key — array of `{ date, title, score, total }`, max 20 entries, most recent first
 - **Retake quiz:** reruns same questions without re-fetching; Done returns to reader
-- sw.js bumped to `ponte-v28`
+- sw.js bumped to `ponte-v29`
 
 ## Error-to-drill engine (issue #32, closed)
 - **Error pattern tracking:** `ponte_error_patterns` localStorage key maps pattern keys → `{ count, lastSeen, label }`
