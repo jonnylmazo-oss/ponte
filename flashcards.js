@@ -67,7 +67,6 @@
   const fcToolbar         = $('fc-toolbar');
   const fcSessionStats    = $('fc-session-stats');
   const fcResetScores     = $('fc-reset-scores-btn');
-  const fcBackfillBtn     = $('fc-backfill-btn');
   const fcDrillReverseBtn = $('fc-drill-reverse-btn');
   const fcFlipPrompt      = $('fc-flip-prompt');
   const fcFlipCard        = $('fc-flip-card');
@@ -252,41 +251,6 @@
     }));
     saveCards(cards);
     renderLibrary();
-  });
-
-  // ── Backfill base forms ───────────────────────────────────────────────────
-  function updateBackfillBtn() {
-    if (!fcBackfillBtn) return;
-    const missing = loadCards().filter(c => !c.baseForm).length;
-    fcBackfillBtn.hidden = missing === 0;
-    if (missing > 0) fcBackfillBtn.textContent = `Backfill base forms (${missing})`;
-  }
-
-  fcBackfillBtn && fcBackfillBtn.addEventListener('click', async () => {
-    const missing = loadCards().filter(c => !c.baseForm).length;
-    if (!missing) { fcBackfillBtn.hidden = true; return; }
-    fcBackfillBtn.disabled = true;
-    fcBackfillBtn.textContent = `Updating ${missing} cards…`;
-    try {
-      const resp = await fetch(API_BASE + '/api/backfill-flashcards', { method: 'POST' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const data = await resp.json();
-      // Reload cards from server into localStorage
-      const syncResp = await fetch(API_BASE + '/api/flashcards');
-      if (syncResp.ok) {
-        const updated = await syncResp.json();
-        if (Array.isArray(updated)) {
-          localStorage.setItem('ponte_flashcards', JSON.stringify(updated));
-          window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
-        }
-      }
-      fcBackfillBtn.textContent = `Done — ${data.updated} updated`;
-      setTimeout(() => updateBackfillBtn(), 1500);
-    } catch (err) {
-      console.error('Backfill failed:', err.message);
-      fcBackfillBtn.textContent = 'Backfill failed — retry?';
-      fcBackfillBtn.disabled = false;
-    }
   });
 
   // ── Reverse drill mode ────────────────────────────────────────────────────
@@ -508,11 +472,9 @@
   window.addEventListener('ponte:flashcard-saved', () => {
     renderLibrary();
     updateBadge();
-    updateBackfillBtn();
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
   renderLibrary();
   updateBadge();
-  updateBackfillBtn();
 })();
