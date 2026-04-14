@@ -205,20 +205,33 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Graceful degradation:** buttons hidden if `!speech.supported` (no `window.speechSynthesis`)
 - Service worker bumped to `ponte-v4` (drill score tracking)
 
-## Practice tab (issues #6, #39 closed)
-- `practice.js`: IIFE — cloze fill-in-the-blank from generated articles stored in localStorage
+## Practice tab (issues #6, #39, #33 closed)
+- `practice.js`: IIFE — three drill modes from generated articles stored in localStorage
 - **Article selector:** dropdown of all `ponte_article_*` keys; "Generate new" switches to Reader tab; selector refreshes on tab click
+- **Mode selector:** Multiple Choice (default) / Type It / Sentence Rebuild — pill buttons; Sentence Rebuild shows difficulty sub-row (Word Bank / Free Recall)
+
+### Multiple Choice + Type It modes
 - **Word selection:** from `article.words`; priority: false-friend > divergence > new > cognate; min 5 / max 10 blanks; cognates only if fewer than 5 non-cognates
 - **Sentence extraction:** splits Italian + English on sentence boundaries; shows English sentence in muted text below Italian
 - **Multiple choice mode** (default): 4 options (correct + 3 AI distractors); auto-advance 1.5s on correct; Next button on wrong
 - **Type it mode:** text input + Enter/Check; Levenshtein ≤1 accepted as correct (shows exact spelling on close typo)
 - **AI distractors:** `POST /api/distractors` — Claude generates 3 plausible wrong answers targeting Spanish-speaker confusion (wrong tense, Spanish cognate, transfer errors); cached in localStorage as `ponte_dist_{word}`; falls back to other article words if API fails
 - **Loading state:** Start button shows "Loading…" while distractors are fetched in parallel via `Promise.all`
+
+### Sentence Rebuild mode (issue #33, closed)
+- **Source:** article sentences with ≥1 annotated word; max 8 items per session
+- **Word Bank (intermediate):** shuffled tile bank (correct tokens + equal-count distractors from article + Italian filler words); tap tile → moves to build area; tap built tile → returns to bank; submit compares normalized token sequence (correct / wrong highlights per tile)
+- **Free Recall (advanced):** textarea for open Italian translation; `POST /api/check-sentence` — Claude evaluates `{english, userItalian, articleItalian}`; returns `{correct, score, idealItalian, errors[], encouragement}`; `score ≥ 75` = correct
+- `server.js` `/api/check-sentence`: `max_tokens: 600`, `temperature: 0.2`; strips markdown from JSON response; returns per-error cards with type badges (Grammar / Spanish Transfer / Word Choice etc.)
+- **Feedback:** ideal sentence (label + italic cyan), per-error cards (strikethrough wrong → green fix + explanation + type badge), score, encouragement
+- Missed sentences reuse `missedItems` structure → same end-screen save-to-flashcards flow
+
+### Shared
 - **Missed words tracker:** `missedItems` array tracks wrong answers throughout session
 - **End screen:** score + missed words list (Italian, English, category badge) + "Save N missed words to Flashcards ★" button
 - **Save missed to flashcards:** writes directly to `ponte_flashcards` localStorage, syncs to server, fires `ponte:flashcard-saved` event
 - **Progress bar** + X/Y counter at top
-- sw.js bumped to `ponte-v14`
+- sw.js bumped to `ponte-v21`
 
 ## Conversation tab (issue #31, closed)
 - `conversation.js`: IIFE — AI conversation simulator; Claude plays native Italian speaker
@@ -351,7 +364,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | #24 | Post-reading quiz (comprehension Qs) | P1 |
 | #26 | Classic literature content category | P1 |
 | #32 | Error-to-drill engine | P1 |
-| #33 | Sentence rebuilding mode | P1 |
+| ~~#33~~ | ~~Sentence rebuilding mode~~ | closed |
 | #34 | Cultural context layer in Reader | P2 |
 | #35 | Weekly learning mission | P2 |
 | #36 | Native audio per article | P2 |
@@ -373,7 +386,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ### P1 — High priority (ranked by learning impact)
 - ~~**#32** Error-to-drill engine~~ — **closed, built** (see Error-to-Drill section below)
-- **#33** Sentence rebuilding mode ⭐ #1: completes production triangle (reading + cloze + full reconstruction); hardest and most effective recall exercise
+- ~~**#33** Sentence rebuilding mode~~ — **closed, built** (see Sentence Rebuild section in Practice tab)
 - **#24** Post-reading quiz ⭐ #3: comprehension questions immediately after reading; strikes consolidation window while context is fresh
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
