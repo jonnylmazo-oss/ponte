@@ -542,7 +542,7 @@
   // ── Reverse drill mode ────────────────────────────────────────────────────
   function updateReverseBtn() {
     if (!fcDrillReverseBtn) return;
-    fcDrillReverseBtn.textContent = drillReverse ? 'Standard 🔄' : 'Reverse 🔄';
+    fcDrillReverseBtn.textContent = drillReverse ? 'Standard' : 'Reverse';
     fcDrillReverseBtn.classList.toggle('active', drillReverse);
   }
 

@@ -164,8 +164,8 @@
     try { patterns = JSON.parse(localStorage.getItem(EP_KEY) || '{}'); } catch (e) {}
     const entries = Object.entries(patterns).filter(([, v]) => v && v.count > 0);
     if (!entries.length) {
-      pracWeakBtn.textContent = '🎯 No weak areas yet — drill some flashcards first';
-      setTimeout(() => { pracWeakBtn.textContent = '🎯 Practice my weak areas'; }, 3000);
+      pracWeakBtn.textContent = 'No weak areas yet — drill some flashcards first';
+      setTimeout(() => { pracWeakBtn.textContent = 'Practice my weak areas'; }, 3000);
       return;
     }
     entries.sort((a, b) => b[1].count - a[1].count);
