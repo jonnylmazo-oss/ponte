@@ -331,21 +331,32 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Backlog (open issues)
 
-### P1 — High priority
-- **#24** Post-reading quiz: comprehension questions generated from article via Claude (distinct from cloze Practice tab)
-- **#26** Classic literature category: dedicated UI button/tier for literary-register articles
-- **#32** Error-to-drill engine: track error pattern types across drill sessions, surface in Grammar tab as personalized weak areas
-- **#33** Sentence rebuilding mode: show English sentence, user reconstructs full Italian from memory; third mode in Practice tab
+### P1 — High priority (ranked by learning impact)
+- **#32** Error-to-drill engine ⭐ #1: connects Tricky cards to targeted grammar cards; personalizes every session over time
+- **#33** Sentence rebuilding mode ⭐ #2: completes production triangle (reading + cloze + full reconstruction); hardest and most effective recall exercise
+- **#24** Post-reading quiz ⭐ #3: comprehension questions immediately after reading; strikes consolidation window while context is fresh
+- **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
 ### P2 — Medium priority
-- **#27** Cognate categorization fix: tighten translate prompt with register/gender/usage-breadth guardrails
-- **#34** Cultural context layer in Reader: 2-3 sentence cultural note per article, collapsible below article text
-- **#35** Weekly learning mission: one goal per week in Progress tab, resets Monday, simple progress bar — no gamification
-- **#36** Native audio per article: ElevenLabs or real audio; TTS insufficient for speech rhythm / connected speech
+- **#1** Article library + switcher: browsable shelf of cached articles (generation exists; library UI missing)
+- **#3** Article difficulty filter: filter stored articles by difficulty (blocked by #1)
+- **#7** Shadowing mode: sentence-by-sentence audio + record & compare (blocked by #36)
+- **#8** Weak word tracker: track most-tapped words in reader; foundation for SRS
+- **#10** Spaced repetition queue: SM-2 algorithm on personal weak word list (builds on #8)
+- **#12** Progress dashboard: learning stats across tabs
+- **#17** Mobile setup and iPhone testing: HTTPS + domain still needed; checklist not fully verified
+- **#18** Flashcard visual images via Unsplash API: contextual photos on noun flashcards
+- **#26** Classic literature content category: dedicated UI button/tier for literary-register articles
+- **#34** Cultural context layer in Reader: 2-3 sentence cultural note per article, collapsible
+- **#35** Weekly learning mission: one goal per week, resets Monday, simple progress bar
+- **#36** Native audio per article: ElevenLabs or real audio; TTS insufficient for speech rhythm
 
 ### P3 — Low priority
-- **#37** Pronunciation lab: user records word/sentence, compares to native reference (requires #36 first)
-- **#38** Collaborative deck sharing: export/import flashcard deck as JSON link, no accounts needed
+- **#11** Onboarding flow
+- **#13** Mobile layout polish: ongoing UX pass
+- **#14** Public false friend SEO page
+- **#37** Pronunciation lab: record + compare to native reference (requires #36)
+- **#38** Collaborative deck sharing: export/import flashcard deck as JSON link
 
 ## Key design decisions
 - No frameworks, no build step — intentionally minimal
