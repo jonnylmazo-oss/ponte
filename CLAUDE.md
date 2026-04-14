@@ -159,14 +159,21 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Translation column toggle
 - Toggle button in header (▶/◀) collapses/shows the English column
-- Default state: **collapsed** (Italian-only view); `renderArticle` always calls `applyTranslationState(false, false)` so every new article resets to Italian-only regardless of saved state
-- State persisted in `localStorage` under key `ponte_translation` (for within-session use; overridden on each new article)
+- Default state: **always collapsed** — `<main class="reader translation-collapsed">` in HTML prevents any flash before JS runs; `initTranslationToggle` ignores localStorage and always calls `applyTranslationState(false, false)`; `renderArticle` also resets to collapsed on each new article
+- State NOT persisted — toggle is session-only; always resets to Italian-only
 - On mobile, collapse has no effect — both columns always stack
+
+## Reader initial state
+- On page load: reader starts empty — no article auto-loaded, no column labels, no title/badges, no "Test yourself" button
+- `reader-has-article` CSS class added to `#reader` by `setLoading(true)` (shows "Italiano" label during skeleton) and `renderArticle` (shows both labels + article)
+- CSS rule: `.reader:not(.reader-has-article) .column-label { display: none }` — column labels hidden until content loads
+- Fallback article (`articles[0]`) only loads on generation error, not on init
+- `quizTriggerBtn` hidden during `setLoading(true)`, revealed in `renderArticle`
 
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v14`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v30`; precaches all static assets on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
