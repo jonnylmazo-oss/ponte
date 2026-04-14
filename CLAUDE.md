@@ -101,7 +101,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Flashcard system
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
-- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled}`
+- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled, interval, easeFactor, dueDate, reviewCount, lastReviewed}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
 - `baseForm` / `baseFormEN`: dictionary/infinitive form + English meaning, from `/api/translate`; shown as italic grey "Base: [form] · [meaning]" line below Italian word in library and drill back face; absent on older saved cards (shows nothing)
 - **Backfill (completed):** `backfill.js` one-time script and `POST /api/backfill-flashcards` endpoint used to populate `baseForm`/`baseFormEN` on all 92 existing cards. Script and endpoint remain in codebase for future use; UI button removed.
@@ -237,6 +237,16 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Sticky buttons: `<div class="drill-card-buttons">` — `flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg-card); padding: 12px 24px 16px`
 - Mobile media queries add `.fc-flip-back { padding: 0; }` and `.ff-flip-back { padding: 0; }` to override `.fc-flip-face` padding rule
 
+## SM-2 spaced repetition (issue #10, closed)
+- `applySmTwo(card, correct)` in `flashcards.js`: correct → interval 1→6→round(interval×easeFactor), easeFactor += 0.1 (min 1.3); wrong → interval = 1, easeFactor -= 0.2 (min 1.3); sets `dueDate`, `reviewCount`, `lastReviewed`
+- `backfillDueDates()` runs on init: cards missing `dueDate` get `dueDate = now` so all existing cards appear due immediately
+- `isDue(card)`: true if `!dueDate` or `dueDate ≤ now`
+- **Drill queue:** due cards shuffled first, not-due cards shuffled after; if no due cards → "No cards due" screen with soonest due date + "Drill anyway →" button (`startDrill(true)` bypasses due check)
+- **Due badges:** `fc-due-badge-sidebar` / `fc-due-badge-bottom` — red pill showing due count; hidden when 0; updated by `updateBadge()`
+- **Library card indicators:** "New" (blue, `reviewCount === 0`), "Due today" (red, `isDue`), "Due in Xd" (muted, upcoming)
+- **Drill done screen:** "Next review" section shows up to 6 cards with `next review tomorrow / in N days`; populated from `sessionDrilledCards` Map (id → {italian, interval})
+- sw.js bumped to `ponte-v16`
+
 ## Reverse drill mode (issue #29, closed)
 - `Reverse 🔄` toggle button in `.fc-drill-topbar` next to Exit; state in `localStorage` (`ponte_drill_reverse`)
 - Standard mode: Italian on front, English + Spanish + category badge + note on back
@@ -342,7 +352,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **#3** Article difficulty filter: filter stored articles by difficulty (blocked by #1)
 - **#7** Shadowing mode: sentence-by-sentence audio + record & compare (blocked by #36)
 - **#8** Weak word tracker: track most-tapped words in reader; foundation for SRS
-- **#10** Spaced repetition queue: SM-2 algorithm on personal weak word list (builds on #8)
+- ~~**#10** Spaced repetition queue~~ — **closed, built** (see SM-2 section below)
 - **#12** Progress dashboard: learning stats across tabs
 - **#17** Mobile setup and iPhone testing: HTTPS + domain still needed; checklist not fully verified
 - **#18** Flashcard visual images via Unsplash API: contextual photos on noun flashcards
