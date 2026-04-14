@@ -537,20 +537,26 @@
   // ── Translation column toggle ──────────────────────────────────────────
   function applyTranslationState(open, save) {
     state.translationOpen = open;
-    readerEl.classList.toggle('translation-collapsed', !open);
-    const icon = translToggleBtn.querySelector('.transl-toggle-icon');
+    if (open) {
+      readerEl.classList.remove('translation-collapsed');
+    } else {
+      readerEl.classList.add('translation-collapsed');
+    }
+    const icon = translToggleBtn ? translToggleBtn.querySelector('.transl-toggle-icon') : null;
     if (icon) icon.textContent = open ? '◀' : '▶';
-    translToggleBtn.setAttribute('aria-pressed', String(open));
+    if (translToggleBtn) translToggleBtn.setAttribute('aria-pressed', String(open));
     if (save) localStorage.setItem(LS_TRANSL, open ? '1' : '0');
   }
 
   function initTranslationToggle() {
-    // Always start collapsed — Italian-only is the default; never restore from localStorage
+    // Always start collapsed — Italian-only is the default
     applyTranslationState(false, false);
 
-    translToggleBtn.addEventListener('click', () => {
-      applyTranslationState(!state.translationOpen, false);
-    });
+    if (translToggleBtn) {
+      translToggleBtn.addEventListener('click', () => {
+        applyTranslationState(!state.translationOpen, true);
+      });
+    }
   }
 
   // ── Audio ──────────────────────────────────────────────────────────────
