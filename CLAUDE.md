@@ -209,6 +209,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `practice.js`: IIFE — fully independent from Reader; generates custom practice sentences via Claude
 - **No article dependency** — article selector and `+ Generate new` button removed
 - **Setup screen:** topic text input → difficulty (B1/B2) → mode → "Generate Practice →"
+  - "Surprise me 🎲" button (`prac-surprise-btn`, `.gen-btn`): picks randomly from `PRACTICE_SURPRISE_TOPICS` (30 topics, 6 registers: grammar, daily life, emotional, storytelling, cultural, travel), fills input
   - "🎯 Practice my weak areas" button reads `ponte_error_patterns`, maps top error key to a topic string via `PATTERN_TOPICS` map, pre-fills input
   - Enter in topic input submits; button disabled when input empty
 - **Backend:** `POST /api/generate-practice` — `{ topic, difficulty }` → Claude returns 8 sentences: `{ sentences: [{ english, italian, words, distractors }] }`; `max_tokens: 1400`, `temperature: 0.8`
