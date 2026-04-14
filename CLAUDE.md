@@ -89,8 +89,9 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Flashcard system
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
-- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, timesCorrect, timesWrong, lastSeen, lastDrilled}`
+- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
+- `baseForm` / `baseFormEN`: dictionary/infinitive form + English meaning, from `/api/translate`; shown as italic grey "Base: [form] · [meaning]" line below Italian word in library and drill back face; absent on older saved cards (shows nothing)
 - `lastDrilled`: ISO timestamp set on every Got it / Tricky action in drill mode
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
 - Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
