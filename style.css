@@ -8,6 +8,8 @@
   padding: 0;
 }
 
+[hidden] { display: none !important; }
+
 :root {
   --bg:              #F8F1E3;
   --bg-italian:      #F0E6D0;
