@@ -130,7 +130,6 @@
   const appWrapper      = $('app-wrapper');
   const sidebarToggleBtn = $('sidebar-toggle');
 
-  const quizTriggerRow   = $('quiz-trigger-row');
   const quizTriggerBtn   = $('quiz-trigger-btn');
   const quizOverlay      = $('quiz-overlay');
   const quizModal        = $('quiz-modal');
@@ -225,7 +224,8 @@
     italianText.innerHTML         = tokenizeItalian(article.italian);
     updateTranslation();
     hideTooltip();
-    quizTriggerRow.hidden = false;
+    applyTranslationState(false, false); // always start Italian-only on new article
+    quizTriggerBtn.hidden = false;
   }
 
   function updateTranslation() {

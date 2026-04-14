@@ -5535,25 +5535,20 @@ body.drill-fullscreen .ff-flip-card {
 
 /* ── Post-reading Quiz ─────────────────────────────────────────────────── */
 
-.quiz-trigger-row {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 24px 0;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.quiz-trigger-btn {
+.quiz-header-btn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-mid);
-  font-size: 13px;
-  padding: 5px 14px;
-  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 5px 11px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
-.quiz-trigger-btn:hover {
+.quiz-header-btn:hover {
   background: var(--bg-card-hover);
   color: var(--text);
   border-color: var(--text-mid);
@@ -5877,11 +5872,7 @@ body.drill-fullscreen .ff-flip-card {
 .quiz-done-btn:hover { background: #0044CC; }
 
 @media (max-width: 820px) {
-  .quiz-trigger-row {
-    padding: 8px 16px 0;
-  }
-
-  .quiz-modal-article-title {
+.quiz-modal-article-title {
     max-width: 220px;
   }
 
