@@ -97,6 +97,7 @@
       stored[key].label    = PATTERN_LABELS[key] || key;
     });
     saveErrorPatterns(stored);
+    console.log('[Ponte] Error patterns recorded for "' + card.italian + '":', patterns, JSON.parse(localStorage.getItem(EP_KEY) || '{}'));
   }
 
   // ── Sort due cards: top-3 error patterns first, then by accuracy ─────────

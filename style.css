@@ -1790,8 +1790,12 @@ header {
   background: var(--bg);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 22;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.grammar-subtabs::-webkit-scrollbar { display: none; }
 
 .grammar-subtab {
   background: none;
@@ -1803,6 +1807,8 @@ header {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .grammar-subtab:hover { color: var(--text); }
@@ -2312,7 +2318,7 @@ header {
 
 /* ── Grammar responsive ────────────────────────────────────── */
 @media (max-width: 820px) {
-  .grammar-subtabs { padding: 10px 14px 0; }
+  .grammar-subtabs { padding: 10px 14px 0; top: var(--header-h); }
   .grammar-subtab { font-size: 12px; padding: 7px 12px 9px; }
   .gr-toolbar { padding: 10px 14px 8px; top: 37px; }
   .gr-delta-grid { padding: 12px 14px; }

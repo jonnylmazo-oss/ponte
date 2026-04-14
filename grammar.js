@@ -121,11 +121,17 @@
   function switchPanel(id) {
     activePanel = id;
     subTabBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === id));
-    panelWeakAreas.hidden = (id !== 'weakareas');
+    if (panelWeakAreas) panelWeakAreas.hidden = (id !== 'weakareas');
     panelStages.hidden    = (id !== 'stages');
     panelDrills.hidden    = (id !== 'drills');
     panelReading.hidden   = (id !== 'reading');
-    if (id === 'weakareas') renderWeakAreas();
+    if (id === 'weakareas') {
+      if (panelWeakAreas) {
+        renderWeakAreas();
+      } else {
+        console.warn('[Ponte] grammar-panel-weakareas not found in DOM — try hard-refreshing (Cmd+Shift+R)');
+      }
+    }
   }
 
   subTabBtns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
