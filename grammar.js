@@ -233,6 +233,30 @@
       </div>`).join('');
   }
 
+  // ── Highlight helper ─────────────────────────────────────────────────────
+  function renderHighlightedExample(text) {
+    const escaped = esc(text);
+    return escaped.replace(/\[h\](.*?)\[\/h\]/g, (_, w) =>
+      `<strong class="gr-ex-highlight">${w}</strong>`
+    );
+  }
+
+  // ── Conjugation table helper ──────────────────────────────────────────────
+  function renderConjTable(rows) {
+    if (!rows || !rows.length) return '';
+    return `
+      <table class="gr-conjugation-table">
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="gr-conj-pronoun">${esc(r.pronoun)}</td>
+              <td class="gr-conj-italian">${esc(r.italian)}</td>
+              <td class="gr-conj-english">${esc(r.english)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
   // ── Card renderer ─────────────────────────────────────────────────────────
   function renderCard(card, stageColor) {
     const hasDrill = grammarDrills.some(d => d.grammarCardId === card.id);
@@ -244,6 +268,7 @@
           <span class="gr-stage-badge" style="color:${stageColor};border-color:${stageColor}">Stage ${card.stageId}</span>
         </div>
         <div class="gr-new-card-title">${esc(card.title)}</div>
+        ${card.grammarTerm ? `<div class="gr-grammar-term">${esc(card.grammarTerm)}</div>` : ''}
         <div class="gr-new-rows">
           <div class="gr-new-row gr-row-en">
             <span class="gr-row-lang">EN</span>
@@ -255,18 +280,14 @@
           </div>
         </div>
         <div class="gr-new-example">
-          <div class="gr-new-ex-it">${esc(card.example)}</div>
+          <div class="gr-new-ex-it">${renderHighlightedExample(card.example)}</div>
           <div class="gr-new-ex-en">${esc(card.exampleEN)}</div>
         </div>
+        ${card.conjugationTable ? renderConjTable(card.conjugationTable) : ''}
         <div class="gr-new-trap">
           <span class="gr-trap-icon">⚠️</span>
           <span>${esc(card.trap)}</span>
         </div>
-        ${card.spanishShortcut ? `
-        <div class="gr-new-spanish">
-          <span class="gr-es-flag">🇪🇸</span>
-          <span>${esc(card.spanishShortcut)}</span>
-        </div>` : ''}
         ${hasDrill ? `
         <button class="gr-practice-btn" data-cardid="${card.id}">Practice this →</button>
         ` : ''}
