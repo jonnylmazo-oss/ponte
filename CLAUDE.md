@@ -159,8 +159,11 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 
 ## Translation column toggle
 - Toggle button in header (▶/◀) collapses/shows the English column
-- Default state: **always collapsed** — `<main class="reader translation-collapsed">` in HTML prevents any flash before JS runs; `initTranslationToggle` ignores localStorage and always calls `applyTranslationState(false, false)`; `renderArticle` also resets to collapsed on each new article
-- State NOT persisted — toggle is session-only; always resets to Italian-only
+- Default state: **always collapsed** — `<main class="reader translation-collapsed">` in HTML prevents flash before JS runs; `initTranslationToggle` always calls `applyTranslationState(false, false)`; `renderArticle` also resets to collapsed on each new article
+- `applyTranslationState` uses explicit `classList.add/remove` (not `toggle`) with null-guards on `translToggleBtn`
+- State saved to localStorage (`ponte_translation`) on click; never restored on load
+- Two-column layout: `grid-template-columns: 1fr 1fr` (50/50) — Italian expands to full width when collapsed (`1fr`)
+- "ITALIANO 🔊" label: wrapped in `.col-label-left` (inline-flex, gap 8px) so text + speak button sit as one unit left-aligned; legend pushes right via `space-between`
 - On mobile, collapse has no effect — both columns always stack
 
 ## Reader initial state
