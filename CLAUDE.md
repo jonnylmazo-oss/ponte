@@ -67,9 +67,13 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `data/safe-cognates.js`: 200 entries (`safeCognates` array) with fields `{ id, italian, spanish, english, similarity, example, exampleEN }`
   - `similarity`: `"identical"` (same spelling), `"near-identical"` (1–3 char diff), `"similar-root"` (clearly same root, more different form)
   - Categories covered: daily life, adjectives, places, academic, food/drink, arts/culture/tech, nature, body, people/professions, verbs/abstract
-- Italian word shown in green (`#2E6B3E`); similarity badge color-coded (dark/medium/light green)
+- Entire SC panel scoped under `#ff-panel-cognates` — green palette: card bg `#F4FAF6`, border `#C8E6C9`, hover `#F0FAF4`, expanded left inset `#A8D5B5`
+- Italian word in cards shown in green (`#2E6B3E`); similarity badge classes: `sc-sim-identical` (dark green `#2E6B3E`), `sc-sim-nearidentical` (`#4CAF7D`), `sc-sim-similarroot` (`#A8D5B5` bg / `#1B5E20` text)
+  - Badge class generated in JS: `'sc-sim-' + similarity.replace('-', '')` (replaces first hyphen only)
+- Filter chips use `.sc-filter` class; active state = cognate green `rgba(46,107,62,0.1)` bg
+- `.ff-subtabs` sticky `z-index: 22`; `.ff-toolbar` sticky `top: 44px` (desktop) / `top: calc(var(--header-h) + 44px)` (mobile)
 - Expand card → shows example sentence + English translation
-- Drill: same flip mechanic as False Friends; back face shows English meaning, Spanish equivalent, similarity badge, example
+- Drill: same flip mechanic as False Friends; back face shows English meaning, Spanish equivalent, similarity badge, example; drill front/back face bg `#F4FAF6`, flip button green `#2E6B3E`
 
 ## Grammar tab — 4-stage learning path
 - `data/grammar.js`: 45 cards (original 40 + 5 new: IDs 41-45) with fields `{ id, title, category, difficulty, stageId, english, italian, example, exampleEN, trap, spanishShortcut, tip? }`
