@@ -1060,6 +1060,79 @@ header {
    False Friends tab
    ═══════════════════════════════════════════════════════════════ */
 
+/* ─── False Friends / Safe Cognates sub-tabs ─────────────────── */
+
+.ff-subtabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.ff-subtab {
+  flex: 1;
+  padding: 11px 16px;
+  border: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ff-subtab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ff-subtab:hover:not(.active) { color: var(--text-mid); }
+
+/* ─── Safe Cognates cards ────────────────────────────────────── */
+
+.sc-it-word {
+  color: #2E6B3E;
+}
+
+.sc-sim-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.sc-simidentical    { background: #2E6B3E; color: #fff; }
+.sc-simnearidentical{ background: #4A9B5F; color: #fff; }
+.sc-simsimilarroot  { background: #85C29A; color: #fff; }
+
+.sc-flip-english {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2E6B3E;
+  margin-bottom: 6px;
+}
+.sc-flip-spanish {
+  font-size: 15px;
+  color: var(--text-mid);
+  margin-bottom: 10px;
+}
+.sc-flip-example {
+  font-size: 13px;
+  color: var(--text-mid);
+  font-style: italic;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.sc-flip-example-en {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
 /* ─── Toolbar ────────────────────────────────────────────────── */
 
 .ff-toolbar {

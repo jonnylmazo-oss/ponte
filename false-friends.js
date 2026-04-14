@@ -40,6 +40,18 @@
     flipped:      false,
   };
 
+  const scState = {
+    filter:    'all',
+    query:     '',
+    drillMode: false,
+    drillQueue:   [],
+    drillDone:    [],
+    drillFirstTry: 0,
+    drillSeenIds: new Set(),
+    currentCard:  null,
+    flipped:      false,
+  };
+
   // ── Fullscreen helpers ─────────────────────────────────────────────────
   function enterFFFullscreen() {
     const hdr = document.getElementById('drill-fullscreen-header');
@@ -288,6 +300,235 @@
     state.drillMode ? exitDrill() : enterDrill();
   });
   ffDrillRestart.addEventListener('click', enterDrill);
+
+  // ── Sub-tab switching ──────────────────────────────────────────────────
+  const ffPanelFriends  = $('ff-panel-friends');
+  const ffPanelCognates = $('ff-panel-cognates');
+
+  document.querySelectorAll('.ff-subtab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ff-subtab').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = btn.dataset.ffPanel;
+      ffPanelFriends.hidden  = (panel !== 'friends');
+      ffPanelCognates.hidden = (panel !== 'cognates');
+      if (panel === 'cognates') scRenderCards();
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  // ── SAFE COGNATES ──────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════
+
+  const scSearch      = $('sc-search');
+  const scCount       = $('sc-count');
+  const scGrid        = $('sc-grid');
+  const scBrowse      = $('sc-browse');
+  const scDrill       = $('sc-drill');
+  const scDrillDone   = $('sc-drill-done');
+  const scDrillToggle = $('sc-drill-toggle');
+  const scDrillStatus = $('sc-drill-status');
+  const scFlipInner   = $('sc-flip-inner');
+  const scFlipWord    = $('sc-flip-word');
+  const scFlipWordBack= $('sc-flip-word-back');
+  const scFlipAnswer  = $('sc-flip-answer');
+  const scFlipBtn     = $('sc-flip-btn');
+  const scGotBtn      = $('sc-got-btn');
+  const scTrickyBtn   = $('sc-tricky-btn');
+  const scExitDrill   = $('sc-exit-drill');
+  const scDrillScore  = $('sc-drill-score');
+  const scDrillRestart= $('sc-drill-restart');
+
+  const SIM_LABELS = {
+    'identical':     'Identical',
+    'near-identical':'Near-identical',
+    'similar-root':  'Similar root',
+  };
+
+  function scGetFiltered() {
+    let cards = typeof safeCognates !== 'undefined' ? safeCognates : [];
+    if (scState.filter !== 'all') {
+      cards = cards.filter((c) => c.similarity === scState.filter);
+    }
+    if (scState.query) {
+      const q = scState.query.toLowerCase();
+      cards = cards.filter((c) =>
+        c.italian.toLowerCase().includes(q) ||
+        c.spanish.toLowerCase().includes(q) ||
+        c.english.toLowerCase().includes(q)
+      );
+    }
+    return cards;
+  }
+
+  function scRenderCards() {
+    const cards = scGetFiltered();
+    scCount.textContent = `${cards.length} cognate${cards.length !== 1 ? 's' : ''}`;
+
+    if (cards.length === 0) {
+      scGrid.innerHTML = '<p class="ff-empty">No matches. Try a different search.</p>';
+      return;
+    }
+
+    scGrid.innerHTML = cards.map((c) => {
+      const simClass = 'sc-sim-' + c.similarity.replace('-', '');
+      return `
+        <div class="sc-card" data-id="${c.id}">
+          <div class="ff-card-main">
+            <div class="ff-it-word sc-it-word">${esc(c.italian)}</div>
+            <div class="ff-card-es-line">in Spanish: <span class="ff-es-inline">${esc(c.spanish)}</span></div>
+            <div class="ff-card-it-line">meaning: <span class="ff-it-inline">${esc(c.english)}</span></div>
+            <div class="ff-card-foot">
+              <span class="sc-sim-badge ${simClass}">${SIM_LABELS[c.similarity] || c.similarity}</span>
+              <span class="ff-chevron" aria-hidden="true">›</span>
+            </div>
+          </div>
+          <div class="ff-card-detail">
+            <div class="ff-card-detail-inner">
+              <div class="ff-detail-example">
+                <p class="ff-example-it">${esc(c.example)}</p>
+                <p class="ff-example-en">${esc(c.exampleEN)}</p>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  scGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.sc-card');
+    if (!card) return;
+    const wasExpanded = card.classList.contains('expanded');
+    document.querySelectorAll('.sc-card.expanded').forEach((c) => {
+      c.classList.remove('expanded');
+      c.querySelector('.ff-chevron').textContent = '›';
+    });
+    if (!wasExpanded) {
+      card.classList.add('expanded');
+      card.querySelector('.ff-chevron').textContent = '⌄';
+    }
+  });
+
+  scSearch.addEventListener('input', () => {
+    scState.query = scSearch.value;
+    scRenderCards();
+  });
+
+  document.querySelectorAll('.sc-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      scState.filter = btn.dataset.sim;
+      document.querySelectorAll('.sc-filter').forEach((b) =>
+        b.classList.toggle('active', b === btn)
+      );
+      scRenderCards();
+    });
+  });
+
+  // ── Safe Cognates drill ──────────────────────────────────────────────
+  function scEnterDrill() {
+    const cards = scGetFiltered();
+    if (cards.length === 0) return;
+
+    scState.drillMode    = true;
+    scState.drillQueue   = shuffle(cards);
+    scState.drillDone    = [];
+    scState.drillFirstTry = 0;
+    scState.drillSeenIds  = new Set();
+    scState.flipped       = false;
+
+    scBrowse.hidden    = true;
+    scDrillDone.hidden = true;
+    scDrill.hidden     = false;
+    scDrillToggle.classList.add('active');
+    scDrillToggle.textContent = '✕ Exit drill';
+
+    scNextCard();
+    enterFFFullscreen();
+    // Override exit button for SC drill
+    const btn = document.getElementById('drill-fs-exit');
+    if (btn) btn.onclick = scExitDrillFn;
+  }
+
+  function scExitDrillFn() {
+    scState.drillMode = false;
+    scDrill.hidden     = true;
+    scDrillDone.hidden = true;
+    scBrowse.hidden    = false;
+    scDrillToggle.classList.remove('active');
+    scDrillToggle.textContent = '⚡ Drill mode';
+    leaveFFFullscreen();
+  }
+
+  function scNextCard() {
+    if (scState.drillQueue.length === 0) { scShowDrillComplete(); return; }
+
+    scState.currentCard = scState.drillQueue.shift();
+    scState.flipped     = false;
+
+    scFlipInner.classList.remove('flipped');
+    scFlipWord.textContent     = scState.currentCard.italian;
+    scFlipWordBack.textContent = scState.currentCard.italian;
+
+    const simClass = 'sc-sim-' + scState.currentCard.similarity.replace('-', '');
+    scFlipAnswer.innerHTML = `
+      <div class="sc-flip-english">${esc(scState.currentCard.english)}</div>
+      <div class="sc-flip-spanish">🇪🇸 ${esc(scState.currentCard.spanish)}</div>
+      <span class="sc-sim-badge ${simClass}">${SIM_LABELS[scState.currentCard.similarity]}</span>
+      <div class="sc-flip-example">${esc(scState.currentCard.example)}</div>
+      <div class="sc-flip-example-en">${esc(scState.currentCard.exampleEN)}</div>
+    `;
+
+    const total     = scState.drillDone.length + scState.drillQueue.length + 1;
+    const remaining = scState.drillQueue.length + 1;
+    scDrillStatus.textContent = `${remaining} / ${total} remaining`;
+    syncFFStatus(`${remaining} / ${total}`);
+  }
+
+  function scShowDrillComplete() {
+    scDrill.hidden     = true;
+    scDrillDone.hidden = false;
+    const total   = scState.drillDone.length;
+    const correct = scState.drillFirstTry;
+    const missed  = total - correct;
+    scDrillScore.textContent = correct === total
+      ? `${correct} / ${total} on the first try — perfect!`
+      : `${correct} / ${total} on the first try · ${missed} needed another look`;
+  }
+
+  scFlipBtn.addEventListener('click', () => {
+    if (scState.flipped) return;
+    scState.flipped = true;
+    scFlipInner.classList.add('flipped');
+  });
+
+  scGotBtn.addEventListener('click', () => {
+    if (!scState.flipped) return;
+    if (!scState.drillSeenIds.has(scState.currentCard.id)) scState.drillFirstTry++;
+    scState.drillDone.push(scState.currentCard);
+    scNextCard();
+  });
+
+  scTrickyBtn.addEventListener('click', () => {
+    if (!scState.flipped) return;
+    scState.drillSeenIds.add(scState.currentCard.id);
+    const q = scState.drillQueue;
+    const insertAt = Math.max(1, Math.floor(q.length / 2)) +
+                     Math.floor(Math.random() * Math.max(1, Math.ceil(q.length / 2)));
+    q.splice(Math.min(insertAt, q.length), 0, scState.currentCard);
+    scNextCard();
+  });
+
+  scExitDrill.addEventListener('click', scExitDrillFn);
+  scDrillToggle.addEventListener('click', () => {
+    scState.drillMode ? scExitDrillFn() : scEnterDrill();
+  });
+  scDrillRestart.addEventListener('click', scEnterDrill);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('drill-fullscreen')) {
+      if (scState.drillMode) scExitDrillFn();
+    }
+  });
 
   // ── Init ───────────────────────────────────────────────────────────────
   renderCards();

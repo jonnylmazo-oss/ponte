@@ -148,65 +148,130 @@
       <div class="tab-panel" id="tab-false-friends">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
 
-        <!-- Toolbar -->
-        <div class="ff-toolbar" id="ff-toolbar">
-          <div class="ff-toolbar-left">
-            <input type="text" id="ff-search" class="ff-search"
-              placeholder="Search Italian, Spanish, or English…" autocomplete="off" />
-            <div class="ff-filters">
-              <button class="ff-filter active" data-danger="all">All</button>
-              <button class="ff-filter" data-danger="high">🔴 High</button>
-              <button class="ff-filter" data-danger="medium">🟡 Medium</button>
-              <button class="ff-filter" data-danger="low">⚪ Low</button>
+        <!-- Sub-tab bar -->
+        <div class="ff-subtabs">
+          <button class="ff-subtab active" data-ff-panel="friends">⚠️ False Friends</button>
+          <button class="ff-subtab" data-ff-panel="cognates">✅ Safe Cognates</button>
+        </div>
+
+        <!-- ── FALSE FRIENDS PANEL ── -->
+        <div id="ff-panel-friends">
+          <!-- Toolbar -->
+          <div class="ff-toolbar" id="ff-toolbar">
+            <div class="ff-toolbar-left">
+              <input type="text" id="ff-search" class="ff-search"
+                placeholder="Search Italian, Spanish, or English…" autocomplete="off" />
+              <div class="ff-filters">
+                <button class="ff-filter active" data-danger="all">All</button>
+                <button class="ff-filter" data-danger="high">🔴 High</button>
+                <button class="ff-filter" data-danger="medium">🟡 Medium</button>
+                <button class="ff-filter" data-danger="low">⚪ Low</button>
+              </div>
+              <span class="ff-count" id="ff-count"></span>
             </div>
-            <span class="ff-count" id="ff-count"></span>
+            <button class="ff-drill-toggle" id="ff-drill-toggle">⚡ Drill mode</button>
+            <p class="ff-danger-legend">🔴 real confusion &nbsp;·&nbsp; 🟡 easy to mix up when reading &nbsp;·&nbsp; ⚪ subtle, worth knowing</p>
           </div>
-          <button class="ff-drill-toggle" id="ff-drill-toggle">⚡ Drill mode</button>
-          <p class="ff-danger-legend">🔴 real confusion &nbsp;·&nbsp; 🟡 easy to mix up when reading &nbsp;·&nbsp; ⚪ subtle, worth knowing</p>
-        </div>
-
-        <!-- Browse mode -->
-        <div class="ff-browse" id="ff-browse">
-          <div class="ff-grid" id="ff-grid"></div>
-        </div>
-
-        <!-- Drill mode -->
-        <div class="ff-drill" id="ff-drill" hidden>
-          <div class="ff-drill-topbar">
-            <span class="ff-drill-status" id="ff-drill-status"></span>
-            <button class="ff-exit-drill" id="ff-exit-drill">Exit</button>
+          <!-- Browse mode -->
+          <div class="ff-browse" id="ff-browse">
+            <div class="ff-grid" id="ff-grid"></div>
           </div>
-          <div class="ff-drill-arena">
-            <div class="ff-flip-card">
-              <div class="ff-flip-inner" id="ff-flip-inner">
-                <div class="ff-flip-face ff-flip-front">
-                  <div class="ff-flip-word" id="ff-flip-word"></div>
-                  <p class="ff-flip-prompt">What does this mean in Italian?</p>
-                  <button class="ff-flip-btn" id="ff-flip-btn">Flip</button>
-                </div>
-                <div class="ff-flip-face ff-flip-back">
-                  <div class="drill-card-content">
-                    <div class="ff-flip-word" id="ff-flip-word-back"></div>
-                    <div class="ff-flip-answer" id="ff-flip-answer"></div>
-                    <p class="ff-flip-tip" id="ff-flip-tip"></p>
+          <!-- Drill mode -->
+          <div class="ff-drill" id="ff-drill" hidden>
+            <div class="ff-drill-topbar">
+              <span class="ff-drill-status" id="ff-drill-status"></span>
+              <button class="ff-exit-drill" id="ff-exit-drill">Exit</button>
+            </div>
+            <div class="ff-drill-arena">
+              <div class="ff-flip-card">
+                <div class="ff-flip-inner" id="ff-flip-inner">
+                  <div class="ff-flip-face ff-flip-front">
+                    <div class="ff-flip-word" id="ff-flip-word"></div>
+                    <p class="ff-flip-prompt">What does this mean in Italian?</p>
+                    <button class="ff-flip-btn" id="ff-flip-btn">Flip</button>
                   </div>
-                  <div class="drill-card-buttons">
-                    <button class="ff-got-btn" id="ff-got-btn">✓ Got it</button>
-                    <button class="ff-tricky-btn" id="ff-tricky-btn">↺ Tricky</button>
+                  <div class="ff-flip-face ff-flip-back">
+                    <div class="drill-card-content">
+                      <div class="ff-flip-word" id="ff-flip-word-back"></div>
+                      <div class="ff-flip-answer" id="ff-flip-answer"></div>
+                      <p class="ff-flip-tip" id="ff-flip-tip"></p>
+                    </div>
+                    <div class="drill-card-buttons">
+                      <button class="ff-got-btn" id="ff-got-btn">✓ Got it</button>
+                      <button class="ff-tricky-btn" id="ff-tricky-btn">↺ Tricky</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <!-- Drill complete -->
+          <div class="ff-drill-done" id="ff-drill-done" hidden>
+            <div class="ff-drill-done-icon">🎉</div>
+            <h2 class="ff-drill-done-title">Deck complete!</h2>
+            <p class="ff-drill-score" id="ff-drill-score"></p>
+            <button class="ff-drill-restart" id="ff-drill-restart">Drill again</button>
+          </div>
         </div>
 
-        <!-- Drill complete -->
-        <div class="ff-drill-done" id="ff-drill-done" hidden>
-          <div class="ff-drill-done-icon">🎉</div>
-          <h2 class="ff-drill-done-title">Deck complete!</h2>
-          <p class="ff-drill-score" id="ff-drill-score"></p>
-          <button class="ff-drill-restart" id="ff-drill-restart">Drill again</button>
+        <!-- ── SAFE COGNATES PANEL ── -->
+        <div id="ff-panel-cognates" hidden>
+          <!-- Toolbar -->
+          <div class="ff-toolbar">
+            <div class="ff-toolbar-left">
+              <input type="text" id="sc-search" class="ff-search"
+                placeholder="Search Italian, Spanish, or English…" autocomplete="off" />
+              <div class="ff-filters">
+                <button class="sc-filter active" data-sim="all">All</button>
+                <button class="sc-filter" data-sim="identical">Identical</button>
+                <button class="sc-filter" data-sim="near-identical">Near-identical</button>
+                <button class="sc-filter" data-sim="similar-root">Similar root</button>
+              </div>
+              <span class="ff-count" id="sc-count"></span>
+            </div>
+            <button class="ff-drill-toggle" id="sc-drill-toggle">⚡ Drill mode</button>
+          </div>
+          <!-- Browse mode -->
+          <div class="ff-browse" id="sc-browse">
+            <div class="ff-grid" id="sc-grid"></div>
+          </div>
+          <!-- Drill mode -->
+          <div class="ff-drill" id="sc-drill" hidden>
+            <div class="ff-drill-topbar">
+              <span class="ff-drill-status" id="sc-drill-status"></span>
+              <button class="ff-exit-drill" id="sc-exit-drill">Exit</button>
+            </div>
+            <div class="ff-drill-arena">
+              <div class="ff-flip-card">
+                <div class="ff-flip-inner" id="sc-flip-inner">
+                  <div class="ff-flip-face ff-flip-front">
+                    <div class="ff-flip-word" id="sc-flip-word"></div>
+                    <p class="ff-flip-prompt">What does this mean in Italian?</p>
+                    <button class="ff-flip-btn" id="sc-flip-btn">Flip</button>
+                  </div>
+                  <div class="ff-flip-face ff-flip-back">
+                    <div class="drill-card-content">
+                      <div class="ff-flip-word sc-flip-word-back" id="sc-flip-word-back"></div>
+                      <div class="ff-flip-answer" id="sc-flip-answer"></div>
+                    </div>
+                    <div class="drill-card-buttons">
+                      <button class="ff-got-btn" id="sc-got-btn">✓ Got it</button>
+                      <button class="ff-tricky-btn" id="sc-tricky-btn">↺ Tricky</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Drill complete -->
+          <div class="ff-drill-done" id="sc-drill-done" hidden>
+            <div class="ff-drill-done-icon">🎉</div>
+            <h2 class="ff-drill-done-title">Deck complete!</h2>
+            <p class="ff-drill-score" id="sc-drill-score"></p>
+            <button class="ff-drill-restart" id="sc-drill-restart">Drill again</button>
+          </div>
         </div>
+
       </div>
 
       <!-- Tab: Grammar -->
@@ -676,6 +741,7 @@
   <script src="data/articles.js"></script>
   <script src="data/wordmap.js"></script>
   <script src="data/false-friends.js"></script>
+  <script src="data/safe-cognates.js"></script>
   <script src="data/grammar.js"></script>
   <script src="app.js"></script>
   <script src="false-friends.js"></script>
