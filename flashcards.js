@@ -42,22 +42,28 @@
     return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // ── SM-2 algorithm ───────────────────────────────────────────────────────
-  function applySmTwo(card, correct) {
-    const iv  = card.interval    !== undefined ? card.interval    : 0;
-    const ef  = card.easeFactor  !== undefined ? card.easeFactor  : 2.5;
-    const rc  = card.reviewCount !== undefined ? card.reviewCount : 0;
+  // ── SM-2 algorithm ─────────────────────────────────────────────────────
+  // rating: 'again' | 'hard' | 'easy'
+  function applySmTwo(card, rating) {
+    const iv = card.interval    !== undefined ? card.interval    : 0;
+    const ef = card.easeFactor  !== undefined ? card.easeFactor  : 2.5;
+    const rc = card.reviewCount !== undefined ? card.reviewCount : 0;
 
     let newInterval, newEF;
 
-    if (correct) {
-      if (rc === 0)      newInterval = 1;
-      else if (rc === 1) newInterval = 6;
-      else               newInterval = Math.round(iv * ef);
-      newEF = Math.max(1.3, ef + 0.1);
-    } else {
+    if (rating === 'again') {
       newInterval = 1;
       newEF = Math.max(1.3, ef - 0.2);
+    } else if (rating === 'hard') {
+      if (rc === 0)      newInterval = 1;
+      else if (rc === 1) newInterval = 3;
+      else               newInterval = Math.round(iv * 1.2);
+      newEF = ef; // unchanged on hard
+    } else { // 'easy'
+      if (rc === 0)      newInterval = 1;
+      else if (rc === 1) newInterval = 6;
+      else               newInterval = Math.round(iv * ef * 1.3);
+      newEF = Math.min(4.0, ef + 0.15);
     }
 
     const due = new Date();
@@ -137,8 +143,9 @@
   const fcFlipAnswer  = $('fc-flip-answer');
   const fcFlipNote    = $('fc-flip-note');
   const fcFlipBase    = $('fc-flip-base');
-  const fcGotBtn      = $('fc-got-btn');
-  const fcTrickyBtn   = $('fc-tricky-btn');
+  const fcAgainBtn    = $('fc-again-btn');
+  const fcHardBtn     = $('fc-hard-btn');
+  const fcEasyBtn     = $('fc-easy-btn');
   const fcDrillScore  = $('fc-drill-score');
   const fcTrickyList  = $('fc-tricky-list');
   const fcDrillRestart = $('fc-drill-restart');
@@ -188,7 +195,7 @@
   let trickyCards         = [];
   let drillWordType       = 'all';
   let sessionCorrect      = 0;
-  let sessionTricky       = 0;
+  let sessionAgain        = 0;
   let sessionDrilledCards = new Map(); // id → { italian, interval }
   let drillReverse        = localStorage.getItem('ponte_drill_reverse') === 'true';
 
@@ -321,12 +328,20 @@
       el.hidden = count === 0;
     });
 
-    ['fc-due-badge-sidebar', 'fc-due-badge-bottom'].forEach((id) => {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = dueCount;
-      el.hidden = dueCount === 0;
-    });
+    // Sidebar: text label "N due today" below the count
+    const dueLabelSidebar = $('fc-due-label-sidebar');
+    if (dueLabelSidebar) {
+      dueLabelSidebar.textContent = `${dueCount} due today`;
+      dueLabelSidebar.hidden = dueCount === 0;
+    }
+
+    // Bottom nav: red pill badge + accessible title
+    const dueBadgeBottom = $('fc-due-badge-bottom');
+    if (dueBadgeBottom) {
+      dueBadgeBottom.textContent = dueCount;
+      dueBadgeBottom.hidden      = dueCount === 0;
+      dueBadgeBottom.title       = `${dueCount} card${dueCount !== 1 ? 's' : ''} due for review`;
+    }
   }
 
   // ── Reset Scores ──────────────────────────────────────────────────────────
@@ -369,13 +384,13 @@
 
   function updateSessionStats() {
     if (!fcSessionStats) return;
-    const total = sessionCorrect + sessionTricky;
+    const total = sessionCorrect + sessionAgain;
     const pct   = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
     if (total === 0) {
       fcSessionStats.textContent = '';
       return;
     }
-    fcSessionStats.textContent = `${sessionCorrect} correct · ${sessionTricky} tricky · ${pct}% this session`;
+    fcSessionStats.textContent = `${sessionCorrect} correct · ${sessionAgain} again · ${pct}% this session`;
   }
 
   function showNoDueScreen(notDue) {
@@ -416,7 +431,7 @@
     drillCorrect        = 0;
     trickyCards         = [];
     sessionCorrect      = 0;
-    sessionTricky       = 0;
+    sessionAgain        = 0;
     sessionDrilledCards = new Map();
     updateSessionStats();
 
@@ -557,15 +572,15 @@
     }
   });
 
-  // Got it — correct answer
-  fcGotBtn.addEventListener('click', () => {
+  // Helper: handle a correct answer (hard or easy) — advance card
+  function handleCorrect(rating) {
     if (!fcFlipInner.classList.contains('flipped')) return;
-    const card = drillQueue.shift();
-    const now  = new Date().toISOString();
+    const card  = drillQueue.shift();
+    const now   = new Date().toISOString();
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
-      applySmTwo(cards[idx], true);
+      applySmTwo(cards[idx], rating);
       cards[idx].timesCorrect = (cards[idx].timesCorrect || 0) + 1;
       cards[idx].lastSeen     = now;
       cards[idx].lastDrilled  = now;
@@ -579,17 +594,17 @@
     sessionCorrect++;
     updateSessionStats();
     showDrillCard();
-  });
+  }
 
-  // Tricky — wrong answer, re-queue
-  fcTrickyBtn.addEventListener('click', () => {
+  // Again — wrong, re-queue
+  fcAgainBtn && fcAgainBtn.addEventListener('click', () => {
     if (!fcFlipInner.classList.contains('flipped')) return;
-    const card = drillQueue.shift();
-    const now  = new Date().toISOString();
+    const card  = drillQueue.shift();
+    const now   = new Date().toISOString();
     const cards = loadCards();
     const idx   = cards.findIndex((c) => c.id === card.id);
     if (idx !== -1) {
-      applySmTwo(cards[idx], false);
+      applySmTwo(cards[idx], 'again');
       cards[idx].timesWrong  = (cards[idx].timesWrong || 0) + 1;
       cards[idx].lastSeen    = now;
       cards[idx].lastDrilled = now;
@@ -599,7 +614,7 @@
         interval: cards[idx].interval,
       });
     }
-    sessionTricky++;
+    sessionAgain++;
     updateSessionStats();
     if (!trickyCards.find((c) => c.id === card.id)) trickyCards.push(card);
     const pos = drillQueue.length <= 2
@@ -609,6 +624,12 @@
     drillTotal++;
     showDrillCard();
   });
+
+  // Hard — correct but struggled
+  fcHardBtn && fcHardBtn.addEventListener('click', () => handleCorrect('hard'));
+
+  // Easy — correct, knew it instantly
+  fcEasyBtn && fcEasyBtn.addEventListener('click', () => handleCorrect('easy'));
 
   fcDrillToggle.addEventListener('click', () => startDrill(false));
   fcExitDrill.addEventListener('click', exitDrill);

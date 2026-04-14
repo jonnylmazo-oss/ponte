@@ -2538,8 +2538,8 @@ header {
 .drill-card-buttons {
   flex-shrink: 0;
   display: flex;
-  gap: 12px;
-  padding: 12px 24px 16px;
+  gap: 8px;
+  padding: 12px 16px 16px;
   border-top: 1px solid var(--border);
   background: var(--bg-card);
   width: 100%;
@@ -2601,35 +2601,31 @@ header {
 }
 
 
-.fc-got-btn {
-  background: #2E6B3E;
-  border: 1px solid #2E6B3E;
+/* ── 3-button drill system: Again / Hard / Easy ─────────────── */
+.fc-again-btn,
+.fc-hard-btn,
+.fc-easy-btn {
+  flex: 1;
   border-radius: var(--radius);
   color: #FFFFFF;
   font-family: var(--font);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   min-height: 44px;
-  padding: 8px 22px;
+  padding: 8px 4px;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: opacity 0.12s;
+  border: none;
 }
-.fc-got-btn:hover { background: #1E5530; }
 
-.fc-tricky-btn {
-  background: #B85C00;
-  border: 1px solid #B85C00;
-  border-radius: var(--radius);
-  color: #FFFFFF;
-  font-family: var(--font);
-  font-size: 14px;
-  font-weight: 500;
-  min-height: 44px;
-  padding: 8px 22px;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-.fc-tricky-btn:hover { background: #964A00; }
+.fc-again-btn { background: #B83232; }
+.fc-again-btn:hover { background: #9A2828; }
+
+.fc-hard-btn  { background: #CC6600; }
+.fc-hard-btn:hover  { background: #A85400; }
+
+.fc-easy-btn  { background: #2E6B3E; }
+.fc-easy-btn:hover  { background: #1E5530; }
 
 /* ─── Drill done screen ──────────────────────────────────────── */
 
@@ -2641,7 +2637,17 @@ header {
 .fc-drill-done-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
 .fc-drill-score { font-size: 15px; color: var(--text-mid); margin-bottom: 20px; }
 
-/* ── Due date badges in nav ─────────────────────────────────── */
+/* ── "N due today" label in sidebar nav ────────────────────── */
+.fc-due-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #B83232;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+/* ── Due count badge (mobile bottom nav) ────────────────────── */
 .fc-due-badge {
   display: inline-block;
   background: #B83232;
