@@ -10,7 +10,21 @@
 
   const FC_KEY      = 'ponte_flashcards';
   const SESSION_KEY = 'ponte_conversation_session';
-  const MAX_HISTORY = 40; // cap at 20 exchanges (40 messages)
+  const MAX_EXCHANGES = 20;
+  const MAX_HISTORY   = MAX_EXCHANGES * 2;
+
+  const SCENARIOS = [
+    { emoji: '☕', italian: 'Al bar',                  english: 'Ordering coffee, chatting with the barista' },
+    { emoji: '🍎', italian: 'Dal fruttivendolo',        english: 'Buying fruit at the market' },
+    { emoji: '👋', italian: 'Con un amico',             english: 'Catching up with a friend you haven\'t seen' },
+    { emoji: '🗺️', italian: 'Chiedere indicazioni',    english: 'Asking for directions in an unfamiliar city' },
+    { emoji: '🍽️', italian: 'Al ristorante',           english: 'Ordering food, asking about dishes' },
+    { emoji: '⚽',  italian: 'Una discussione',         english: 'Friendly argument about football or food' },
+    { emoji: '📖', italian: 'Raccontare un aneddoto',   english: 'Telling a funny story that happened to you' },
+    { emoji: '🤝', italian: 'Conoscere qualcuno',       english: 'Meeting someone new at a party' },
+    { emoji: '🏥', italian: 'Dal medico',               english: 'Describing symptoms at the doctor\'s office' },
+    { emoji: '😤', italian: 'Fare un reclamo',          english: 'Complaining politely about a problem' },
+  ];
 
   function $(id) { return document.getElementById(id); }
 
@@ -22,30 +36,58 @@
   }
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
-  const convSetup         = $('conv-setup');
+  const convSetup          = $('conv-setup');
   if (!convSetup) return;
 
-  const convChat          = $('conv-chat');
-  const convSummary       = $('conv-summary');
-  const scenarioSelect    = $('conv-scenario-select');
-  const startBtn          = $('conv-start-btn');
-  const convScenarioLabel = $('conv-scenario-label');
-  const exitBtn           = $('conv-exit-btn');
-  const messagesEl        = $('conv-messages');
-  const inputEl           = $('conv-input');
-  const sendBtn           = $('conv-send-btn');
-  const summaryStats      = $('conv-summary-stats');
-  const errorsSection     = $('conv-errors-section');
-  const errorsList        = $('conv-errors-list');
-  const saveErrorsBtn     = $('conv-save-errors-btn');
-  const newConvBtn        = $('conv-new-btn');
+  const convChat           = $('conv-chat');
+  const convSummary        = $('conv-summary');
+  const scenarioGrid       = $('conv-scenario-grid');
+  const startBtn           = $('conv-start-btn');
+  const convScenarioLabel  = $('conv-scenario-label');
+  const convExchangeCounter= $('conv-exchange-counter');
+  const exitBtn            = $('conv-exit-btn');
+  const messagesEl         = $('conv-messages');
+  const inputEl            = $('conv-input');
+  const sendBtn            = $('conv-send-btn');
+  const summaryStats       = $('conv-summary-stats');
+  const errorsSection      = $('conv-errors-section');
+  const errorsList         = $('conv-errors-list');
+  const saveErrorsBtn      = $('conv-save-errors-btn');
+  const newConvBtn         = $('conv-new-btn');
+  const backBtn            = $('conv-back-btn');
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let history         = [];  // { role, content } — clean Italian only for assistant
-  let allErrors       = [];  // feedback strings flagged during session
-  let currentScenario = '';
-  let exchangeCount   = 0;
-  let isLoading       = false;
+  let selectedScenario = null;   // { emoji, italian, english }
+  let history          = [];     // { role, content } — clean Italian for assistant
+  let allErrors        = [];     // feedback strings flagged during session
+  let currentScenario  = '';
+  let exchangeCount    = 0;
+  let isLoading        = false;
+
+  // ── Scenario grid ─────────────────────────────────────────────────────────
+  function renderScenarios() {
+    scenarioGrid.innerHTML = '';
+    SCENARIOS.forEach((s) => {
+      const card = document.createElement('button');
+      card.className = 'conv-scenario-card';
+      card.type = 'button';
+      card.dataset.italian = s.italian;
+      card.innerHTML = `
+        <span class="conv-scenario-emoji">${s.emoji}</span>
+        <span class="conv-scenario-name">${escapeHTML(s.italian)}</span>
+        <span class="conv-scenario-desc">${escapeHTML(s.english)}</span>`;
+      card.addEventListener('click', () => selectScenario(s, card));
+      scenarioGrid.appendChild(card);
+    });
+  }
+
+  function selectScenario(scenario, cardEl) {
+    // Deselect all, select clicked
+    scenarioGrid.querySelectorAll('.conv-scenario-card').forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
+    selectedScenario = scenario;
+    startBtn.disabled = false;
+  }
 
   // ── Screen management ─────────────────────────────────────────────────────
   function showScreen(name) {
@@ -54,9 +96,13 @@
     convSummary.hidden = name !== 'summary';
   }
 
+  // ── Counter ───────────────────────────────────────────────────────────────
+  function updateCounter() {
+    convExchangeCounter.textContent = `${exchangeCount} / ${MAX_EXCHANGES}`;
+  }
+
   // ── Reply parsing ─────────────────────────────────────────────────────────
   function parseReply(text) {
-    // Find --- separator (preceded by newline, or at start of line)
     const match = text.match(/\n---\n?/);
     if (match) {
       return {
@@ -64,12 +110,19 @@
         feedback: text.slice(match.index + match[0].length).trim() || null,
       };
     }
-    // Bare --- with no surrounding newlines
-    const bare = text.indexOf('---');
+    const bare = text.indexOf('\n---');
     if (bare !== -1) {
       return {
         italian:  text.slice(0, bare).trim(),
-        feedback: text.slice(bare + 3).trim() || null,
+        feedback: text.slice(bare + 4).trim() || null,
+      };
+    }
+    // Fallback: bare --- anywhere
+    const idx = text.indexOf('---');
+    if (idx !== -1 && idx > 0) {
+      return {
+        italian:  text.slice(0, idx).trim(),
+        feedback: text.slice(idx + 3).trim() || null,
       };
     }
     return { italian: text.trim(), feedback: null };
@@ -117,7 +170,8 @@
     }
 
     messagesEl.appendChild(wrap);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    // Smooth scroll to bottom
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
     return wrap;
   }
 
@@ -126,7 +180,7 @@
     wrap.className = 'conv-bubble-wrap conv-bubble-assistant';
     wrap.innerHTML = '<div class="conv-bubble conv-bubble-loading"><span></span><span></span><span></span></div>';
     messagesEl.appendChild(wrap);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
     return wrap;
   }
 
@@ -135,11 +189,7 @@
     const res = await fetch(API_BASE + '/api/conversation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        scenario: currentScenario,
-        history,
-        userMessage,
-      }),
+      body: JSON.stringify({ scenario: currentScenario, history, userMessage }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
@@ -167,16 +217,16 @@
       loadingEl.remove();
       addBubble('assistant', italian, feedback);
 
-      // Store only the Italian in history — no feedback noise for Claude
       history.push({ role: 'assistant', content: italian });
-      if (userText !== null) exchangeCount++;
+      if (userText !== null) {
+        exchangeCount++;
+        updateCounter();
+      }
 
-      // Cap history at MAX_HISTORY messages
       if (history.length > MAX_HISTORY) {
         history = history.slice(history.length - MAX_HISTORY);
       }
 
-      // Persist session
       try {
         localStorage.setItem(SESSION_KEY, JSON.stringify({
           scenario: currentScenario,
@@ -201,17 +251,19 @@
   }
 
   async function startConversation() {
-    currentScenario      = scenarioSelect.value;
+    if (!selectedScenario) return;
+
+    currentScenario      = selectedScenario.italian;
     history              = [];
     allErrors            = [];
     exchangeCount        = 0;
     messagesEl.innerHTML = '';
-    convScenarioLabel.textContent = currentScenario;
 
+    convScenarioLabel.textContent = `${selectedScenario.emoji} ${selectedScenario.italian}`;
+    updateCounter();
     showScreen('chat');
     inputEl.focus();
 
-    // Get Claude's opening message (userText = null → server injects "Ciao!")
     await fetchReply(null);
   }
 
@@ -224,25 +276,25 @@
   function endSession() {
     showScreen('summary');
 
-    summaryStats.textContent = exchangeCount === 1
-      ? '1 exchange'
-      : `${exchangeCount} exchanges`;
-
-    // Clean up any leftover no-errors message from previous session
+    // Remove leftover no-errors message from prior session
     const prev = convSummary.querySelector('.conv-no-errors');
     if (prev) prev.remove();
 
-    if (allErrors.length > 0) {
+    const errorCount = allErrors.length;
+    summaryStats.textContent =
+      `${exchangeCount} exchange${exchangeCount !== 1 ? 's' : ''} · ${errorCount} error${errorCount !== 1 ? 's' : ''} flagged`;
+
+    if (errorCount > 0) {
       errorsSection.hidden = false;
       saveErrorsBtn.hidden = false;
       saveErrorsBtn.textContent = 'Save flagged words to Flashcards ★';
       saveErrorsBtn.disabled = false;
       errorsList.innerHTML = '';
-      allErrors.forEach((err, i) => {
-        const card = document.createElement('div');
-        card.className = 'conv-error-card';
-        card.innerHTML = `<span class="conv-error-num">${i + 1}</span><p class="conv-error-text">${escapeHTML(err)}</p>`;
-        errorsList.appendChild(card);
+      allErrors.forEach((err) => {
+        const row = document.createElement('div');
+        row.className = 'conv-error-row';
+        row.textContent = err;
+        errorsList.appendChild(row);
       });
     } else {
       errorsSection.hidden = true;
@@ -259,10 +311,8 @@
     // "X" → "Y"  or  "X" should be "Y"
     const arrow = note.match(/["""«]([^"""»\n]+)["""»]\s*(?:→|should be)\s*["""«]([^"""»\n]+)["""»]/i);
     if (arrow) return arrow[2].trim();
-    // use "X"
     const use = note.match(/\buse\s+["""«]([^"""»\n]+)["""»]/i);
     if (use) return use[1].trim();
-    // First quoted phrase after ⚠️
     const q = note.match(/["""«]([^"""»\n]{2,30})["""»]/);
     if (q) return q[1].trim();
     return null;
@@ -276,8 +326,7 @@
     allErrors.forEach((err, i) => {
       const italian = extractItalianFromError(err) || `Nota ${i + 1}`;
       const dup = cards.some(
-        c => c.italian === italian &&
-             c.sourceArticle && c.sourceArticle.startsWith('Conversation')
+        c => c.italian === italian && c.sourceArticle && c.sourceArticle.startsWith('Conversation')
       );
       if (!dup) {
         cards.push({
@@ -331,5 +380,13 @@
     localStorage.removeItem(SESSION_KEY);
     showScreen('setup');
   });
+
+  backBtn.addEventListener('click', () => {
+    localStorage.removeItem(SESSION_KEY);
+    showScreen('setup');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  renderScenarios();
 
 })();

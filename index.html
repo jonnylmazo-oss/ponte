@@ -425,30 +425,19 @@
 
         <!-- Setup screen -->
         <div id="conv-setup" class="conv-setup">
-          <h2 class="conv-heading">Conversation</h2>
-          <p class="conv-subheading">Practice Italian in a real exchange with an AI native speaker. No scripts — just talk.</p>
-          <div class="conv-scenario-group">
-            <label class="conv-label" for="conv-scenario-select">Choose a scenario</label>
-            <select id="conv-scenario-select" class="conv-scenario-select">
-              <option value="Al bar">☕ Al bar — ordering coffee, chatting with the barista</option>
-              <option value="Dal fruttivendolo">🍎 Dal fruttivendolo — buying fruit at the market</option>
-              <option value="Con un amico">👋 Con un amico — catching up with a friend you haven't seen</option>
-              <option value="Chiedere indicazioni">🗺️ Chiedere indicazioni — asking for directions in the city</option>
-              <option value="Al ristorante">🍽️ Al ristorante — ordering food, asking about dishes</option>
-              <option value="Una discussione">⚽ Una discussione — friendly argument about football or food</option>
-              <option value="Raccontare un aneddoto">📖 Raccontare un aneddoto — telling a funny story</option>
-              <option value="Conoscere qualcuno">🤝 Conoscere qualcuno — meeting someone new at a party</option>
-              <option value="Dal medico">🏥 Dal medico — describing symptoms at the doctor</option>
-              <option value="Fare un reclamo">😤 Fare un reclamo — complaining politely about a problem</option>
-            </select>
+          <div class="conv-setup-inner">
+            <h2 class="conv-heading">Conversation</h2>
+            <p class="conv-subheading">Practice Italian in a real exchange. No scripts — just talk.</p>
+            <div class="conv-scenario-grid" id="conv-scenario-grid"></div>
+            <button id="conv-start-btn" class="conv-start-btn" disabled>Start Conversation →</button>
           </div>
-          <button id="conv-start-btn" class="conv-start-btn">Start Conversation →</button>
         </div>
 
         <!-- Chat screen -->
         <div id="conv-chat" class="conv-chat" hidden>
           <div class="conv-chat-topbar">
-            <span class="conv-scenario-label" id="conv-scenario-label"></span>
+            <span class="conv-topbar-scenario" id="conv-scenario-label"></span>
+            <span class="conv-topbar-counter" id="conv-exchange-counter">0 / 20</span>
             <button class="conv-exit-btn" id="conv-exit-btn">End session</button>
           </div>
           <div class="conv-messages" id="conv-messages"></div>
@@ -462,15 +451,19 @@
 
         <!-- Summary screen -->
         <div id="conv-summary" class="conv-summary" hidden>
-          <h2 class="conv-summary-title">Sessione completata</h2>
-          <p class="conv-summary-stats" id="conv-summary-stats"></p>
-          <div class="conv-errors-section" id="conv-errors-section" hidden>
-            <h3 class="conv-errors-heading">Errors to review</h3>
-            <div class="conv-errors-list" id="conv-errors-list"></div>
-          </div>
-          <div class="conv-summary-actions">
-            <button class="conv-save-errors-btn" id="conv-save-errors-btn" hidden>Save flagged words to Flashcards ★</button>
-            <button class="conv-new-btn" id="conv-new-btn">Start new conversation</button>
+          <div class="conv-summary-card">
+            <div class="conv-summary-check" id="conv-summary-check">✓</div>
+            <h2 class="conv-summary-title">Sessione completata</h2>
+            <p class="conv-summary-meta" id="conv-summary-stats"></p>
+            <div class="conv-errors-section" id="conv-errors-section" hidden>
+              <h3 class="conv-errors-heading">Errors to review</h3>
+              <div class="conv-errors-list" id="conv-errors-list"></div>
+            </div>
+            <div class="conv-summary-actions">
+              <button class="conv-save-errors-btn" id="conv-save-errors-btn" hidden>Save flagged words to Flashcards ★</button>
+              <button class="conv-new-btn" id="conv-new-btn">Start new conversation</button>
+              <button class="conv-back-btn" id="conv-back-btn">← Change scenario</button>
+            </div>
           </div>
         </div>
 
