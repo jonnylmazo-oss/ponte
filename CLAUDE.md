@@ -50,6 +50,12 @@ python3 -m http.server 8080
 ## Frontend caching
 Generated articles are cached in `localStorage` with key `ponte_article_{topic}_{difficulty}`. Clear localStorage to force re-generation.
 
+## Surprise me (article generator)
+- `SURPRISE_TOPICS`: 40 unique topics in `app.js` spanning 9 registers (daily life, food, culture, travel, social, storytelling, humor, formal, emotional)
+- `generateArticle(topic, difficulty, forceRefresh = false)`: when `forceRefresh = true`, skips the localStorage article cache and always hits the API
+- `surpriseBtn` listener: picks a random topic from pool excluding `ponte_recent_topics` (last 10 seen); resets pool when all 40 exhausted; always calls `generateArticle(..., true)` to bypass cache
+- `ponte_recent_topics` localStorage key: FIFO list of up to 10 recently used topics
+
 ## False Friends tab (issue #5)
 - `data/false-friends.js`: 100 entries with fields: `id`, `italian`, `italianMeaning`, `spanishLookalike`, `spanishMeaning`, `englishMeaning`, `category`, `danger` (high/medium/low), `example`, `exampleEN`, `tip`
 - `false-friends.js`: vanilla JS IIFE — search, danger filter, card grid with expand/collapse (grid-template-rows animation), drill mode
