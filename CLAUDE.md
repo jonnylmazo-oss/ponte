@@ -68,6 +68,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - Old `spanish: { label, example, note }` / `italian: { label, example, note }` format removed
   - `stageId`: 1=Foundation, 2=Traps, 3=Nuance, 4=Fluency
   - 30 pattern drills (`grammarDrills` array, `grammarCardId` → card `id`); each drill has `sentenceEN` field (English translation with `___` mirroring the Italian blank)
+  - Verb drills (18 of 30) have `verbRef: { infinitive, meaning, type, typeNote }` — renders a subtle info box above the drill sentence (bg `#F0EBE3`, left border `#0066CC`); non-verb drills (pronouns, prepositions, geminate) omit this field and show no panel
 - `grammar.js`: IIFE — stage tiles grid → card list view
   - Landing: 2×2 tile grid (1-col on mobile); each tile shows count + viewed progress bar (`ponte_grammar_viewed` in localStorage)
   - Click tile → shows all cards for that stage; back button returns to grid
