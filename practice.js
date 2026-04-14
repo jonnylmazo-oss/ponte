@@ -186,6 +186,7 @@
     }
     currentTopic = topic;
     updateGenerateBtn();
+    console.log('[Practice] Surprise me — topic:', topic, '| button disabled:', pracStartBtn.disabled);
   });
 
   pracDiffBtns.forEach(btn => {
@@ -273,27 +274,56 @@
     });
   }
 
+  const pracError = $('prac-error');
+
+  function showPracError(msg) {
+    if (!pracError) return;
+    pracError.textContent = msg;
+    pracError.hidden = false;
+  }
+
+  function clearPracError() {
+    if (!pracError) return;
+    pracError.hidden = true;
+    pracError.textContent = '';
+  }
+
   // ── Start button ──────────────────────────────────────────────────────────
   pracStartBtn.addEventListener('click', async () => {
     currentTopic = pracTopicInput ? pracTopicInput.value.trim() : '';
-    if (!currentTopic) return;
+    console.log('[Practice] Generate clicked — topic:', JSON.stringify(currentTopic), 'difficulty:', currentDifficulty, 'mode:', drillMode);
 
+    if (!currentTopic) {
+      console.log('[Practice] Blocked: topic is empty');
+      return;
+    }
+
+    clearPracError();
     pracStartBtn.disabled    = true;
     pracStartBtn.textContent = 'Generating…';
 
     try {
+      console.log('[Practice] Calling /api/generate-practice…');
       drillItems = await generatePractice(currentTopic, currentDifficulty);
+      console.log('[Practice] API returned', drillItems.length, 'items');
     } catch (e) {
+      console.error('[Practice] API error:', e);
       pracStartBtn.disabled    = false;
       pracStartBtn.textContent = 'Generate Practice →';
+      showPracError('Could not generate practice. Check your connection and try again.');
       return;
     }
 
     pracStartBtn.disabled    = false;
     pracStartBtn.textContent = 'Generate Practice →';
 
-    if (!drillItems.length) return;
+    if (!drillItems.length) {
+      console.log('[Practice] Empty drillItems — API returned no sentences');
+      showPracError('No sentences returned. Try a different topic.');
+      return;
+    }
 
+    console.log('[Practice] Starting drill, mode:', drillMode);
     drillIndex    = 0;
     drillScore    = 0;
     missedItems   = [];

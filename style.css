@@ -3748,6 +3748,13 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 .prac-start-btn:hover:not(:disabled) { background: #003D80; }
 .prac-start-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+.prac-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #B83232;
+  line-height: 1.45;
+}
+
 /* ── Drill screen ───────────────────────────────────────────── */
 
 .prac-drill {
