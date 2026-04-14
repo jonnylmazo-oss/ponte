@@ -2655,6 +2655,20 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   color: #0055AA;
 }
 
+.fc-backfill-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.fc-backfill-btn:hover:not(:disabled) { background: var(--bg-card); color: var(--text-mid); }
+.fc-backfill-btn:disabled { opacity: 0.6; cursor: default; }
+
 .fc-reset-scores-btn {
   font-size: 11px;
   padding: 5px 10px;

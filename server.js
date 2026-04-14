@@ -378,6 +378,70 @@ app.post('/api/flashcards', (req, res) => {
   }
 });
 
+// ── Backfill baseForm — POST /api/backfill-flashcards
+// Reads flashcards.json, calls /api/translate for cards missing baseForm,
+// writes results back. Rate-limited to 500ms between calls.
+app.post('/api/backfill-flashcards', async (req, res) => {
+  let cards;
+  try {
+    if (!fs.existsSync(FLASHCARDS_PATH)) return res.json({ updated: 0, skipped: 0, errors: [] });
+    cards = JSON.parse(fs.readFileSync(FLASHCARDS_PATH, 'utf8'));
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to read flashcards: ' + err.message });
+  }
+
+  const toUpdate = cards.filter(c => !c.baseForm);
+  const errors   = [];
+  let updated    = 0;
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  for (const card of toUpdate) {
+    try {
+      const prompt = `The user is learning Italian and selected this text: "${card.italian}"
+Full Italian context (the article being read): "${card.italian}"
+Return JSON only — no markdown, no code fences:
+{
+  "baseForm": "the dictionary/infinitive form of this word — for verbs use infinitive (e.g. 'svegliarsi'), for nouns use singular nominative (e.g. 'caffè'), for adjectives use masculine singular (e.g. 'bello'). If the word is already in base form, repeat it here.",
+  "baseFormEN": "English meaning of the base form (e.g. 'to wake up', 'coffee', 'beautiful')"
+}`;
+
+      const message = await client.messages.create({
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  100,
+        temperature: 0.1,
+        messages:    [{ role: 'user', content: prompt }],
+      });
+
+      const result = parseArticleJSON(message.content[0].text);
+      if (result.baseForm) {
+        card.baseForm   = result.baseForm;
+        card.baseFormEN = result.baseFormEN || '';
+        updated++;
+      } else {
+        errors.push({ word: card.italian, error: 'No baseForm in response' });
+      }
+    } catch (err) {
+      errors.push({ word: card.italian, error: err.message });
+    }
+
+    if (toUpdate.indexOf(card) < toUpdate.length - 1) {
+      await sleep(500);
+    }
+  }
+
+  // Write back atomically
+  try {
+    const tmp = FLASHCARDS_PATH + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(cards, null, 2), 'utf8');
+    fs.renameSync(tmp, FLASHCARDS_PATH);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to write flashcards: ' + err.message });
+  }
+
+  res.json({ updated, skipped: cards.length - toUpdate.length, errors });
+});
+
 // ── Translate to Italian — POST /api/translate-to-italian
 // Body: { text: string }
 app.post('/api/translate-to-italian', async (req, res) => {
