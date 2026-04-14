@@ -1,11 +1,12 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v31';
+const CACHE_NAME = 'ponte-v32';
 
 const PRECACHE = [
   '/',
   '/index.html',
   '/style.css',
+  '/utils.js',
   '/app.js',
   '/false-friends.js',
   '/grammar.js',
@@ -19,6 +20,7 @@ const PRECACHE = [
   '/data/articles.js',
   '/data/wordmap.js',
   '/data/false-friends.js',
+  '/data/safe-cognates.js',
   '/data/grammar.js',
 ];
 

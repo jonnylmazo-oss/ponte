@@ -41,9 +41,7 @@
 
   function $(id) { return document.getElementById(id); }
 
-  function escapeHTML(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  const escapeHTML = window.ponteEsc;
 
   // ── DOM refs ──────────────────────────────────────────────────────────────
   const dictItInput      = $('dict-it-input');

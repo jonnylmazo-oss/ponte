@@ -265,12 +265,7 @@
   }
 
   // ── Streaming helpers ──────────────────────────────────────────────────
-  function escapeHTML(str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
+  const escapeHTML = window.ponteEsc;
 
   // Extract the (possibly partial) value of a JSON string field from a streaming buffer.
   // Returns whatever text has arrived so far, or null if the field hasn't started yet.
@@ -426,7 +421,7 @@
     if (tenseVal) {
       const row = document.createElement('div');
       row.className = 'tooltip-row tooltip-row-tense';
-      row.innerHTML = '<span class="lang-tag">TENSE</span><span>' + tenseVal + '</span>';
+      row.innerHTML = '<span class="lang-tag">TENSE</span><span>' + escapeHTML(tenseVal) + '</span>';
       tooltipRows.appendChild(row);
     }
 
@@ -434,7 +429,7 @@
     if (rootVal) {
       const row = document.createElement('div');
       row.className = 'tooltip-row tooltip-row-root';
-      row.innerHTML = '<span class="lang-tag">INFINITIVE</span><span class="tooltip-root">' + rootVal + '</span>';
+      row.innerHTML = '<span class="lang-tag">INFINITIVE</span><span class="tooltip-root">' + escapeHTML(rootVal) + '</span>';
       tooltipRows.appendChild(row);
     }
 

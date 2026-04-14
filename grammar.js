@@ -9,14 +9,7 @@
   ) ? 'http://localhost:3000' : '';
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  function esc(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+  const esc = window.ponteEsc;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -488,10 +481,10 @@
       }
     }
 
-    drillSentence.innerHTML = drill.sentence.replace(/___/g, '<span class="gr-blank">___</span>');
+    drillSentence.innerHTML = esc(drill.sentence).replace(/___/g, '<span class="gr-blank">___</span>');
     if (drillSentenceEN) {
       drillSentenceEN.innerHTML = drill.sentenceEN
-        ? drill.sentenceEN.replace(/___/g, '<span class="gr-blank-en">___</span>')
+        ? esc(drill.sentenceEN).replace(/___/g, '<span class="gr-blank-en">___</span>')
         : '';
       drillSentenceEN.hidden = !drill.sentenceEN;
     }
@@ -503,10 +496,7 @@
 
     drillFeedback.hidden = true;
     drillNextBtn.hidden  = true;
-
-    drillOptions.querySelectorAll('.gr-option').forEach(btn => {
-      btn.addEventListener('click', () => handleAnswer(btn, drill));
-    });
+    // Event delegation handles clicks — see drillOptions listener below
   }
 
   function handleAnswer(btn, drill) {
@@ -524,6 +514,14 @@
     drillFeedback.hidden      = false;
     drillNextBtn.hidden       = false;
   }
+
+  // Delegated click handler for drill option buttons (avoids listener buildup)
+  drillOptions.addEventListener('click', (e) => {
+    const btn = e.target.closest('.gr-option');
+    if (!btn || drillAnswered) return;
+    const drill = drillQueue[drillIndex];
+    if (drill) handleAnswer(btn, drill);
+  });
 
   drillNextBtn && drillNextBtn.addEventListener('click', () => { drillIndex++; showDrill(); });
 

@@ -64,9 +64,7 @@
 
   function $(id) { return document.getElementById(id); }
 
-  function escapeHTML(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  const escapeHTML = window.ponteEsc;
 
   function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -376,11 +374,16 @@
     pracChoices.innerHTML = options.map(opt =>
       `<button class="prac-choice" data-val="${escapeHTML(opt)}">${escapeHTML(opt)}</button>`
     ).join('');
-
-    pracChoices.querySelectorAll('.prac-choice').forEach(btn => {
-      btn.addEventListener('click', () => handleAnswer(btn.dataset.val, item));
-    });
+    // Event delegation handles clicks — see pracChoices listener below
   }
+
+  // Delegated click handler for MC choice buttons (avoids listener buildup)
+  pracChoices.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prac-choice');
+    if (!btn || drillAnswered) return;
+    const item = drillItems[drillIndex];
+    if (item) handleAnswer(btn.dataset.val, item);
+  });
 
   function handleAnswer(answer, item) {
     if (drillAnswered) return;
@@ -562,19 +565,7 @@
     bank.innerHTML = srBank.map(tile =>
       `<button class="prac-sr-tile" data-id="${tile.id}">${escapeHTML(tile.word)}</button>`
     ).join('');
-    bank.querySelectorAll('.prac-sr-tile').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (srAnswered) return;
-        const id   = Number(btn.dataset.id);
-        const tile = srBank.find(t => t.id === id);
-        if (!tile) return;
-        srBank  = srBank.filter(t => t.id !== id);
-        srBuilt = [...srBuilt, tile];
-        renderSRBuilt();
-        renderSRBank();
-        updateSRSubmit();
-      });
-    });
+    // Event delegation handles clicks — see bank listener below
   }
 
   function renderSRBuilt() {
@@ -587,20 +578,38 @@
     built.innerHTML = srBuilt.map(tile =>
       `<button class="prac-sr-tile prac-sr-tile--built" data-id="${tile.id}">${escapeHTML(tile.word)}</button>`
     ).join('');
-    built.querySelectorAll('.prac-sr-tile--built').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (srAnswered) return;
-        const id   = Number(btn.dataset.id);
-        const tile = srBuilt.find(t => t.id === id);
-        if (!tile) return;
-        srBuilt = srBuilt.filter(t => t.id !== id);
-        srBank  = [...srBank, tile];
-        renderSRBuilt();
-        renderSRBank();
-        updateSRSubmit();
-      });
-    });
+    // Event delegation handles clicks — see built listener below
   }
+
+  // Delegated click handlers for SR tiles (avoids listener buildup on re-render)
+  const srBankEl  = srEl('prac-sr-bank');
+  const srBuiltEl = srEl('prac-sr-built');
+
+  srBankEl && srBankEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prac-sr-tile');
+    if (!btn || srAnswered) return;
+    const id   = Number(btn.dataset.id);
+    const tile = srBank.find(t => t.id === id);
+    if (!tile) return;
+    srBank  = srBank.filter(t => t.id !== id);
+    srBuilt = [...srBuilt, tile];
+    renderSRBuilt();
+    renderSRBank();
+    updateSRSubmit();
+  });
+
+  srBuiltEl && srBuiltEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prac-sr-tile--built');
+    if (!btn || srAnswered) return;
+    const id   = Number(btn.dataset.id);
+    const tile = srBuilt.find(t => t.id === id);
+    if (!tile) return;
+    srBuilt = srBuilt.filter(t => t.id !== id);
+    srBank  = [...srBank, tile];
+    renderSRBuilt();
+    renderSRBank();
+    updateSRSubmit();
+  });
 
   function updateSRSubmit() {
     const btn = srEl('prac-sr-submit-btn');
@@ -795,7 +804,7 @@
               <span class="prac-sr-error-wrong">${escapeHTML(err.userText)}</span>
               <span class="prac-sr-error-arrow">→</span>
               <span class="prac-sr-error-fix">${escapeHTML(err.correction)}</span>
-              <span class="prac-sr-error-badge" style="color:${col};border-color:${col}">${err.type || 'error'}</span>
+              <span class="prac-sr-error-badge" style="color:${col};border-color:${col}">${escapeHTML(err.type || 'error')}</span>
             </div>
             <p class="prac-sr-error-exp">${escapeHTML(err.explanation)}</p>
           </div>`;

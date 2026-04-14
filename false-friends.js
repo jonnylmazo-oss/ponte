@@ -2,13 +2,7 @@
   'use strict';
 
   // ── Helpers ────────────────────────────────────────────────────────────
-  function esc(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+  const esc = window.ponteEsc;
 
   function cap(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);

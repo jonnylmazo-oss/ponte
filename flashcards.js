@@ -39,9 +39,7 @@
     }).catch(function(err) { console.warn('Flashcard sync failed:', err.message); });
   }
 
-  function escapeHTML(str) {
-    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  const escapeHTML = window.ponteEsc;
 
   const PATTERN_LABELS = {
     'false-friend':     'False Friends',
