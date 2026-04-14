@@ -4810,6 +4810,36 @@ body.drill-fullscreen .ff-flip-card {
   padding-top: 6px;
 }
 
+.prac-sr-worddiff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.prac-sr-diff-token {
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.prac-sr-diff-token.correct {
+  background: rgba(46, 107, 62, 0.12);
+  color: #2E6B3E;
+  border: 1px solid rgba(46, 107, 62, 0.3);
+}
+.prac-sr-diff-token.wrong {
+  background: rgba(184, 50, 50, 0.1);
+  color: #B83232;
+  border: 1px solid rgba(184, 50, 50, 0.3);
+  text-decoration: line-through;
+}
+.prac-sr-diff-token.fix {
+  background: rgba(0, 85, 170, 0.08);
+  color: #0055AA;
+  border: 1px solid rgba(0, 85, 170, 0.25);
+}
+
 .prac-sr-ideal {
   font-size: 14px;
   color: var(--text-mid);

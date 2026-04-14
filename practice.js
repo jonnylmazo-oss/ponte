@@ -688,6 +688,7 @@
     if (correct) drillScore++;
     else         missedItems.push(item);
 
+    // Per-tile colour: green if position matches, red otherwise
     const builtEl = srEl('prac-sr-built');
     if (builtEl) {
       builtEl.querySelectorAll('.prac-sr-tile--built').forEach((btn, i) => {
@@ -700,7 +701,8 @@
     const bankEl = srEl('prac-sr-bank');
     if (bankEl) bankEl.querySelectorAll('.prac-sr-tile').forEach(b => { b.disabled = true; });
 
-    showSRFeedback(correct, item, null);
+    // Pass built words so feedback can show a word-by-word diff
+    showSRFeedback(correct, item, null, srBuilt.map(t => t.word));
   }
 
   async function submitRecall(item) {
@@ -750,7 +752,7 @@
     showSRFeedback(isCorrect, item, result);
   }
 
-  function showSRFeedback(correct, item, apiResult) {
+  function showSRFeedback(correct, item, apiResult, builtWords) {
     const fbEl  = srEl('prac-sr-feedback');
     const subEl = srEl('prac-sr-submit-btn');
     const nxtEl = srEl('prac-sr-next-btn');
@@ -758,9 +760,29 @@
 
     let html = `<div class="prac-feedback-result ${correct ? 'correct' : 'wrong'}">${correct ? '✓ Correct!' : '✗ Not quite'}</div>`;
 
+    // Word bank mode: show a word-by-word diff comparing built vs correct
+    if (!correct && builtWords && drillMode === 'rebuild' && srDifficulty === 'wordbank') {
+      const correctTokens = item.tokens;
+      html += '<div class="prac-sr-worddiff">';
+      // Show what they built vs what was correct, token by token
+      const maxLen = Math.max(builtWords.length, correctTokens.length);
+      for (let i = 0; i < maxLen; i++) {
+        const got  = builtWords[i]   || '';
+        const want = correctTokens[i] || '';
+        const match = normalizeIT(got) === normalizeIT(want);
+        if (got && match) {
+          html += `<span class="prac-sr-diff-token correct">${escapeHTML(got)}</span>`;
+        } else {
+          if (got)  html += `<span class="prac-sr-diff-token wrong">${escapeHTML(got)}</span>`;
+          if (want && !match) html += `<span class="prac-sr-diff-token fix">${escapeHTML(want)}</span>`;
+        }
+      }
+      html += '</div>';
+    }
+
     const ideal = (apiResult && apiResult.idealItalian) ? apiResult.idealItalian : item.italian;
     html += `<div class="prac-sr-ideal">
-      <span class="prac-sr-ideal-label">Ideal:</span>
+      <span class="prac-sr-ideal-label">Correct sentence:</span>
       <em class="prac-sr-ideal-text">${escapeHTML(ideal)}</em>
     </div>`;
 

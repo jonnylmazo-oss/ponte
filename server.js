@@ -733,7 +733,7 @@ app.post('/api/generate-practice', async (req, res) => {
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1400,
+      max_tokens: 2000,
       temperature: 0.8,
       messages: [{
         role: 'user',
@@ -746,13 +746,19 @@ Return JSON only, no markdown:
     {
       "english": "the English sentence",
       "italian": "the ideal Italian translation",
-      "words": ["key", "italian", "words"],
+      "words": ["every", "single", "word", "in", "the", "italian", "sentence"],
       "distractors": ["wrong1", "wrong2", "wrong3", "wrong4"]
     }
   ]
 }
-words: 4-8 key content words from the Italian sentence (nouns, verbs, adjectives — not articles or prepositions)
-distractors: 4 plausible wrong Italian words targeting Spanish-speaker errors (wrong tense, Spanish cognate, gender/number mistake, false friend)`,
+CRITICAL: words must contain EVERY token that appears in the italian sentence, in the same order, including:
+- Articles: il, la, lo, i, le, gli, un, una, uno, del, della, dello, dei, delle, degli
+- Prepositions: di, a, in, con, per, su, tra, fra, da, al, alla, agli, alle, dal, dalla, nel, nella
+- Conjunctions: e, ma, che, però, perché, quando, mentre, se, o, anche, quindi
+- Pronouns: io, tu, lui, lei, noi, voi, loro, mi, ti, si, ci, vi, lo, la, li, le, ne
+- All nouns, verbs (conjugated form exactly as in italian), adjectives, adverbs
+If a word appears twice in the sentence, include it twice. The word bank must have everything needed to build the exact sentence.
+distractors: 4 plausible wrong Italian words targeting Spanish-speaker errors (wrong conjugation, Spanish cognate that fails in Italian, wrong gender agreement, false friend)`,
       }],
     });
 
