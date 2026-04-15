@@ -124,12 +124,25 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
 
 ## Tab navigation
-- Left sidebar on desktop: logo at top, collapse toggle (‹/›), 8 nav tabs (icon + label)
-- Collapsed sidebar: 54px wide, icon-only; expanded: 200px; state in `localStorage` (`ponte_sidebar`)
-- Bottom tab bar on mobile (≤820px): icons + short labels, fixed to bottom (58px)
+- **Desktop sidebar** (>820px): 5 top-level items — Read, Learn ▾, Practice ▾, Cards, More ▾
+  - Learn group: False Friends + Grammar sub-items (expand inline with animated chevron)
+  - Practice group: Practice + Conversation sub-items
+  - More group: Translate + Shadowing + Progress sub-items
+  - Collapsed sidebar (54px): clicking a group header navigates to last-visited sub-tab for that group
+  - Group headers have `data-nav-group` attribute; sub-items have `data-tab` attribute
+  - State: `ponte_last_learn`, `ponte_last_practice`, `ponte_last_more` localStorage keys track last-visited sub-tab per group
+- **Mobile bottom nav** (≤820px): 5 items — Read, Learn, Practice, Cards, More
+  - Read (`id="bn-read"`) → `switchTab('reader')`
+  - Learn (`id="bn-learn"`) → `switchTab(ponte_last_learn || 'grammar')`
+  - Practice (`id="bn-practice"`) → `switchTab(ponte_last_practice || 'practice')`
+  - Cards (`id="bn-cards"`) → `switchTab('flashcards')`
+  - More (`id="bn-more"`) → toggles `.more-panel` slide-up sheet
+  - All 5 have explicit individual `addEventListener` click handlers in `initTabs()` with `console.log`
+- **More panel** (`#more-panel`): slide-up sheet above mobile bottom nav; backdrop `#more-panel-backdrop` (z-index 28); panel z-index 29; `.open` class triggers `transform: translateY(0)` transition; `hidden` attribute used for display-none when closed
+- `switchTab(tabId)`: hides all `.tab-panel`, shows `#tab-{id}`, calls `updateNavActive()`, tracks last-visited, calls `closeMorePanel()`; no-ops if panel doesn't exist; skips if already active
 - Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
 - Non-reader tabs (except False Friends, Grammar, Flashcards) show a coming-soon placeholder
-- `[data-tab]` attribute on all nav items drives both sidebar and bottom nav; `switchTab(id)` syncs both
+- SVG icons (inline `<svg>`) for all 5 main nav items; emoji for sub-items
 
 ## Tooltip system (issue #16)
 - **Desktop:** hover on annotated word → tooltip after 200ms; mouse path word→tooltip keeps it open; click pins tooltip (second click unpins); `state.pinnedByClick` flag
@@ -183,7 +196,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v32`; precaches all static assets (including `utils.js` and `data/safe-cognates.js`) on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v34`; precaches all static assets (including `utils.js` and `data/safe-cognates.js`) on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -317,7 +330,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `backfillDueDates()` runs on init: cards missing `dueDate` get `dueDate = now` so all existing cards appear due immediately
 - `isDue(card)`: true if `!dueDate` or `dueDate ≤ now`
 - **Drill queue:** due cards shuffled first, not-due cards shuffled after; if no due cards → "No cards due" screen with soonest due date + "Drill anyway →" button (`startDrill(true)` bypasses due check)
-- **Due badges:** sidebar shows `fc-due-label-sidebar` — "N due today" text label in small red (`#B83232`) on new line below count; bottom nav shows `fc-due-badge-bottom` red pill + `title` tooltip "N cards due for review"; both hidden when dueCount === 0
+- **Due badges:** sidebar shows `fc-due-label-sidebar` — "N due today" text label in small red (`#B83232`) inline after "Cards" label; bottom nav shows `fc-due-badge-bottom` red pill + `title` tooltip "N cards due for review"; both hidden when dueCount === 0. Green total count badge (`fc-badge`) removed entirely.
 - **Library card indicators:** "New" (blue, `reviewCount === 0`), "Due today" (red, `isDue`), "Due in Xd" (muted, upcoming)
 - **Drill done screen:** "Next review" section shows up to 6 cards with `next review tomorrow / in N days`; populated from `sessionDrilledCards` Map (id → {italian, interval})
 - Drill buttons: `fc-again-btn` (red `#B83232`) / `fc-hard-btn` (amber `#CC6600`) / `fc-easy-btn` (green `#2E6B3E`); each `flex: 1` across `.drill-card-buttons`

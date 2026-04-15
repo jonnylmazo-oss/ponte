@@ -501,14 +501,7 @@
     const count    = cards.length;
     const dueCount = countDue(cards);
 
-    ['fc-badge-sidebar', 'fc-badge-bottom'].forEach((id) => {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = count;
-      el.hidden = count === 0;
-    });
-
-    // Sidebar: text label "N due today" below the count
+    // Sidebar: text label "N due today"
     const dueLabelSidebar = $('fc-due-label-sidebar');
     if (dueLabelSidebar) {
       dueLabelSidebar.textContent = `${dueCount} due today`;

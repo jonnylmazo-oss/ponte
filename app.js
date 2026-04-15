@@ -792,17 +792,23 @@
   }
 
   function switchTab(tabId) {
-    if (tabId === currentTab) return;
-
-    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
     const panel = $(`tab-${tabId}`);
-    if (panel) panel.classList.add('active');
+    if (!panel) { console.warn('[Ponte] switchTab: no panel for', tabId); return; }
+    if (tabId === currentTab && panel.classList.contains('active')) return;
 
-    // Track last-visited per group
+    console.log('[Ponte] switchTab →', tabId);
+
+    // 1. Hide all tab content panels
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+    // 2. Show selected panel
+    panel.classList.add('active');
+
+    // 3. Track last-visited per group
     if (LEARN_TABS.includes(tabId))    localStorage.setItem(LS_LAST_LEARN,    tabId);
     if (PRACTICE_TABS.includes(tabId)) localStorage.setItem(LS_LAST_PRACTICE, tabId);
     if (MORE_TABS.includes(tabId))     localStorage.setItem(LS_LAST_MORE,     tabId);
 
+    // 4. Update active state on sidebar and bottom nav
     openSidebarGroupForTab(tabId);
     updateNavActive(tabId);
 
@@ -852,12 +858,12 @@
     updateNavActive(saved);
     currentTab = saved;
 
-    // Direct tab buttons (sidebar sub-items + bottom nav direct)
-    document.querySelectorAll('[data-tab]').forEach((btn) => {
+    // ── Sidebar sub-items (desktop) ──────────────────────────────────────
+    document.querySelectorAll('.sidebar .nav-item[data-tab], .sidebar .more-panel-item[data-tab]').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Sidebar group headers: toggle expand or navigate to last-visited sub-tab
+    // ── Sidebar group headers: expand inline or (collapsed) navigate ──────
     document.querySelectorAll('.nav-group-header').forEach((hdr) => {
       hdr.addEventListener('click', () => {
         const groupId = hdr.dataset.navGroup;
@@ -866,11 +872,9 @@
         const isSidebarCollapsed = appWrapper.classList.contains('sidebar-collapsed');
 
         if (isSidebarCollapsed) {
-          // Collapsed sidebar: navigate directly to last-visited tab
           const fallbacks = { learn: 'grammar', practice: 'practice', more: 'dictionary' };
           const lsKeys    = { learn: LS_LAST_LEARN, practice: LS_LAST_PRACTICE, more: LS_LAST_MORE };
-          const dest = localStorage.getItem(lsKeys[groupId]) || fallbacks[groupId];
-          switchTab(dest);
+          switchTab(localStorage.getItem(lsKeys[groupId]) || fallbacks[groupId]);
         } else if (isOpen) {
           setSidebarGroup(groupId, false);
         } else {
@@ -879,26 +883,44 @@
       });
     });
 
-    // Bottom nav group buttons
+    // ── Bottom nav: explicit handler per item ─────────────────────────────
+    const bnRead     = $('bn-read');
     const bnLearn    = $('bn-learn');
     const bnPractice = $('bn-practice');
+    const bnCards    = $('bn-cards');
     const bnMore     = $('bn-more');
 
+    console.log('[Ponte] bottom nav elements:', { bnRead, bnLearn, bnPractice, bnCards, bnMore });
+
+    if (bnRead) {
+      bnRead.addEventListener('click', () => {
+        console.log('[Ponte] bottom nav tap: Read');
+        switchTab('reader');
+      });
+    }
     if (bnLearn) {
       bnLearn.addEventListener('click', () => {
         const dest = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
+        console.log('[Ponte] bottom nav tap: Learn →', dest);
         switchTab(dest);
       });
     }
     if (bnPractice) {
       bnPractice.addEventListener('click', () => {
         const dest = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
+        console.log('[Ponte] bottom nav tap: Practice →', dest);
         switchTab(dest);
+      });
+    }
+    if (bnCards) {
+      bnCards.addEventListener('click', () => {
+        console.log('[Ponte] bottom nav tap: Cards');
+        switchTab('flashcards');
       });
     }
     if (bnMore) {
       bnMore.addEventListener('click', () => {
-        // Toggle More panel
+        console.log('[Ponte] bottom nav tap: More');
         if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
           closeMorePanel();
         } else {
@@ -907,13 +929,18 @@
       });
     }
 
-    // More panel backdrop closes panel
+    // ── More panel backdrop + items ───────────────────────────────────────
     if (moreBackdrop) {
       moreBackdrop.addEventListener('click', closeMorePanel);
     }
-
-    // More panel items: handled by the general [data-tab] listener above;
-    // closeMorePanel is called inside switchTab, so no extra listener needed.
+    if (morePanelEl) {
+      morePanelEl.querySelectorAll('[data-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          console.log('[Ponte] more panel tap:', btn.dataset.tab);
+          switchTab(btn.dataset.tab);
+        });
+      });
+    }
   }
 
   // ── Sidebar collapse ───────────────────────────────────────────────────
@@ -1064,13 +1091,7 @@
   }
 
   function updateFlashcardBadge() {
-    const count = loadFlashcards().length;
-    ['fc-badge-sidebar', 'fc-badge-bottom'].forEach((id) => {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = count;
-      el.hidden = count === 0;
-    });
+    // Green total count removed — only due-count badges remain (managed by flashcards.js)
   }
 
   // Push full cards array to server (fire-and-forget; localStorage is the source of truth offline)
