@@ -729,7 +729,67 @@
   });
 
   // ── Tab navigation ─────────────────────────────────────────────────────
+
+  const LEARN_TABS    = ['false-friends', 'grammar'];
+  const PRACTICE_TABS = ['practice', 'conversation'];
+  const MORE_TABS     = ['dictionary', 'shadowing', 'progress'];
+
+  const LS_LAST_LEARN    = 'ponte_last_learn';
+  const LS_LAST_PRACTICE = 'ponte_last_practice';
+  const LS_LAST_MORE     = 'ponte_last_more';
+
   let currentTab = 'reader';
+
+  function getGroupForTab(tabId) {
+    if (LEARN_TABS.includes(tabId))    return 'learn';
+    if (PRACTICE_TABS.includes(tabId)) return 'practice';
+    if (MORE_TABS.includes(tabId))     return 'more';
+    return null;
+  }
+
+  function updateNavActive(tabId) {
+    const group = getGroupForTab(tabId);
+
+    // Sidebar: nav-item active state
+    document.querySelectorAll('[data-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    // Sidebar: group header active state (if tab is in a group)
+    document.querySelectorAll('.nav-group-header').forEach((hdr) => {
+      hdr.classList.remove('active');
+    });
+    if (group) {
+      const hdr = document.querySelector(`.nav-group-header[data-nav-group="${group}"]`);
+      if (hdr) hdr.classList.add('active');
+    }
+
+    // Bottom nav: direct data-tab items
+    document.querySelectorAll('.bottom-nav-item[data-tab]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    // Bottom nav: group buttons (Learn / Practice / More)
+    document.querySelectorAll('.bottom-nav-item[data-nav-group]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.navGroup === group);
+    });
+  }
+
+  // Open/close a sidebar nav group
+  function setSidebarGroup(groupId, open) {
+    const itemsEl = $(`nav-group-items-${groupId}`);
+    const hdr     = document.querySelector(`.nav-group-header[data-nav-group="${groupId}"]`);
+    if (!itemsEl) return;
+    itemsEl.classList.toggle('open', open);
+    if (hdr) hdr.classList.toggle('group-open', open);
+  }
+
+  function openSidebarGroupForTab(tabId) {
+    ['learn', 'practice', 'more'].forEach((g) => {
+      const tabs = g === 'learn' ? LEARN_TABS : g === 'practice' ? PRACTICE_TABS : MORE_TABS;
+      setSidebarGroup(g, tabs.includes(tabId));
+    });
+  }
 
   function switchTab(tabId) {
     if (tabId === currentTab) return;
@@ -738,29 +798,122 @@
     const panel = $(`tab-${tabId}`);
     if (panel) panel.classList.add('active');
 
-    document.querySelectorAll('[data-tab]').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.tab === tabId);
-    });
+    // Track last-visited per group
+    if (LEARN_TABS.includes(tabId))    localStorage.setItem(LS_LAST_LEARN,    tabId);
+    if (PRACTICE_TABS.includes(tabId)) localStorage.setItem(LS_LAST_PRACTICE, tabId);
+    if (MORE_TABS.includes(tabId))     localStorage.setItem(LS_LAST_MORE,     tabId);
+
+    openSidebarGroupForTab(tabId);
+    updateNavActive(tabId);
 
     currentTab = tabId;
     localStorage.setItem(LS_TAB, tabId);
+
+    // Close More panel if open
+    closeMorePanel();
+  }
+
+  // ── More panel (mobile) ───────────────────────────────────────────────────
+  const morePanelEl   = $('more-panel');
+  const moreBackdrop  = $('more-panel-backdrop');
+
+  function openMorePanel() {
+    if (!morePanelEl) return;
+    morePanelEl.hidden  = false;
+    moreBackdrop.hidden = false;
+    requestAnimationFrame(() => {
+      morePanelEl.classList.add('open');
+      moreBackdrop.classList.add('open');
+    });
+  }
+
+  function closeMorePanel() {
+    if (!morePanelEl) return;
+    morePanelEl.classList.remove('open');
+    moreBackdrop.classList.remove('open');
+    // Wait for transition before hiding
+    setTimeout(() => {
+      if (!morePanelEl.classList.contains('open')) {
+        morePanelEl.hidden  = true;
+        moreBackdrop.hidden = true;
+      }
+    }, 250);
   }
 
   function initTabs() {
     const saved = localStorage.getItem(LS_TAB) || 'reader';
 
-    // Set initial state (no animation on load)
+    // Set initial panel
     document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
     const panel = $(`tab-${saved}`);
     if (panel) panel.classList.add('active');
-    document.querySelectorAll('[data-tab]').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.tab === saved);
-    });
+
+    openSidebarGroupForTab(saved);
+    updateNavActive(saved);
     currentTab = saved;
 
+    // Direct tab buttons (sidebar sub-items + bottom nav direct)
     document.querySelectorAll('[data-tab]').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
+
+    // Sidebar group headers: toggle expand or navigate to last-visited sub-tab
+    document.querySelectorAll('.nav-group-header').forEach((hdr) => {
+      hdr.addEventListener('click', () => {
+        const groupId = hdr.dataset.navGroup;
+        const itemsEl = $(`nav-group-items-${groupId}`);
+        const isOpen  = itemsEl && itemsEl.classList.contains('open');
+        const isSidebarCollapsed = appWrapper.classList.contains('sidebar-collapsed');
+
+        if (isSidebarCollapsed) {
+          // Collapsed sidebar: navigate directly to last-visited tab
+          const fallbacks = { learn: 'grammar', practice: 'practice', more: 'dictionary' };
+          const lsKeys    = { learn: LS_LAST_LEARN, practice: LS_LAST_PRACTICE, more: LS_LAST_MORE };
+          const dest = localStorage.getItem(lsKeys[groupId]) || fallbacks[groupId];
+          switchTab(dest);
+        } else if (isOpen) {
+          setSidebarGroup(groupId, false);
+        } else {
+          setSidebarGroup(groupId, true);
+        }
+      });
+    });
+
+    // Bottom nav group buttons
+    const bnLearn    = $('bn-learn');
+    const bnPractice = $('bn-practice');
+    const bnMore     = $('bn-more');
+
+    if (bnLearn) {
+      bnLearn.addEventListener('click', () => {
+        const dest = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
+        switchTab(dest);
+      });
+    }
+    if (bnPractice) {
+      bnPractice.addEventListener('click', () => {
+        const dest = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
+        switchTab(dest);
+      });
+    }
+    if (bnMore) {
+      bnMore.addEventListener('click', () => {
+        // Toggle More panel
+        if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
+          closeMorePanel();
+        } else {
+          openMorePanel();
+        }
+      });
+    }
+
+    // More panel backdrop closes panel
+    if (moreBackdrop) {
+      moreBackdrop.addEventListener('click', closeMorePanel);
+    }
+
+    // More panel items: handled by the general [data-tab] listener above;
+    // closeMorePanel is called inside switchTab, so no extra listener needed.
   }
 
   // ── Sidebar collapse ───────────────────────────────────────────────────

@@ -43,42 +43,90 @@
         <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Collapse sidebar">‹</button>
       </div>
       <div class="sidebar-nav">
+
+        <!-- Read -->
         <button class="nav-item active" data-tab="reader">
-          <span class="nav-icon">📖</span>
-          <span class="nav-label">Reader</span>
+          <span class="nav-icon nav-svg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </span>
+          <span class="nav-label">Read</span>
         </button>
-        <button class="nav-item" data-tab="false-friends">
-          <span class="nav-icon">⚡</span>
-          <span class="nav-label">False Friends</span>
-        </button>
-        <button class="nav-item" data-tab="grammar">
-          <span class="nav-icon">🧠</span>
-          <span class="nav-label">Grammar</span>
-        </button>
-        <button class="nav-item" data-tab="dictionary">
-          <span class="nav-icon">🔄</span>
-          <span class="nav-label">Translate</span>
-        </button>
-        <button class="nav-item" data-tab="practice">
-          <span class="nav-icon">✍️</span>
-          <span class="nav-label">Practice</span>
-        </button>
-        <button class="nav-item" data-tab="conversation">
-          <span class="nav-icon">💬</span>
-          <span class="nav-label">Conversation</span>
-        </button>
+
+        <!-- Learn group -->
+        <div class="nav-group" id="nav-group-learn">
+          <button class="nav-group-header" data-nav-group="learn">
+            <span class="nav-icon nav-svg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </span>
+            <span class="nav-label">Learn</span>
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-group-items" id="nav-group-items-learn"><div>
+            <button class="nav-item nav-sub-item" data-tab="false-friends">
+              <span class="nav-icon">⚡</span>
+              <span class="nav-label">False Friends</span>
+            </button>
+            <button class="nav-item nav-sub-item" data-tab="grammar">
+              <span class="nav-icon">🧠</span>
+              <span class="nav-label">Grammar</span>
+            </button>
+          </div></div>
+        </div>
+
+        <!-- Practice group -->
+        <div class="nav-group" id="nav-group-practice">
+          <button class="nav-group-header" data-nav-group="practice">
+            <span class="nav-icon nav-svg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </span>
+            <span class="nav-label">Practice</span>
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-group-items" id="nav-group-items-practice"><div>
+            <button class="nav-item nav-sub-item" data-tab="practice">
+              <span class="nav-icon">✍️</span>
+              <span class="nav-label">Practice</span>
+            </button>
+            <button class="nav-item nav-sub-item" data-tab="conversation">
+              <span class="nav-icon">💬</span>
+              <span class="nav-label">Conversation</span>
+            </button>
+          </div></div>
+        </div>
+
+        <!-- Cards -->
         <button class="nav-item" data-tab="flashcards">
-          <span class="nav-icon">🃏</span>
-          <span class="nav-label">Flashcards <span class="fc-badge" id="fc-badge-sidebar" hidden></span><span class="fc-due-label" id="fc-due-label-sidebar" hidden></span></span>
+          <span class="nav-icon nav-svg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </span>
+          <span class="nav-label">Cards <span class="fc-badge" id="fc-badge-sidebar" hidden></span><span class="fc-due-label" id="fc-due-label-sidebar" hidden></span></span>
         </button>
-        <button class="nav-item" data-tab="shadowing">
-          <span class="nav-icon">🎙️</span>
-          <span class="nav-label">Shadowing</span>
-        </button>
-        <button class="nav-item" data-tab="progress">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Progress</span>
-        </button>
+
+        <!-- More group -->
+        <div class="nav-group" id="nav-group-more">
+          <button class="nav-group-header" data-nav-group="more">
+            <span class="nav-icon nav-svg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+            </span>
+            <span class="nav-label">More</span>
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-group-items" id="nav-group-items-more"><div>
+            <button class="nav-item nav-sub-item" data-tab="dictionary">
+              <span class="nav-icon">🔄</span>
+              <span class="nav-label">Translate</span>
+            </button>
+            <button class="nav-item nav-sub-item" data-tab="shadowing">
+              <span class="nav-icon">🎙️</span>
+              <span class="nav-label">Shadowing</span>
+            </button>
+            <button class="nav-item nav-sub-item" data-tab="progress">
+              <span class="nav-icon">📊</span>
+              <span class="nav-label">Progress</span>
+            </button>
+          </div></div>
+        </div>
+
       </div>
     </nav>
 
@@ -744,45 +792,57 @@
     </div><!-- .main-area -->
   </div><!-- .app-wrapper -->
 
-  <!-- Mobile bottom nav -->
+  <!-- Mobile bottom nav (5 items) -->
   <nav class="bottom-nav" id="bottom-nav">
     <button class="bottom-nav-item active" data-tab="reader">
-      <span class="bottom-nav-icon">📖</span>
-      <span class="bottom-nav-label">Reader</span>
+      <span class="bottom-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </span>
+      <span class="bottom-nav-label">Read</span>
     </button>
-    <button class="bottom-nav-item" data-tab="false-friends">
-      <span class="bottom-nav-icon">⚡</span>
-      <span class="bottom-nav-label">Decks</span>
+    <button class="bottom-nav-item" data-nav-group="learn" id="bn-learn">
+      <span class="bottom-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </span>
+      <span class="bottom-nav-label">Learn</span>
     </button>
-    <button class="bottom-nav-item" data-tab="grammar">
-      <span class="bottom-nav-icon">🧠</span>
-      <span class="bottom-nav-label">Grammar</span>
-    </button>
-    <button class="bottom-nav-item" data-tab="dictionary">
-      <span class="bottom-nav-icon">🔄</span>
-      <span class="bottom-nav-label">Translate</span>
-    </button>
-    <button class="bottom-nav-item" data-tab="practice">
-      <span class="bottom-nav-icon">✍️</span>
+    <button class="bottom-nav-item" data-nav-group="practice" id="bn-practice">
+      <span class="bottom-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </span>
       <span class="bottom-nav-label">Practice</span>
     </button>
-    <button class="bottom-nav-item" data-tab="conversation">
-      <span class="bottom-nav-icon">💬</span>
-      <span class="bottom-nav-label">Chat</span>
-    </button>
     <button class="bottom-nav-item" data-tab="flashcards">
-      <span class="bottom-nav-icon">🃏</span>
+      <span class="bottom-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </span>
       <span class="bottom-nav-label">Cards <span class="fc-badge" id="fc-badge-bottom" hidden></span><span class="fc-due-badge" id="fc-due-badge-bottom" hidden></span></span>
     </button>
-    <button class="bottom-nav-item" data-tab="shadowing">
-      <span class="bottom-nav-icon">🎙️</span>
-      <span class="bottom-nav-label">Shadowing</span>
-    </button>
-    <button class="bottom-nav-item" data-tab="progress">
-      <span class="bottom-nav-icon">📊</span>
-      <span class="bottom-nav-label">Progress</span>
+    <button class="bottom-nav-item" data-nav-group="more" id="bn-more">
+      <span class="bottom-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+      </span>
+      <span class="bottom-nav-label">More</span>
     </button>
   </nav>
+
+  <!-- More panel (mobile slide-up) -->
+  <div class="more-panel-backdrop" id="more-panel-backdrop" hidden></div>
+  <div class="more-panel" id="more-panel" hidden>
+    <div class="more-panel-handle"></div>
+    <button class="more-panel-item" data-tab="dictionary">
+      <span class="more-panel-icon">🔄</span>
+      <span class="more-panel-label">Translate</span>
+    </button>
+    <button class="more-panel-item" data-tab="shadowing">
+      <span class="more-panel-icon">🎙️</span>
+      <span class="more-panel-label">Shadowing</span>
+    </button>
+    <button class="more-panel-item" data-tab="progress">
+      <span class="more-panel-icon">📊</span>
+      <span class="more-panel-label">Progress</span>
+    </button>
+  </div>
 
   <!-- Fullscreen drill header (shown when body.drill-fullscreen) -->
   <div class="drill-fullscreen-header" id="drill-fullscreen-header" hidden>
