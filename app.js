@@ -1075,30 +1075,39 @@
     }).catch((err) => console.warn('Flashcard sync to server failed:', err.message));
   }
 
+  // Signal flashcards.js that sync is complete (success or failure).
+  // Sets window._ponteFCReady so the flag can be checked if flashcards.js runs after this fires.
+  function signalFCReady() {
+    window._ponteFCReady = true;
+    window.dispatchEvent(new CustomEvent('ponte:flashcards-synced'));
+  }
+
   // On load: pull server cards, merge with localStorage (server wins on id conflicts),
   // push any local-only cards back, then re-render badge.
   async function syncFlashcardsFromServer() {
     try {
       const resp = await fetch(API_BASE + '/api/flashcards');
-      if (!resp.ok) return;
+      if (!resp.ok) { signalFCReady(); return; }
       const serverCards = await resp.json();
-      if (!Array.isArray(serverCards)) return;
+      if (!Array.isArray(serverCards)) { signalFCReady(); return; }
 
       const localCards = loadFlashcards();
-      // Union: start from server list, append local cards that server doesn't have
+      // Union: server list is authoritative; append any local-only cards
       const merged = [...serverCards];
       localCards.forEach((lc) => {
         if (!merged.find((sc) => sc.id === lc.id)) merged.push(lc);
       });
 
-      // If there were local-only cards, push the merged set back to server
+      // If local had cards the server didn't, push them back
       if (merged.length > serverCards.length) persistFlashcardsToServer(merged);
 
       localStorage.setItem(FC_KEY, JSON.stringify(merged));
       updateFlashcardBadge();
       window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+      signalFCReady();
     } catch (err) {
       console.warn('Flashcard initial sync failed (offline?):', err.message);
+      signalFCReady(); // still signal so flashcards.js renders from localStorage
     }
   }
 

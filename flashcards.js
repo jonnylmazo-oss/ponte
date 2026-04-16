@@ -850,7 +850,22 @@
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
+  // Show badge immediately from localStorage (fast, pre-sync).
   backfillDueDates();
-  renderLibrary();
   updateBadge();
+
+  // Render library only after syncFlashcardsFromServer() completes so we use
+  // merged server+local data, not possibly-empty pre-sync localStorage.
+  function doInitialRender() {
+    backfillDueDates(); // re-run: merged data may lack dueDate on some cards
+    renderLibrary();
+    updateBadge();
+  }
+
+  if (window._ponteFCReady) {
+    // Sync already finished (edge case: very fast response before this script ran)
+    doInitialRender();
+  } else {
+    window.addEventListener('ponte:flashcards-synced', doInitialRender, { once: true });
+  }
 })();
