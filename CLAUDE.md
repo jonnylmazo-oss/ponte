@@ -137,7 +137,9 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - Practice (`id="bn-practice"`) → `switchTab(ponte_last_practice || 'practice')`
   - Cards (`id="bn-cards"`) → `switchTab('flashcards')`
   - More (`id="bn-more"`) → toggles `.more-panel` slide-up sheet
-  - All 5 have explicit individual `addEventListener` click handlers in `initTabs()` with `console.log`
+  - All 5 use `onTap(el, handler)` helper — attaches both `touchend` (with `preventDefault`) and `click` handlers with a dedup guard (iOS Safari sometimes fails to fire `click` on fixed-position elements after scrolling)
+  - CSS: `touch-action: manipulation` on `.bottom-nav-item` removes 300ms tap delay; `.bottom-nav-item > * { pointer-events: none }` ensures taps target the button, not inner SVG/span; `-webkit-tap-highlight-color` provides tap feedback
+  - `console.log('[Ponte] bottom nav tap: ...')` on each handler for debugging
 - **More panel** (`#more-panel`): slide-up sheet above mobile bottom nav; backdrop `#more-panel-backdrop` (z-index 28); panel z-index 29; `.open` class triggers `transform: translateY(0)` transition; `hidden` attribute used for display-none when closed
 - `switchTab(tabId)`: hides all `.tab-panel`, shows `#tab-{id}`, calls `updateNavActive()`, tracks last-visited, calls `closeMorePanel()`; no-ops if panel doesn't exist; skips if already active
 - Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
@@ -196,7 +198,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v34`; precaches all static assets (including `utils.js` and `data/safe-cognates.js`) on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v35`; precaches all static assets (including `utils.js` and `data/safe-cognates.js`) on install; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`

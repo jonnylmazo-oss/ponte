@@ -884,6 +884,23 @@
     });
 
     // ── Bottom nav: explicit handler per item ─────────────────────────────
+    // iOS Safari sometimes fails to fire 'click' on position:fixed elements
+    // after scrolling. Attach both touchend + click with a dedup guard.
+    function onTap(el, handler) {
+      if (!el) return;
+      let touchFired = false;
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchFired = true;
+        handler(e);
+        setTimeout(() => { touchFired = false; }, 400);
+      }, { passive: false });
+      el.addEventListener('click', (e) => {
+        if (touchFired) { touchFired = false; return; }
+        handler(e);
+      });
+    }
+
     const bnRead     = $('bn-read');
     const bnLearn    = $('bn-learn');
     const bnPractice = $('bn-practice');
@@ -892,50 +909,40 @@
 
     console.log('[Ponte] bottom nav elements:', { bnRead, bnLearn, bnPractice, bnCards, bnMore });
 
-    if (bnRead) {
-      bnRead.addEventListener('click', () => {
-        console.log('[Ponte] bottom nav tap: Read');
-        switchTab('reader');
-      });
-    }
-    if (bnLearn) {
-      bnLearn.addEventListener('click', () => {
-        const dest = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
-        console.log('[Ponte] bottom nav tap: Learn →', dest);
-        switchTab(dest);
-      });
-    }
-    if (bnPractice) {
-      bnPractice.addEventListener('click', () => {
-        const dest = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
-        console.log('[Ponte] bottom nav tap: Practice →', dest);
-        switchTab(dest);
-      });
-    }
-    if (bnCards) {
-      bnCards.addEventListener('click', () => {
-        console.log('[Ponte] bottom nav tap: Cards');
-        switchTab('flashcards');
-      });
-    }
-    if (bnMore) {
-      bnMore.addEventListener('click', () => {
-        console.log('[Ponte] bottom nav tap: More');
-        if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
-          closeMorePanel();
-        } else {
-          openMorePanel();
-        }
-      });
-    }
+    onTap(bnRead, () => {
+      console.log('[Ponte] bottom nav tap: Read');
+      switchTab('reader');
+    });
+    onTap(bnLearn, () => {
+      const dest = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
+      console.log('[Ponte] bottom nav tap: Learn →', dest);
+      switchTab(dest);
+    });
+    onTap(bnPractice, () => {
+      const dest = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
+      console.log('[Ponte] bottom nav tap: Practice →', dest);
+      switchTab(dest);
+    });
+    onTap(bnCards, () => {
+      console.log('[Ponte] bottom nav tap: Cards');
+      switchTab('flashcards');
+    });
+    onTap(bnMore, () => {
+      console.log('[Ponte] bottom nav tap: More');
+      if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
+        closeMorePanel();
+      } else {
+        openMorePanel();
+      }
+    });
 
     // ── More panel backdrop + items ───────────────────────────────────────
     if (moreBackdrop) {
-      moreBackdrop.addEventListener('click', closeMorePanel);
+      onTap(moreBackdrop, closeMorePanel);
     }
     if (morePanelEl) {
       morePanelEl.querySelectorAll('[data-tab]').forEach((btn) => {
-        btn.addEventListener('click', () => {
+        onTap(btn, () => {
           console.log('[Ponte] more panel tap:', btn.dataset.tab);
           switchTab(btn.dataset.tab);
         });

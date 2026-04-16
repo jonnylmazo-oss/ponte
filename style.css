@@ -341,6 +341,7 @@ body {
   cursor: pointer;
   text-align: left;
   transition: background 0.1s;
+  touch-action: manipulation;
 }
 
 .more-panel-item:hover,
@@ -1126,6 +1127,13 @@ header {
     cursor: pointer;
     padding: 6px 2px;
     transition: color 0.1s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Ensure taps always target the button, not inner SVG/span children */
+  .bottom-nav-item > * {
+    pointer-events: none;
   }
 
   .bottom-nav-item.active {
