@@ -1081,6 +1081,15 @@
     window.dispatchEvent(new CustomEvent('ponte:flashcards-synced'));
   }
 
+  // Core merge helper: union of server + local cards (server wins on id conflicts)
+  function mergeFlashcards(serverCards, localCards) {
+    const merged = [...serverCards];
+    localCards.forEach((lc) => {
+      if (!merged.find((sc) => sc.id === lc.id)) merged.push(lc);
+    });
+    return merged;
+  }
+
   // On load: pull server cards, merge with localStorage (server wins on id conflicts),
   // push any local-only cards back, then re-render badge.
   async function syncFlashcardsFromServer() {
@@ -1091,11 +1100,7 @@
       if (!Array.isArray(serverCards)) { signalFCReady(); return; }
 
       const localCards = loadFlashcards();
-      // Union: server list is authoritative; append any local-only cards
-      const merged = [...serverCards];
-      localCards.forEach((lc) => {
-        if (!merged.find((sc) => sc.id === lc.id)) merged.push(lc);
-      });
+      const merged = mergeFlashcards(serverCards, localCards);
 
       // If local had cards the server didn't, push them back
       if (merged.length > serverCards.length) persistFlashcardsToServer(merged);
@@ -1108,6 +1113,51 @@
       console.warn('Flashcard initial sync failed (offline?):', err.message);
       signalFCReady(); // still signal so flashcards.js renders from localStorage
     }
+  }
+
+  // Manual sync: re-pull from server, merge, update localStorage + UI.
+  // Exposed on window so the Sync button in flashcards.js can call it.
+  window.manualSyncFlashcards = async function() {
+    const resp = await fetch(API_BASE + '/api/flashcards');
+    if (!resp.ok) throw new Error('Server returned ' + resp.status);
+    const serverCards = await resp.json();
+    if (!Array.isArray(serverCards)) throw new Error('Invalid response');
+
+    const localCards = loadFlashcards();
+    const merged = mergeFlashcards(serverCards, localCards);
+
+    if (merged.length > serverCards.length) persistFlashcardsToServer(merged);
+
+    localStorage.setItem(FC_KEY, JSON.stringify(merged));
+    updateFlashcardBadge();
+    window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+  };
+
+  // Background poll: every 60s check if server has cards not in localStorage.
+  // Only triggers a re-render when new cards are actually found.
+  function startFlashcardPoll() {
+    setInterval(async () => {
+      try {
+        const resp = await fetch(API_BASE + '/api/flashcards');
+        if (!resp.ok) return;
+        const serverCards = await resp.json();
+        if (!Array.isArray(serverCards)) return;
+
+        const localCards = loadFlashcards();
+        const localIds   = new Set(localCards.map((c) => c.id));
+        const hasNew     = serverCards.some((sc) => !localIds.has(sc.id));
+
+        if (hasNew) {
+          const merged = mergeFlashcards(serverCards, localCards);
+          localStorage.setItem(FC_KEY, JSON.stringify(merged));
+          updateFlashcardBadge();
+          window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+          console.log('[Ponte] Poll: pulled', merged.length - localCards.length, 'new card(s) from server');
+        }
+      } catch (_) {
+        // Silently ignore — offline or server unavailable
+      }
+    }, 60000);
   }
 
   tooltipSaveBtn && tooltipSaveBtn.addEventListener('click', () => {
@@ -1334,5 +1384,5 @@
   initSidebar();
   initTranslationToggle();
   updateFlashcardBadge();
-  syncFlashcardsFromServer(); // async; localStorage badge already shown above
+  syncFlashcardsFromServer().then(() => startFlashcardPoll()); // poll after initial sync
 })();

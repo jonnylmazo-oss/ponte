@@ -2747,6 +2747,23 @@ header {
   white-space: nowrap;
 }
 
+.fc-sync-btn {
+  align-self: flex-start;
+  background: rgba(0, 85, 170, 0.07);
+  border: 1px solid rgba(0, 85, 170, 0.25);
+  border-radius: var(--radius);
+  color: #0055AA;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, opacity 0.12s;
+}
+.fc-sync-btn:hover { background: rgba(0, 85, 170, 0.14); }
+.fc-sync-btn:disabled { opacity: 0.6; cursor: default; }
+
 .fc-add-word-btn {
   align-self: flex-start;
   background: rgba(46, 107, 62, 0.1);

@@ -951,6 +951,26 @@
     }
   }
 
+  // ── Sync button ──────────────────────────────────────────────────────────
+  const fcSyncBtn = $('fc-sync-btn');
+  if (fcSyncBtn) {
+    fcSyncBtn.addEventListener('click', async () => {
+      if (!window.manualSyncFlashcards) return;
+      fcSyncBtn.textContent = 'Syncing…';
+      fcSyncBtn.disabled = true;
+      try {
+        await window.manualSyncFlashcards();
+        fcSyncBtn.textContent = 'Synced ✓';
+      } catch (_) {
+        fcSyncBtn.textContent = 'Failed';
+      }
+      setTimeout(() => {
+        fcSyncBtn.textContent = 'Sync';
+        fcSyncBtn.disabled = false;
+      }, 2000);
+    });
+  }
+
   if (fcAddWordBtn) {
     fcAddWordBtn.addEventListener('click', openWordLookup);
   }

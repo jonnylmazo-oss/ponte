@@ -376,15 +376,18 @@ app.post('/api/flashcards', (req, res) => {
     }
   } catch (_) { /* ignore read errors */ }
 
+  const clientIp = req.headers['x-forwarded-for'] || req.ip;
+  console.log(`[flashcards] POST from ${clientIp}: incoming=${cards.length} current=${currentCount}`);
+
   // Reject empty-overwrite: never allow wiping a non-empty deck
   if (cards.length === 0 && currentCount > 0) {
-    console.error(`BLOCKED POST /api/flashcards: incoming empty array would wipe ${currentCount} cards`);
+    console.error(`[flashcards] BLOCKED: empty array would wipe ${currentCount} cards`);
     return res.status(409).json({ error: `Refusing to overwrite ${currentCount} cards with empty array` });
   }
 
-  // Warn if incoming is significantly smaller than current (possible data loss)
+  // Warn if incoming is smaller than current (possible data loss, but allow it — may be a deliberate delete)
   if (currentCount > 0 && cards.length < currentCount) {
-    console.warn(`POST /api/flashcards: incoming ${cards.length} cards < current ${currentCount} cards`);
+    console.warn(`[flashcards] WARNING: incoming ${cards.length} < current ${currentCount} — writing anyway`);
   }
 
   try {
