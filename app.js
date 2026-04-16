@@ -25,14 +25,14 @@
 
   function showLoginOverlay() {
     const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.hidden = false;
+    if (overlay) overlay.style.display = 'flex';
     const input = document.getElementById('login-password');
     if (input) { input.value = ''; setTimeout(() => input.focus(), 50); }
   }
 
   function hideLoginOverlay() {
     const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.hidden = true;
+    if (overlay) overlay.style.display = 'none';
   }
 
   function handle401() {
