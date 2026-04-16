@@ -440,7 +440,7 @@
           </summary>
           <div class="fc-card-details">
             ${card.baseForm ? `<div class="fc-card-base">Base: ${escapeHTML(card.baseForm)} · ${escapeHTML(card.baseFormEN)}</div>` : ''}
-            ${card.spanish ? `<div class="fc-card-es">${escapeHTML(card.spanish)}</div>` : ''}
+            ${card.example ? `<div class="fc-card-example"><span class="fc-card-example-it">${escapeHTML(card.example)}</span><span class="fc-card-example-en">${escapeHTML(card.exampleEN || '')}</span></div>` : ''}
             ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
             <span class="fc-card-source">${escapeHTML(source)}</span>
           </div>
