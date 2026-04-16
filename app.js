@@ -1172,6 +1172,7 @@
       const merged = mergeFlashcards(serverCards, localCards);
       persistFlashcardsToServer(merged);
       localStorage.setItem(FC_KEY, JSON.stringify(merged));
+      if (window._ponteFCRender) window._ponteFCRender();
       updateFlashcardBadge();
       return true;
     } catch {
@@ -1447,9 +1448,9 @@
 
   // ── Init ───────────────────────────────────────────────────────────────
   function initApp() {
-    if (!getToken()) {
-      showLoginOverlay();
-      setLoginNoOps();
+    const token = localStorage.getItem('ponte_auth_token');
+    if (!token) {
+      document.getElementById('login-overlay').style.display = 'flex';
       return;
     }
 
