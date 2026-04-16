@@ -1228,17 +1228,17 @@ header {
     grid-template-columns: 1fr;
   }
   .reader.translation-collapsed .column-translation {
-    display: block;
+    display: none;
   }
 
   .column {
     padding: 28px 22px;
   }
 
-  /* Italian on top on mobile */
-  .column-italian { order: 1; }
+  /* Expanded on mobile: English on top, Italian below */
+  .column-translation { order: 1; }
+  .column-italian { order: 2; }
   .column-translation {
-    order: 2;
     border-right: none;
     border-top: 1px solid var(--border);
     box-shadow: none;
