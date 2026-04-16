@@ -25,6 +25,11 @@
   // ── Helpers ─────────────────────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
 
+  function authHeaders() {
+    const token = localStorage.getItem('ponte_auth_token') || '';
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+  }
+
   function loadCards() {
     try { return JSON.parse(localStorage.getItem(FC_KEY) || '[]'); }
     catch { return []; }
@@ -38,7 +43,7 @@
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
     fetch(API_BASE + '/api/flashcards', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body:    JSON.stringify(cards),
     }).catch(function(err) { console.warn('Flashcard sync failed:', err.message); });
   }
