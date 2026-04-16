@@ -221,7 +221,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v47`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v48`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -236,12 +236,26 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **PM2 process:** `ponte-api` (`pm2 list`, `pm2 logs ponte-api`)
 - **nginx:** serves static files from `/home/ponte`; proxies `/api/` → `localhost:3001`
 - **Flashcards:** `/home/ponte/data/flashcards.json` (persisted across deploys)
-- **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`
+- **`.env`** at `/home/ponte/.env` — `ANTHROPIC_API_KEY`, `FLASHCARDS_PATH`, `PORT=3001`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
 - **nginx cache headers**: JS/CSS/HTML served with `Cache-Control: no-cache, must-revalidate` — browser always revalidates with server (uses ETag/Last-Modified for conditional requests)
 - **nginx config**: `/etc/nginx/sites-available/ponte` symlinked as `/etc/nginx/sites-enabled/default`; only one symlink to avoid duplicate server_name warning
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v47`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v48`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
+
+## Password authentication
+- **Protected endpoints:** `GET /api/flashcards`, `POST /api/flashcards`, `POST /api/backfill-flashcards` — all require `Authorization: Bearer <token>` header
+- **Token generation:** HMAC-SHA256 of `PONTE_PASSWORD` keyed with `PONTE_SESSION_SECRET`; deterministic, stateless, survives restarts
+- **`POST /api/login`:** `{ password }` → `{ token }` (200) or 401; auth disabled if `PONTE_PASSWORD` env var not set
+- **`requireAuth` middleware** in `server.js`: checks `Authorization` header, returns 401 if missing/wrong
+- **`app.js` flow:**
+  - `AUTH_KEY = 'ponte_auth_token'` in localStorage
+  - IIFE checks `getToken()` at startup — if no token, shows `#login-overlay`, sets window no-ops, and `return`s early (app uninitialised)
+  - `window.doLogin()`: posts to `/api/login`, on success sets token + `window.location.reload()` (full re-init on reload)
+  - All flashcard fetch calls include `authHeaders()` (`Authorization: Bearer <token>`)
+  - 401 response on any flashcard call → `handle401()` clears token + shows login overlay
+- **`#login-overlay`** in `index.html`: centered card (hidden by default), password input, Enter button, error message; `hidden` attribute → overlay shown by JS when needed
+- **To set/change password on server:** edit `/home/ponte/.env` → `PONTE_PASSWORD=...` + `PONTE_SESSION_SECRET=...`, then `pm2 restart ponte-api --update-env`
 
 ## Audio pronunciation (issue #25, closed)
 - **Bug fix:** tooltip 🔊 had `e.stopPropagation()` to prevent bubble to document click (tooltip dismiss)
