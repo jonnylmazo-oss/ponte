@@ -792,9 +792,6 @@
   }
 
   function switchTab(tabId) {
-    // DEBUG: flash background — confirms function executed on iOS
-    document.body.style.background = (document.body.style.background === 'red') ? '' : 'red';
-
     // Route shorthand IDs used by inline bottom-nav handlers
     if (tabId === 'learn') {
       tabId = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
