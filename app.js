@@ -792,6 +792,9 @@
   }
 
   function switchTab(tabId) {
+    // DEBUG: title change visible in iOS Safari address bar — confirms function executed
+    document.title = 'TAB: ' + tabId;
+
     const panel = $(`tab-${tabId}`);
     if (!panel) { console.warn('[Ponte] switchTab: no panel for', tabId); return; }
     if (tabId === currentTab && panel.classList.contains('active')) return;
