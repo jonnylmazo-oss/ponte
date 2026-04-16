@@ -1256,6 +1256,8 @@
       wordType:      currentTooltipEntry.wordType   || 'other',
       baseForm:      currentTooltipEntry.baseForm   || '',
       baseFormEN:    currentTooltipEntry.baseFormEN || '',
+      example:       currentTooltipEntry.example    || '',
+      exampleEN:     currentTooltipEntry.exampleEN  || '',
       timesCorrect:  0,
       timesWrong:    0,
       lastSeen:      null,

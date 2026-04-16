@@ -312,7 +312,9 @@ Return JSON only — no markdown, no code fences:
   "pronunciation": "stress-marked syllable pronunciation e.g. 'TAR-di' or 'ka-FFÈ' — always include",
   "wordType": "noun or verb or adjective or adverb or phrase or other",
   "baseForm": "the dictionary/infinitive form of this word — for verbs use infinitive (e.g. 'svegliarsi'), for nouns use singular nominative (e.g. 'caffè'), for adjectives use masculine singular (e.g. 'bello'). If the word is already in base form, repeat it here.",
-  "baseFormEN": "English meaning of the base form (e.g. 'to wake up', 'coffee', 'beautiful')"
+  "baseFormEN": "English meaning of the base form (e.g. 'to wake up', 'coffee', 'beautiful')",
+  "example": "a natural Italian sentence using the word in context (10-15 words)",
+  "exampleEN": "English translation of the example sentence"
 }
 Category guide — "cognate": looks and means the same as Spanish; "false-friend": looks Spanish but means something different; "divergence": exists in Spanish but used differently in Italian; "new": no close Spanish equivalent.
 wordType guide — classify the selected text: "noun" (includes proper nouns), "verb" (any conjugated form or infinitive), "adjective", "adverb", "phrase" (multi-word expression), "other" (conjunctions, prepositions, articles, etc.).`;
@@ -320,7 +322,7 @@ wordType guide — classify the selected text: "noun" (includes proper nouns), "
   try {
     const message = await client.messages.create({
       model:       'claude-sonnet-4-20250514',
-      max_tokens:  400,
+      max_tokens:  500,
       temperature: 0.2,
       messages:    [{ role: 'user', content: prompt }],
     });
