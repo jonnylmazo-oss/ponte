@@ -791,6 +791,22 @@
     });
   }
 
+  // Exposed on window for inline onclick on nav-group-header buttons (reliability)
+  window.toggleNavGroup = function(groupId) {
+    const itemsEl = $(`nav-group-items-${groupId}`);
+    const isOpen  = itemsEl && itemsEl.classList.contains('open');
+    const isSidebarCollapsed = appWrapper.classList.contains('sidebar-collapsed');
+    if (isSidebarCollapsed) {
+      const fallbacks = { learn: 'grammar', practice: 'practice', more: 'dictionary' };
+      const lsKeys    = { learn: LS_LAST_LEARN, practice: LS_LAST_PRACTICE, more: LS_LAST_MORE };
+      switchTab(localStorage.getItem(lsKeys[groupId]) || fallbacks[groupId]);
+    } else if (isOpen) {
+      setSidebarGroup(groupId, false);
+    } else {
+      setSidebarGroup(groupId, true);
+    }
+  };
+
   function switchTab(tabId) {
     // Route shorthand IDs used by inline bottom-nav handlers
     if (tabId === 'learn') {
@@ -876,30 +892,9 @@
     updateNavActive(saved);
     currentTab = saved;
 
-    // ── Sidebar sub-items (desktop) ──────────────────────────────────────
-    document.querySelectorAll('.sidebar .nav-item[data-tab], .sidebar .more-panel-item[data-tab]').forEach((btn) => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
-    // ── Sidebar group headers: expand inline or (collapsed) navigate ──────
-    document.querySelectorAll('.nav-group-header').forEach((hdr) => {
-      hdr.addEventListener('click', () => {
-        const groupId = hdr.dataset.navGroup;
-        const itemsEl = $(`nav-group-items-${groupId}`);
-        const isOpen  = itemsEl && itemsEl.classList.contains('open');
-        const isSidebarCollapsed = appWrapper.classList.contains('sidebar-collapsed');
-
-        if (isSidebarCollapsed) {
-          const fallbacks = { learn: 'grammar', practice: 'practice', more: 'dictionary' };
-          const lsKeys    = { learn: LS_LAST_LEARN, practice: LS_LAST_PRACTICE, more: LS_LAST_MORE };
-          switchTab(localStorage.getItem(lsKeys[groupId]) || fallbacks[groupId]);
-        } else if (isOpen) {
-          setSidebarGroup(groupId, false);
-        } else {
-          setSidebarGroup(groupId, true);
-        }
-      });
-    });
+    // ── Sidebar items + group headers: handled by inline onclick in HTML ─────
+    // (Same reliability pattern as bottom nav; addEventListener was unreliable
+    //  on some desktop browsers in certain states)
 
     // ── Bottom nav: handled by inline onclick/ontouchend in HTML ─────────
     // (onTap/addEventListener approach was unreliable on iOS Safari)
