@@ -2744,6 +2744,19 @@ header {
   cursor: pointer;
   flex-shrink: 0;
 }
+.fc-dropdown-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 8px 2px;
+}
+.fc-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
 
 /* ── Drill setup screen ─────────────────────────────────────────────────── */
 .fc-drill-setup {

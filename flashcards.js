@@ -281,6 +281,7 @@
 
   // ── State ────────────────────────────────────────────────────────────────
   let activeCats          = new Set(['cognate', 'false-friend', 'divergence', 'new']);
+  let activeWordTypes     = new Set(['noun', 'verb', 'adjective', 'adverb', 'phrase']);
   let activeStatuses      = new Set(['due', 'new-card', 'upcoming', 'mastered']);
   let openDropdownId      = null;
   let searchQuery         = '';
@@ -295,6 +296,7 @@
 
   // ── Filter helpers ────────────────────────────────────────────────────────
   const ALL_CATS     = ['cognate', 'false-friend', 'divergence', 'new'];
+  const ALL_WORD_TYPES = ['noun', 'verb', 'adjective', 'adverb', 'phrase'];
   const ALL_STATUSES = ['due', 'new-card', 'upcoming', 'mastered'];
 
   const CAT_NAMES = {
@@ -302,6 +304,13 @@
     'false-friend': 'False Friend',
     'divergence':   'Used differently',
     'new':          'New word',
+  };
+  const WORD_TYPE_NAMES = {
+    'noun': 'Noun',
+    'verb': 'Verb',
+    'adjective': 'Adjective',
+    'adverb': 'Adverb',
+    'phrase': 'Phrase',
   };
   const STATUS_NAMES = {
     'due':      'Due today',
@@ -320,9 +329,11 @@
   function getFiltered() {
     const cards       = loadCards();
     const allCatsOn   = ALL_CATS.every(c => activeCats.has(c));
+    const allWordTypesOn = ALL_WORD_TYPES.every(wt => activeWordTypes.has(wt));
     const allStatusOn = ALL_STATUSES.every(s => activeStatuses.has(s));
     return cards.filter((c) => {
       if (!allCatsOn && !activeCats.has(c.category || 'new')) return false;
+      if (!allWordTypesOn && !activeWordTypes.has((c.wordType || 'other'))) return false;
       if (!allStatusOn && !activeStatuses.has(getCardStatus(c))) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -340,13 +351,20 @@
   function updateCatBtn() {
     const btn = $('fc-cat-btn');
     if (!btn) return;
-    const allOn = ALL_CATS.every(c => activeCats.has(c));
-    if (allOn) {
+    const allCatsOn = ALL_CATS.every(c => activeCats.has(c));
+    const allWordTypesOn = ALL_WORD_TYPES.every(wt => activeWordTypes.has(wt));
+    if (allCatsOn && allWordTypesOn) {
       btn.textContent = 'Type: All ▾';
       btn.classList.remove('fc-dropdown-btn--active');
     } else {
-      const labels = ALL_CATS.filter(c => activeCats.has(c)).map(c => CAT_NAMES[c]);
-      btn.textContent = labels.length ? `Type: ${labels.join(', ')} ▾` : 'Type: None ▾';
+      const catLabels = allCatsOn
+        ? []
+        : ALL_CATS.filter(c => activeCats.has(c)).map(c => CAT_NAMES[c]);
+      const wordTypeLabels = allWordTypesOn
+        ? []
+        : ALL_WORD_TYPES.filter(wt => activeWordTypes.has(wt)).map(wt => WORD_TYPE_NAMES[wt]);
+      const labels = [...catLabels, ...wordTypeLabels];
+      btn.textContent = labels.length ? `Type: ${labels.join(', ')} ▾` : 'Type: All ▾';
       btn.classList.toggle('fc-dropdown-btn--active', labels.length > 0);
     }
   }
@@ -486,6 +504,21 @@
       if (activeCats.size === 0) {
         ALL_CATS.forEach(c => activeCats.add(c));
         document.querySelectorAll('.fc-cat-check').forEach(c => { c.checked = true; });
+      }
+      updateCatBtn();
+      renderLibrary();
+    });
+  });
+
+  // Word type checkboxes
+  document.querySelectorAll('.fc-wordtype-check').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) activeWordTypes.add(cb.dataset.wordtype);
+      else            activeWordTypes.delete(cb.dataset.wordtype);
+      // If nothing selected, reset to all
+      if (activeWordTypes.size === 0) {
+        ALL_WORD_TYPES.forEach(wt => activeWordTypes.add(wt));
+        document.querySelectorAll('.fc-wordtype-check').forEach(c => { c.checked = true; });
       }
       updateCatBtn();
       renderLibrary();
