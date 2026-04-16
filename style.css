@@ -550,6 +550,8 @@ header {
   letter-spacing: 0.6px;
   padding: 5px 10px;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.08);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
 
@@ -557,6 +559,8 @@ header {
   background: var(--bg-card-hover);
   color: var(--text-mid);
 }
+
+.transl-toggle > * { pointer-events: none; }
 
 .transl-toggle-icon {
   font-size: 9px;
