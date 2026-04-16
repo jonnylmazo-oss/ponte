@@ -934,6 +934,14 @@
   let xlatAbortCtrl        = null;  // AbortController for in-flight translate request
   let activeXlatText       = null;  // text currently showing/loading in translation mode
 
+  // Clean raw selection: collapse newlines/spaces, trim, reject if < 2 or > 50 chars.
+  // > 50 chars almost always means a mis-swipe spanning multiple lines on mobile.
+  function cleanSelection(raw) {
+    const cleaned = raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (cleaned.length < 2 || cleaned.length > 50) return null;
+    return cleaned;
+  }
+
   // iOS Safari backup: selectionchange can lag behind the touch gesture.
   // On touchend, re-check selection after 50ms so any just-completed drag
   // selection is picked up even if selectionchange hasn't fired yet.
@@ -943,8 +951,8 @@
       if (!sel || sel.isCollapsed || !sel.rangeCount) return;
       const range = sel.getRangeAt(0);
       if (!italianText.contains(range.commonAncestorContainer)) return;
-      const text = sel.toString().trim();
-      if (!text || text.length < 2 || text === activeXlatText) return;
+      const text = cleanSelection(sel.toString());
+      if (!text || text === activeXlatText) return;
       doTranslate(text, italianText.innerText, range.getBoundingClientRect());
     }, 50);
   });
@@ -974,9 +982,8 @@
     const range = sel.getRangeAt(0);
     if (!italianText.contains(range.commonAncestorContainer)) return;
 
-    const text = sel.toString().trim();
-    if (!text || text.length < 2) return;
-    if (text === activeXlatText) return; // result for this exact text already showing
+    const text = cleanSelection(sel.toString());
+    if (!text || text === activeXlatText) return; // too short, too long, or already showing
 
     // Debounce: wait for selection to stabilise before firing the API call
     clearTimeout(selectionDebounceTimer);
@@ -985,8 +992,8 @@
       if (!sel2 || sel2.isCollapsed || !sel2.rangeCount) return;
       const range2 = sel2.getRangeAt(0);
       if (!italianText.contains(range2.commonAncestorContainer)) return;
-      const text2 = sel2.toString().trim();
-      if (!text2 || text2.length < 2) return;
+      const text2 = cleanSelection(sel2.toString());
+      if (!text2) return;
       doTranslate(text2, italianText.innerText, range2.getBoundingClientRect());
     }, 300);
   });
