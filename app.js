@@ -1166,10 +1166,14 @@
   // push any local-only cards back, then re-render badge.
   async function syncFlashcardsFromServer() {
     try {
+      const localBefore = JSON.parse(localStorage.getItem(FC_KEY) || '[]');
+      console.log('[sync] starting — localStorage has:', localBefore.length, 'cards; token:', getToken() ? 'present' : 'MISSING');
       const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
+      console.log('[sync] GET /api/flashcards status:', resp.status);
       if (resp.status === 401) { handle401(); signalFCReady(); return; }
-      if (!resp.ok) { signalFCReady(); return; }
+      if (!resp.ok) { console.warn('[sync] non-ok response:', resp.status); signalFCReady(); return; }
       const serverCards = await resp.json();
+      console.log('[sync] server returned:', Array.isArray(serverCards) ? serverCards.length : 'non-array', 'cards');
       if (!Array.isArray(serverCards)) { signalFCReady(); return; }
 
       const localCards = loadFlashcards();

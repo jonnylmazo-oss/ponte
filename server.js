@@ -379,9 +379,15 @@ Keep sentences short (8-12 words). Natural colloquial Italian, not textbook.`;
 // ── Flashcard persistence — GET /api/flashcards
 app.get('/api/flashcards', requireAuth, (req, res) => {
   try {
-    if (!fs.existsSync(FLASHCARDS_PATH)) return res.json([]);
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (!fs.existsSync(FLASHCARDS_PATH)) {
+      console.log(`[flashcards] GET from ${clientIp}: file missing, returning []`);
+      return res.json([]);
+    }
     const data = fs.readFileSync(FLASHCARDS_PATH, 'utf8');
-    res.json(JSON.parse(data));
+    const cards = JSON.parse(data);
+    console.log(`[flashcards] GET from ${clientIp}: returning ${cards.length} cards`);
+    res.json(cards);
   } catch (err) {
     console.error('Error reading flashcards:', err.message);
     res.json([]);

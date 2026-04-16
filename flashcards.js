@@ -388,8 +388,9 @@
 
   // ── Library render ────────────────────────────────────────────────────────
   function renderLibrary() {
-    const filtered = getFiltered();
     const total    = loadCards().length;
+    console.log('[fc] renderLibrary called, cards in localStorage:', total);
+    const filtered = getFiltered();
 
     fcCount.textContent = filtered.length === total
       ? `${total} card${total !== 1 ? 's' : ''}`
