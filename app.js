@@ -543,15 +543,15 @@
     if (save) localStorage.setItem(LS_TRANSL, open ? '1' : '0');
   }
 
+  // Exposed on window for inline onclick handler (iOS Safari reliability)
+  window.toggleTranslation = function() {
+    applyTranslationState(!state.translationOpen, true);
+  };
+
   function initTranslationToggle() {
     // Always start collapsed — Italian-only is the default
+    // Click is handled by inline onclick/ontouchend on the button (iOS Safari reliability)
     applyTranslationState(false, false);
-
-    if (translToggleBtn) {
-      translToggleBtn.addEventListener('click', () => {
-        applyTranslationState(!state.translationOpen, true);
-      });
-    }
   }
 
   // ── Audio ──────────────────────────────────────────────────────────────
@@ -1068,6 +1068,10 @@
 
   // Push full cards array to server (fire-and-forget; localStorage is the source of truth offline)
   function persistFlashcardsToServer(cards) {
+    if (!cards || cards.length === 0) {
+      console.error('BLOCKED: attempted to persist empty cards array - skipping');
+      return;
+    }
     fetch(API_BASE + '/api/flashcards', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },

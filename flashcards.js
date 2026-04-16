@@ -31,6 +31,10 @@
   }
 
   function saveCards(cards) {
+    if (!cards || cards.length === 0) {
+      console.error('BLOCKED: attempted to persist empty cards array - skipping');
+      return;
+    }
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
     fetch(API_BASE + '/api/flashcards', {
       method:  'POST',

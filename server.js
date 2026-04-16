@@ -366,8 +366,34 @@ app.post('/api/flashcards', (req, res) => {
   if (!Array.isArray(cards)) {
     return res.status(400).json({ error: 'Expected array' });
   }
+
+  // Read current count before writing
+  let currentCount = 0;
+  try {
+    if (fs.existsSync(FLASHCARDS_PATH)) {
+      const existing = JSON.parse(fs.readFileSync(FLASHCARDS_PATH, 'utf8'));
+      if (Array.isArray(existing)) currentCount = existing.length;
+    }
+  } catch (_) { /* ignore read errors */ }
+
+  // Reject empty-overwrite: never allow wiping a non-empty deck
+  if (cards.length === 0 && currentCount > 0) {
+    console.error(`BLOCKED POST /api/flashcards: incoming empty array would wipe ${currentCount} cards`);
+    return res.status(409).json({ error: `Refusing to overwrite ${currentCount} cards with empty array` });
+  }
+
+  // Warn if incoming is significantly smaller than current (possible data loss)
+  if (currentCount > 0 && cards.length < currentCount) {
+    console.warn(`POST /api/flashcards: incoming ${cards.length} cards < current ${currentCount} cards`);
+  }
+
   try {
     fs.mkdirSync(path.dirname(FLASHCARDS_PATH), { recursive: true });
+    // Backup before every write
+    if (fs.existsSync(FLASHCARDS_PATH)) {
+      const backupPath = FLASHCARDS_PATH + '.bak';
+      fs.copyFileSync(FLASHCARDS_PATH, backupPath);
+    }
     const tmp = FLASHCARDS_PATH + '.tmp';
     fs.writeFileSync(tmp, JSON.stringify(cards, null, 2), 'utf8');
     fs.renameSync(tmp, FLASHCARDS_PATH);

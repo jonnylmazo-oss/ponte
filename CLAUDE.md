@@ -101,6 +101,10 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Script load order: `data/grammar.js` → `app.js` → `grammar.js` (grammar.js loads after app.js)
 
 ## Flashcard system
+- **Data wipe protection (triple guard):**
+  - Client (app.js): `persistFlashcardsToServer(cards)` returns early with `console.error` if `cards.length === 0`
+  - Client (flashcards.js): `saveCards(cards)` returns early with `console.error` if `cards.length === 0`
+  - Server (server.js): POST `/api/flashcards` reads existing count; returns 409 if incoming is empty but current file has cards; logs warning if incoming < current; creates `.bak` copy before every write
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
 - Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled, interval, easeFactor, dueDate, reviewCount, lastReviewed}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
@@ -188,6 +192,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Two-column layout: `grid-template-columns: 1fr 1fr` (50/50) — Italian expands to full width when collapsed (`1fr`)
 - "ITALIANO 🔊" label: wrapped in `.col-label-left` (inline-flex, gap 8px) so text + speak button sit as one unit left-aligned; legend pushes right via `space-between`
 - On mobile, collapse has no effect — both columns always stack
+- **Click reliability (iOS Safari):** `window.toggleTranslation` exposed; button uses inline `onclick` + `ontouchend` (same pattern as bottom nav); `addEventListener` removed from `initTranslationToggle` to prevent double-firing
 
 ## Reader initial state
 - On page load: reader starts empty — no article auto-loaded, no column labels, no title/badges, no "Test yourself" button
@@ -205,7 +210,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v43`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v44`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -224,7 +229,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
 - **nginx cache headers**: JS/CSS/HTML served with `Cache-Control: no-cache, must-revalidate` — browser always revalidates with server (uses ETag/Last-Modified for conditional requests)
 - **nginx config**: `/etc/nginx/sites-available/ponte` symlinked as `/etc/nginx/sites-enabled/default`; only one symlink to avoid duplicate server_name warning
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v43`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v44`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)

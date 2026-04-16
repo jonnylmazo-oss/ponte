@@ -146,7 +146,9 @@
           </div>
           <div class="header-right">
             <button class="quiz-header-btn" id="quiz-trigger-btn" hidden>Test yourself</button>
-            <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation">
+            <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation"
+              onclick="window.toggleTranslation && window.toggleTranslation()"
+              ontouchend="window.toggleTranslation && window.toggleTranslation(); return false;">
               <span class="transl-toggle-label">EN</span>
               <span class="transl-toggle-icon" aria-hidden="true">▶</span>
             </button>
