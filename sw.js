@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v35';
+const CACHE_NAME = 'ponte-v36';
 
 const PRECACHE = [
   '/',
@@ -24,10 +24,16 @@ const PRECACHE = [
   '/data/grammar.js',
 ];
 
-// Install: pre-cache all static assets
+// Install: pre-cache all static assets, bypassing browser HTTP cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        PRECACHE.map((url) =>
+          fetch(url, { cache: 'reload' }).then((res) => cache.put(url, res))
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
