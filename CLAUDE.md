@@ -109,7 +109,10 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `lastDrilled`: ISO timestamp set on every Got it / Tricky action in drill mode
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
 - Count badge (`fc-badge-sidebar`, `fc-badge-bottom`) updates immediately via `updateFlashcardBadge()`
-- Cross-module sync: `app.js` fires `window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'))` on save/delete; `flashcards.js` listens to re-render
+- Cross-module sync:
+  - `ponte:flashcard-saved` — fired by `app.js` on tooltip save/delete and after server sync; `flashcards.js` listens to re-render library
+  - `ponte:flashcards-synced` — fired by `app.js`'s `signalFCReady()` in ALL exit paths of `syncFlashcardsFromServer()` (success, early-return, offline catch); `flashcards.js` uses this for its initial library render so it always uses merged server+local data, not empty pre-sync localStorage
+  - `window._ponteFCReady = true` flag set alongside the event, as a fallback check in `flashcards.js` for the edge case where the event fires before the listener registers
 - `flashcards.js` IIFE: library view (search, dropdown filters, card grid, delete), drill mode (3D CSS flip, Again/Hard/Easy, score)
 - **Library filters (dropdown style):**
   - **Type dropdown:** multi-select checkboxes — Same in Spanish / False Friend / Used differently / New word; button label updates to show active selections; blue border when filtered
@@ -200,7 +203,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v39`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v40`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -219,7 +222,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
 - **nginx cache headers**: JS/CSS/HTML served with `Cache-Control: no-cache, must-revalidate` — browser always revalidates with server (uses ETag/Last-Modified for conditional requests)
 - **nginx config**: `/etc/nginx/sites-available/ponte` symlinked as `/etc/nginx/sites-enabled/default`; only one symlink to avoid duplicate server_name warning
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v39`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v40`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)
