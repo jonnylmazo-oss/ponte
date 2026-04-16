@@ -2907,22 +2907,35 @@ header {
   border: 1px solid var(--border-mid);
   border-radius: 8px;
   overflow: hidden;
-  transition: border-color 0.12s, background 0.12s;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.2s;
 }
 .fc-card:hover { background: #E8D9BC; }
 
-.fc-card-body { padding: 14px 16px 12px; }
+.fc-card-body {
+  padding: 14px 16px 12px;
+  list-style: none;
+  cursor: pointer;
+}
+.fc-card-body::-webkit-details-marker { display: none; }
 
 .fc-card-it-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 .fc-card-italian {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text);
+  line-height: 1.2;
+}
+.fc-card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .fc-card-base {
   font-size: 12px;
@@ -2938,9 +2951,10 @@ header {
   margin: 2px 0 6px;
 }
 .fc-card-en {
-  font-size: 13px;
-  color: var(--text-mid);
-  margin-bottom: 2px;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.35;
 }
 .fc-card-es {
   font-size: 12px;
@@ -2951,23 +2965,21 @@ header {
   font-size: 12px;
   color: var(--text-mid);
   line-height: 1.45;
-  margin-bottom: 10px;
-  margin-top: 4px;
+  margin: 4px 0 8px;
 }
 
 .fc-card-foot {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 2px;
 }
 .fc-card-source {
   font-size: 11px;
   color: var(--text-dim);
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
+  margin-top: 2px;
 }
 
 .fc-cat-badge {
@@ -2983,14 +2995,30 @@ header {
   background: transparent;
   border: none;
   color: var(--text-dim);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 2px 5px;
   border-radius: 3px;
   transition: color 0.1s, background 0.1s;
   flex-shrink: 0;
 }
 .fc-delete-btn:hover { color: #B83232; background: rgba(184, 50, 50, 0.08); }
+
+.fc-card-details {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 16px;
+  transition: max-height 200ms ease, padding 200ms ease;
+}
+.fc-card[open] .fc-card-details,
+.fc-card.expanded .fc-card-details {
+  max-height: 200px;
+  padding: 2px 16px 12px;
+}
+.fc-card[open],
+.fc-card.expanded {
+  box-shadow: inset 3px 0 0 var(--fc-cat, var(--border-mid));
+}
 
 /* ─── Drill topbar ───────────────────────────────────────────── */
 

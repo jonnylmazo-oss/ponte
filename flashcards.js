@@ -422,25 +422,29 @@
       const dueLabel = formatDueLabel(card);
 
       return `
-        <div class="fc-card" data-id="${card.id}">
-          <div class="fc-card-body">
+        <details class="fc-card" data-id="${card.id}" style="--fc-cat:${color}">
+          <summary class="fc-card-body">
             <div class="fc-card-it-row">
               <span class="fc-card-italian">${escapeHTML(card.italian)}</span>
-              <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
+              <div class="fc-card-head-actions">
+                <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
+                <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
+              </div>
             </div>
-            ${card.baseForm ? `<div class="fc-card-base">Base: ${escapeHTML(card.baseForm)} · ${escapeHTML(card.baseFormEN)}</div>` : ''}
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
-            ${card.spanish ? `<div class="fc-card-es">${escapeHTML(card.spanish)}</div>` : ''}
-            ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
             <div class="fc-card-foot">
               <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>
-              ${accuracyBadge}
               ${dueLabel}
-              <span class="fc-card-source">${escapeHTML(source)}</span>
-              <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
+              ${accuracyBadge}
             </div>
+          </summary>
+          <div class="fc-card-details">
+            ${card.baseForm ? `<div class="fc-card-base">Base: ${escapeHTML(card.baseForm)} · ${escapeHTML(card.baseFormEN)}</div>` : ''}
+            ${card.spanish ? `<div class="fc-card-es">${escapeHTML(card.spanish)}</div>` : ''}
+            ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
+            <span class="fc-card-source">${escapeHTML(source)}</span>
           </div>
-        </div>`;
+        </details>`;
     }).join('');
   }
 
