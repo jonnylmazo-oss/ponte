@@ -858,6 +858,7 @@
 
   // ── Listen for saves from app.js ──────────────────────────────────────────
   window.addEventListener('ponte:flashcard-saved', () => {
+    backfillDueDates();
     renderLibrary();
     updateBadge();
   });
@@ -1046,23 +1047,10 @@
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
-  // Show badge immediately from localStorage (fast, pre-sync).
-  // Pass silent=true so we only update localStorage — no server POST before sync.
+  // Render immediately with whatever is in localStorage (may be empty on first
+  // load). The existing ponte:flashcard-saved listener re-renders once
+  // syncFlashcardsFromServer() in app.js finishes and fires that event.
   backfillDueDates(true);
+  renderLibrary();
   updateBadge();
-
-  // Render library only after syncFlashcardsFromServer() completes so we use
-  // merged server+local data, not possibly-empty pre-sync localStorage.
-  function doInitialRender() {
-    backfillDueDates(); // re-run: merged data may lack dueDate on some cards
-    renderLibrary();
-    updateBadge();
-  }
-
-  if (window._ponteFCReady) {
-    // Sync already finished (edge case: very fast response before this script ran)
-    doInitialRender();
-  } else {
-    window.addEventListener('ponte:flashcards-synced', doInitialRender, { once: true });
-  }
 })();
