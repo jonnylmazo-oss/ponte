@@ -111,6 +111,9 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - `window.manualSyncFlashcards()` exposed for Sync button — same merge logic, throws on error so caller can show feedback
   - **Sync button** in Cards toolbar (`.fc-sync-btn`): shows "Syncing…" → "Synced ✓" or "Failed" → resets after 2s
   - `mergeFlashcards(serverCards, localCards)` shared helper: server wins on ID conflicts, appends local-only cards
+  - `syncFlashcardsFromServer()` always pushes merged result back to server (unconditional) — ensures server always has the complete union
+  - **Race condition fix:** `backfillDueDates(silent=false)` — pre-sync init call passes `silent=true` (writes localStorage only, no server POST); post-sync `doInitialRender()` call passes `silent=false` (safe to POST). Prevents stale pre-sync array from wiping a larger server-side deck.
+  - nginx `/api/` block sets `proxy_set_header X-Forwarded-For $remote_addr` — real client IPs visible in server logs
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
 - Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, timesCorrect, timesWrong, lastSeen, lastDrilled, interval, easeFactor, dueDate, reviewCount, lastReviewed}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
@@ -218,7 +221,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v46`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v47`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -237,7 +240,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
 - **nginx cache headers**: JS/CSS/HTML served with `Cache-Control: no-cache, must-revalidate` — browser always revalidates with server (uses ETag/Last-Modified for conditional requests)
 - **nginx config**: `/etc/nginx/sites-available/ponte` symlinked as `/etc/nginx/sites-enabled/default`; only one symlink to avoid duplicate server_name warning
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v46`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v47`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Audio pronunciation (issue #25, closed)

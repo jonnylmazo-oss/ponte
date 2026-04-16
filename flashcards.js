@@ -161,7 +161,8 @@
   }
 
   // ── Backfill: set dueDate = now for any card missing it ──────────────────
-  function backfillDueDates() {
+  // silent=true: only write localStorage, skip server POST (safe before initial sync)
+  function backfillDueDates(silent) {
     const cards = loadCards();
     let changed = false;
     const now = new Date().toISOString();
@@ -174,7 +175,10 @@
         changed = true;
       }
     });
-    if (changed) saveCards(cards);
+    if (changed) {
+      localStorage.setItem(FC_KEY, JSON.stringify(cards));
+      if (!silent) saveCards(cards); // POST to server only after sync is complete
+    }
   }
 
   // ── Due helpers ──────────────────────────────────────────────────────────
@@ -1038,7 +1042,8 @@
 
   // ── Init ─────────────────────────────────────────────────────────────────
   // Show badge immediately from localStorage (fast, pre-sync).
-  backfillDueDates();
+  // Pass silent=true so we only update localStorage — no server POST before sync.
+  backfillDueDates(true);
   updateBadge();
 
   // Render library only after syncFlashcardsFromServer() completes so we use

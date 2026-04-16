@@ -1102,8 +1102,9 @@
       const localCards = loadFlashcards();
       const merged = mergeFlashcards(serverCards, localCards);
 
-      // If local had cards the server didn't, push them back
-      if (merged.length > serverCards.length) persistFlashcardsToServer(merged);
+      // Always push merged result to server — ensures server has the complete union
+      // of server+local cards. Safe because persistFlashcardsToServer guards empty arrays.
+      persistFlashcardsToServer(merged);
 
       localStorage.setItem(FC_KEY, JSON.stringify(merged));
       updateFlashcardBadge();
