@@ -1424,10 +1424,10 @@
   }
 
   // Wire up quiz events
-  quizTriggerBtn.addEventListener('click', openQuiz);
-  quizClosBtn.addEventListener('click', closeQuiz);
-  quizOverlay.addEventListener('click', (e) => { if (e.target === quizOverlay) closeQuiz(); });
-  quizNextBtn.addEventListener('click', () => {
+  if (quizTriggerBtn) quizTriggerBtn.addEventListener('click', openQuiz);
+  if (quizClosBtn) quizClosBtn.addEventListener('click', closeQuiz);
+  if (quizOverlay) quizOverlay.addEventListener('click', (e) => { if (e.target === quizOverlay) closeQuiz(); });
+  if (quizNextBtn) quizNextBtn.addEventListener('click', () => {
     quizCurrent++;
     if (quizCurrent < quizQuestions.length) {
       renderQuizQuestion();
@@ -1435,7 +1435,7 @@
       showQuizScore();
     }
   });
-  quizRetakeBtn.addEventListener('click', () => {
+  if (quizRetakeBtn) quizRetakeBtn.addEventListener('click', () => {
     quizCurrent  = 0;
     quizCorrect  = 0;
     quizAnswered = false;
@@ -1443,7 +1443,7 @@
     quizQuestionScr.hidden = false;
     renderQuizQuestion();
   });
-  quizDoneBtn.addEventListener('click', closeQuiz);
+  if (quizDoneBtn) quizDoneBtn.addEventListener('click', closeQuiz);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !quizOverlay.hidden) closeQuiz();
   });
