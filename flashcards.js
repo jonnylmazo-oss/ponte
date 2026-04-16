@@ -1055,4 +1055,9 @@
     renderLibrary();
     updateBadge();
   };
+
+  // Render immediately from whatever is in localStorage.
+  // app.js re-renders after sync completes, so this initial pass may show
+  // an empty or partial deck — that's fine; it won't be blank.
+  window._ponteFCRender();
 })();

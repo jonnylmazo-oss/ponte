@@ -1462,7 +1462,7 @@
 
     // Sync in background — re-renders Cards tab when complete
     syncFlashcardsFromServer().then((ok) => {
-      if (!ok) return; // 401 handled inside syncFlashcardsFromServer
+      if (!ok) { setLoginNoOps(); return; } // 401 — lock down the UI
       if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
       startFlashcardPoll();
     });
