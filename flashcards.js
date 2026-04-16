@@ -849,6 +849,169 @@
     updateBadge();
   });
 
+  // ── Word lookup modal (+ Add word) ───────────────────────────────────────
+  const wlBackdrop  = $('wl-backdrop');
+  const wlModal     = $('wl-modal');
+  const wlClose     = $('wl-close');
+  const wlInput     = $('wl-input');
+  const wlSearchBtn = $('wl-search-btn');
+  const wlStatus    = $('wl-status');
+  const wlResult    = $('wl-result');
+  const wlResultWord  = $('wl-result-word');
+  const wlResultBadge = $('wl-result-badge');
+  const wlResultEn    = $('wl-result-en');
+  const wlResultEs    = $('wl-result-es');
+  const wlResultNote  = $('wl-result-note');
+  const wlSaveBtn     = $('wl-save-btn');
+  const fcAddWordBtn  = $('fc-add-word-btn');
+
+  const BADGE_COLORS = {
+    'cognate':      '#2E6B3E',
+    'false-friend': '#B83232',
+    'divergence':   '#B85C00',
+    'new':          '#888888',
+  };
+  const BADGE_LABELS = {
+    'cognate':      'Same in Spanish',
+    'false-friend': 'False Friend',
+    'divergence':   'Used differently',
+    'new':          'New word',
+  };
+
+  let wlCurrentEntry = null; // last successful translate result
+
+  function openWordLookup() {
+    if (!wlModal) return;
+    wlInput.value = '';
+    wlStatus.hidden = true;
+    wlResult.hidden = true;
+    wlCurrentEntry = null;
+    wlBackdrop.hidden = false;
+    wlModal.hidden = false;
+    setTimeout(() => wlInput.focus(), 50);
+  }
+
+  function closeWordLookup() {
+    if (!wlModal) return;
+    wlModal.hidden = true;
+    wlBackdrop.hidden = true;
+  }
+
+  async function runWordLookup() {
+    const word = wlInput.value.trim();
+    if (!word) return;
+
+    wlSearchBtn.disabled = true;
+    wlResult.hidden = true;
+    wlStatus.hidden = false;
+    wlStatus.textContent = 'Translating…';
+    wlCurrentEntry = null;
+
+    try {
+      const resp = await fetch(API_BASE + '/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: word, context: '' }),
+      });
+      if (!resp.ok) throw new Error('Server error');
+      const entry = await resp.json();
+
+      wlCurrentEntry = entry;
+      wlStatus.hidden = true;
+
+      const cat   = entry.category || 'new';
+      const color = BADGE_COLORS[cat] || BADGE_COLORS['new'];
+      const label = BADGE_LABELS[cat] || cat;
+
+      wlResultWord.textContent  = entry.italian || word;
+      wlResultBadge.textContent = label;
+      wlResultBadge.style.setProperty('--tooltip-accent', color);
+      wlResultBadge.style.borderColor = color;
+      wlResultBadge.style.color       = color;
+      wlResultEn.textContent   = entry.english  || '';
+      wlResultEs.textContent   = entry.spanish  || '';
+      wlResultNote.textContent = entry.note     || '';
+
+      // Check if already saved
+      const existing = loadCards().find(
+        (c) => c.italian.toLowerCase() === (entry.italian || word).toLowerCase()
+      );
+      wlSaveBtn.textContent = existing ? 'Already saved ✓' : 'Save to Cards ★';
+      wlSaveBtn.classList.toggle('saved', !!existing);
+
+      wlResult.hidden = false;
+    } catch (err) {
+      wlStatus.textContent = 'Translation failed — please try again.';
+    } finally {
+      wlSearchBtn.disabled = false;
+    }
+  }
+
+  if (fcAddWordBtn) {
+    fcAddWordBtn.addEventListener('click', openWordLookup);
+  }
+  if (wlClose)    wlClose.addEventListener('click', closeWordLookup);
+  if (wlBackdrop) wlBackdrop.addEventListener('click', closeWordLookup);
+
+  if (wlSearchBtn) {
+    wlSearchBtn.addEventListener('click', runWordLookup);
+  }
+  if (wlInput) {
+    wlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runWordLookup();
+      if (e.key === 'Escape') closeWordLookup();
+    });
+  }
+
+  if (wlSaveBtn) {
+    wlSaveBtn.addEventListener('click', () => {
+      if (!wlCurrentEntry || wlSaveBtn.classList.contains('saved')) return;
+      const entry = wlCurrentEntry;
+      const cards = loadCards();
+      const italian = (entry.italian || wlInput.value).trim();
+      if (cards.find((c) => c.italian.toLowerCase() === italian.toLowerCase())) {
+        wlSaveBtn.textContent = 'Already saved ✓';
+        wlSaveBtn.classList.add('saved');
+        return;
+      }
+      const card = {
+        id:           Date.now(),
+        italian:      italian,
+        english:      entry.english  || '',
+        spanish:      entry.spanish  || '',
+        category:     entry.category || 'new',
+        note:         entry.note     || '',
+        wordType:     entry.wordType || 'other',
+        baseForm:     entry.baseForm    || '',
+        baseFormEN:   entry.baseFormEN  || '',
+        savedAt:      new Date().toISOString(),
+        sourceArticle: 'Word lookup',
+        timesCorrect: 0,
+        timesWrong:   0,
+        lastSeen:     null,
+        lastDrilled:  null,
+        interval:     0,
+        easeFactor:   2.5,
+        dueDate:      null,
+        reviewCount:  0,
+        lastReviewed: null,
+        grammarPatterns: [],
+      };
+      cards.push(card);
+      saveCards(cards);
+      renderLibrary();
+      updateBadge();
+      window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+      wlSaveBtn.textContent = 'Saved ✓';
+      wlSaveBtn.classList.add('saved');
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && wlModal && !wlModal.hidden) closeWordLookup();
+  });
+
   // ── Init ─────────────────────────────────────────────────────────────────
   // Show badge immediately from localStorage (fast, pre-sync).
   backfillDueDates();

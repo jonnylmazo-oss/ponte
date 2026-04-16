@@ -667,6 +667,7 @@
               <span class="fc-count" id="fc-count"></span>
             </div>
             <div class="fc-toolbar-actions">
+              <button class="fc-add-word-btn" id="fc-add-word-btn" title="Look up and add a word">+ Add word</button>
               <button class="fc-drill-toggle" id="fc-drill-toggle">Drill mode</button>
               <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
             </div>
@@ -853,7 +854,6 @@
 
   <!-- Tooltip card -->
   <div class="tooltip" id="tooltip" aria-hidden="true" hidden>
-    <p class="tooltip-mobile-tip">Tap a colored word · double-tap any word to translate</p>
     <div class="tooltip-header">
       <div class="tooltip-word-group">
         <div class="tooltip-word-line">
@@ -887,6 +887,34 @@
 
   <!-- Mobile bottom-sheet backdrop -->
   <div class="tooltip-backdrop" id="tooltip-backdrop"></div>
+
+  <!-- Word lookup modal (Cards tab → + Add word) -->
+  <div class="wl-backdrop" id="wl-backdrop" hidden></div>
+  <div class="wl-modal" id="wl-modal" hidden role="dialog" aria-modal="true" aria-label="Look up a word">
+    <div class="wl-header">
+      <h3 class="wl-title">Look up a word</h3>
+      <button class="wl-close" id="wl-close" aria-label="Close">✕</button>
+    </div>
+    <div class="wl-search-row">
+      <input type="text" id="wl-input" class="wl-input"
+        placeholder="Italian word or phrase…" autocomplete="off" autocorrect="off"
+        autocapitalize="none" spellcheck="false" />
+      <button class="wl-search-btn" id="wl-search-btn">Translate →</button>
+    </div>
+    <div class="wl-status" id="wl-status" hidden></div>
+    <div class="wl-result" id="wl-result" hidden>
+      <div class="wl-result-header">
+        <span class="wl-result-word" id="wl-result-word"></span>
+        <span class="tooltip-badge wl-result-badge" id="wl-result-badge"></span>
+      </div>
+      <div class="wl-result-rows">
+        <div class="wl-result-row"><span class="lang-tag">EN</span><span id="wl-result-en"></span></div>
+        <div class="wl-result-row"><span class="lang-tag">ES</span><span id="wl-result-es"></span></div>
+      </div>
+      <p class="wl-result-note" id="wl-result-note"></p>
+      <button class="wl-save-btn" id="wl-save-btn">Save to Cards ★</button>
+    </div>
+  </div>
 
 
   <script src="utils.js"></script>

@@ -875,20 +875,6 @@ header {
   pointer-events: auto;
 }
 
-.tooltip-mobile-tip {
-  display: none; /* hidden on desktop */
-  font-size: 11px;
-  color: var(--text-dim);
-  text-align: center;
-  margin: 0;
-  padding: 8px 16px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-@media (max-width: 768px) {
-  .tooltip-mobile-tip { display: block; }
-}
-
 .tooltip-header {
   padding: 14px 16px 12px;
   display: flex;
@@ -2760,6 +2746,22 @@ header {
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+.fc-add-word-btn {
+  align-self: flex-start;
+  background: rgba(46, 107, 62, 0.1);
+  border: 1px solid rgba(46, 107, 62, 0.35);
+  border-radius: var(--radius);
+  color: #2E6B3E;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.fc-add-word-btn:hover { background: rgba(46, 107, 62, 0.18); }
 
 .fc-drill-toggle {
   align-self: flex-start;
@@ -6120,5 +6122,174 @@ body.drill-fullscreen .ff-flip-card {
 
   .quiz-score-screen {
     padding: 24px 16px 20px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Word Lookup Modal (Cards tab → + Add word)
+═══════════════════════════════════════════════════════════════ */
+
+.wl-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+}
+
+.wl-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 440px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  z-index: 301;
+  padding: 0;
+  overflow: hidden;
+}
+
+.wl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wl-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.wl-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+}
+.wl-close:hover { color: var(--text); }
+
+.wl-search-row {
+  display: flex;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wl-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-family: var(--font);
+  font-size: 15px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  outline: none;
+}
+.wl-input:focus { border-color: #0055AA; }
+
+.wl-search-btn {
+  background: #0055AA;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.wl-search-btn:hover { background: #0044AA; }
+.wl-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.wl-status {
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.wl-result {
+  padding: 14px 18px 18px;
+}
+
+.wl-result-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wl-result-word {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wl-result-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.wl-result-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.wl-result-note {
+  font-size: 12px;
+  color: var(--text-mid);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.wl-result-note:empty { display: none; }
+
+.wl-save-btn {
+  width: 100%;
+  background: #2E6B3E;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.wl-save-btn:hover { background: #265C35; }
+.wl-save-btn.saved {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .wl-modal {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
