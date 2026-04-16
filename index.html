@@ -46,6 +46,11 @@
       onclick="document.getElementById('install-banner').style.display='none'; localStorage.setItem('ponte_install_dismissed', '1');">✕</button>
   </div>
 
+  <!-- App loading overlay — visible until initial server sync completes -->
+  <div id="app-loading">
+    <p class="app-loading-text">Loading…</p>
+  </div>
+
   <div class="app-wrapper" id="app-wrapper">
 
     <!-- ─── Sidebar ───────────────────────────────────────────────── -->

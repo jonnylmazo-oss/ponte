@@ -71,17 +71,13 @@
     }
   };
 
-  // Show login and stop init if no token stored.
-  // doLogin sets token then reloads the page — full init runs on reload.
-  if (!getToken()) {
-    showLoginOverlay();
-    // No-ops so other script modules don't crash while login screen is showing
+  // No-ops set when login screen is showing so other modules don't crash.
+  function setLoginNoOps() {
     window.manualSyncFlashcards = () => Promise.resolve();
-    window.ponteSpeak = () => {};
-    window.switchTab = () => {};
-    window.toggleNavGroup = () => {};
-    window.toggleTranslation = () => {};
-    return; // skip rest of IIFE — app uninitialised until reload after login
+    window.ponteSpeak            = () => {};
+    window.switchTab             = () => {};
+    window.toggleNavGroup        = () => {};
+    window.toggleTranslation     = () => {};
   }
 
   const SURPRISE_TOPICS = [
@@ -1152,13 +1148,6 @@
     }).catch((err) => console.warn('Flashcard sync to server failed:', err.message));
   }
 
-  // Signal flashcards.js that sync is complete (success or failure).
-  // Sets window._ponteFCReady so the flag can be checked if flashcards.js runs after this fires.
-  function signalFCReady() {
-    window._ponteFCReady = true;
-    window.dispatchEvent(new CustomEvent('ponte:flashcards-synced'));
-  }
-
   // Core merge helper: union of server + local cards (server wins on id conflicts)
   function mergeFlashcards(serverCards, localCards) {
     const merged = [...serverCards];
@@ -1168,31 +1157,25 @@
     return merged;
   }
 
-  // On load: pull server cards, merge with localStorage (server wins on id conflicts),
-  // push any local-only cards back, then re-render badge.
+  // Pull server cards, merge with localStorage, push merged result back.
+  // Returns true on success, false on 401 (login shown).
+  // On any other error, silently continues — app uses whatever is in localStorage.
   async function syncFlashcardsFromServer() {
     try {
       const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
-      if (resp.status === 401) { handle401(); signalFCReady(); return; }
-      if (!resp.ok) { signalFCReady(); return; }
+      if (resp.status === 401) { handle401(); return false; }
+      if (!resp.ok) return true;
       const serverCards = await resp.json();
-      if (!Array.isArray(serverCards)) { signalFCReady(); return; }
+      if (!Array.isArray(serverCards)) return true;
 
       const localCards = loadFlashcards();
       const merged = mergeFlashcards(serverCards, localCards);
-
-      // Always push merged result to server — ensures server has the complete union
-      // of server+local cards. Safe because persistFlashcardsToServer guards empty arrays.
       persistFlashcardsToServer(merged);
-
       localStorage.setItem(FC_KEY, JSON.stringify(merged));
       updateFlashcardBadge();
-      // Re-render directly (belt-and-suspenders alongside the event for tab-switch cases)
-      if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
-      window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
-      signalFCReady();
-    } catch (err) {
-      signalFCReady();
+      return true;
+    } catch {
+      return true; // offline — app uses localStorage
     }
   }
 
@@ -1463,9 +1446,40 @@
   });
 
   // ── Init ───────────────────────────────────────────────────────────────
-  initTabs();
-  initSidebar();
-  initTranslationToggle();
-  updateFlashcardBadge();
-  syncFlashcardsFromServer().then(() => startFlashcardPoll()); // poll after initial sync
+  // Await sync before initialising tabs so localStorage is populated with
+  // server cards before flashcards.js renders the library for the first time.
+  (async function initApp() {
+    const loadingEl = document.getElementById('app-loading');
+
+    if (!getToken()) {
+      // No auth token — show login, set no-ops, leave loading overlay hidden
+      if (loadingEl) loadingEl.hidden = true;
+      showLoginOverlay();
+      setLoginNoOps();
+      return;
+    }
+
+    // Show loading overlay while syncing
+    if (loadingEl) loadingEl.hidden = false;
+    const ok = await syncFlashcardsFromServer();
+    if (loadingEl) loadingEl.hidden = true;
+
+    if (!ok) {
+      // 401 returned — handle401() already showed login overlay
+      setLoginNoOps();
+      return;
+    }
+
+    // localStorage now has the merged server+local deck.
+    // Initialise tabs — this activates the correct panel.
+    initTabs();
+    initSidebar();
+    initTranslationToggle();
+    updateFlashcardBadge();
+
+    // Trigger the first flashcard library render now that data is ready.
+    if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
+
+    startFlashcardPoll();
+  })();
 })();

@@ -6394,3 +6394,20 @@ body.drill-fullscreen .ff-flip-card {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ── App loading overlay ──────────────────────────────────────────────── */
+#app-loading {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+#app-loading[hidden] { display: none; }
+.app-loading-text {
+  color: var(--text-mid);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}

@@ -1047,12 +1047,12 @@
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
-  // Expose render function so app.js can call it directly after sync completes
-  // and on every Cards tab switch, bypassing any event-dispatch ambiguity.
-  window._ponteFCRender = function () { renderLibrary(); updateBadge(); };
-
-  // Render immediately with whatever is in localStorage (may be empty on first load).
-  backfillDueDates(true);
-  renderLibrary();
-  updateBadge();
+  // app.js awaits syncFlashcardsFromServer() before calling _ponteFCRender,
+  // so localStorage is guaranteed to have server cards on the first render.
+  // switchTab also calls _ponteFCRender on every navigation to the Cards tab.
+  window._ponteFCRender = function () {
+    backfillDueDates();
+    renderLibrary();
+    updateBadge();
+  };
 })();
