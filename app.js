@@ -51,11 +51,13 @@
     if (errorEl) errorEl.hidden = true;
 
     try {
+      console.log('[login] attempting fetch to:', API_BASE + '/api/login', 'with password length:', password.length);
       const resp = await fetch(API_BASE + '/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
+      console.log('[login] response status:', resp.status, resp.ok);
       if (resp.ok) {
         const { token } = await resp.json();
         localStorage.setItem(AUTH_KEY, token);
