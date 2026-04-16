@@ -1450,10 +1450,10 @@
   // server cards before flashcards.js renders the library for the first time.
   (async function initApp() {
     const loadingEl = document.getElementById('app-loading');
+    const hideLoading = () => { if (loadingEl) loadingEl.hidden = true; };
 
     if (!getToken()) {
-      // No auth token — show login, set no-ops, leave loading overlay hidden
-      if (loadingEl) loadingEl.hidden = true;
+      hideLoading();
       showLoginOverlay();
       setLoginNoOps();
       return;
@@ -1461,25 +1461,35 @@
 
     // Show loading overlay while syncing
     if (loadingEl) loadingEl.hidden = false;
-    const ok = await syncFlashcardsFromServer();
-    if (loadingEl) loadingEl.hidden = true;
 
-    if (!ok) {
-      // 401 returned — handle401() already showed login overlay
-      setLoginNoOps();
-      return;
+    let syncOk = true;
+    try {
+      // 5-second timeout — if server is slow or unreachable, still show the app
+      const result = await Promise.race([
+        syncFlashcardsFromServer(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('sync timeout')), 5000)
+        ),
+      ]);
+      if (result === false) {
+        // 401 — handle401() already showed login overlay
+        hideLoading();
+        setLoginNoOps();
+        return;
+      }
+    } catch {
+      // Timeout or network error — continue with whatever is in localStorage
+      syncOk = false;
     }
 
-    // localStorage now has the merged server+local deck.
-    // Initialise tabs — this activates the correct panel.
+    hideLoading();
+
+    // localStorage now has the merged server+local deck (or whatever was cached).
     initTabs();
     initSidebar();
     initTranslationToggle();
     updateFlashcardBadge();
-
-    // Trigger the first flashcard library render now that data is ready.
     if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
-
-    startFlashcardPoll();
+    if (syncOk) startFlashcardPoll();
   })();
 })();
