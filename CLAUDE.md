@@ -221,7 +221,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 ## PWA (Progressive Web App)
 - `manifest.json`: name, short_name, icons (192+512), display=standalone, theme #00C2B8
 - `icons/icon-192.png` + `icons/icon-512.png`: generated via Python/Pillow (dark bg, white P + cyan e)
-- `sw.js`: cache name `ponte-v54`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
+- `sw.js`: cache name `ponte-v55`; install uses `fetch(url, { cache: 'reload' })` per file to bypass browser HTTP cache; network-first for `/api/*`; cache-first for everything else; old cache versions deleted on activate
 - iOS meta tags: `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style=black-translucent`, `apple-touch-icon`
 - Service worker registered in inline `<script>` at bottom of `index.html`
 - Install banner: shown once on iOS Safari (not standalone), dismissable, stored in `localStorage` key `ponte_install_dismissed`
@@ -240,7 +240,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - HTTPS via Let's Encrypt still needed for PWA installability; domain TBD
 - **nginx cache headers**: JS/CSS/HTML served with `Cache-Control: no-cache, must-revalidate` — browser always revalidates with server (uses ETag/Last-Modified for conditional requests)
 - **nginx config**: `/etc/nginx/sites-available/ponte` symlinked as `/etc/nginx/sites-enabled/default`; only one symlink to avoid duplicate server_name warning
-- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v54`) after major frontend changes to bust service worker cache
+- Update `CACHE_NAME` in `sw.js` (e.g. `ponte-v55`) after major frontend changes to bust service worker cache
 - See issue #17 for full mobile testing checklist
 
 ## Password authentication

@@ -1446,50 +1446,27 @@
   });
 
   // ── Init ───────────────────────────────────────────────────────────────
-  // Await sync before initialising tabs so localStorage is populated with
-  // server cards before flashcards.js renders the library for the first time.
-  (async function initApp() {
-    const loadingEl = document.getElementById('app-loading');
-    const hideLoading = () => { if (loadingEl) loadingEl.hidden = true; };
-
+  function initApp() {
     if (!getToken()) {
-      hideLoading();
       showLoginOverlay();
       setLoginNoOps();
       return;
     }
 
-    // Show loading overlay while syncing
-    if (loadingEl) loadingEl.hidden = false;
-
-    let syncOk = true;
-    try {
-      // 5-second timeout — if server is slow or unreachable, still show the app
-      const result = await Promise.race([
-        syncFlashcardsFromServer(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('sync timeout')), 5000)
-        ),
-      ]);
-      if (result === false) {
-        // 401 — handle401() already showed login overlay
-        hideLoading();
-        setLoginNoOps();
-        return;
-      }
-    } catch {
-      // Timeout or network error — continue with whatever is in localStorage
-      syncOk = false;
-    }
-
-    hideLoading();
-
-    // localStorage now has the merged server+local deck (or whatever was cached).
+    // Initialize immediately — do not block on network
     initTabs();
     initSidebar();
     initTranslationToggle();
     updateFlashcardBadge();
     if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
-    if (syncOk) startFlashcardPoll();
-  })();
+
+    // Sync in background — re-renders Cards tab when complete
+    syncFlashcardsFromServer().then((ok) => {
+      if (!ok) return; // 401 handled inside syncFlashcardsFromServer
+      if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
+      startFlashcardPoll();
+    });
+  }
+
+  initApp();
 })();
