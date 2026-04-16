@@ -783,6 +783,10 @@ header {
 
 .column-italian .column-body {
   color: #3B2D1F;
+  padding-left: 4px;            /* prevent first word from sitting flush at edge on mobile */
+  -webkit-user-select: text;    /* explicit iOS Safari text selection */
+  user-select: text;
+  touch-action: pan-y;          /* allow vertical scroll without blocking horizontal text selection */
 }
 
 

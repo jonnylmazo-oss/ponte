@@ -934,6 +934,21 @@
   let xlatAbortCtrl        = null;  // AbortController for in-flight translate request
   let activeXlatText       = null;  // text currently showing/loading in translation mode
 
+  // iOS Safari backup: selectionchange can lag behind the touch gesture.
+  // On touchend, re-check selection after 50ms so any just-completed drag
+  // selection is picked up even if selectionchange hasn't fired yet.
+  italianText.addEventListener('touchend', () => {
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      if (!italianText.contains(range.commonAncestorContainer)) return;
+      const text = sel.toString().trim();
+      if (!text || text.length < 2 || text === activeXlatText) return;
+      doTranslate(text, italianText.innerText, range.getBoundingClientRect());
+    }, 50);
+  });
+
   // selectionchange fires on every cursor/drag change — use it both to trigger
   // translation (debounced) and to dismiss when selection is cleared.
   document.addEventListener('selectionchange', () => {
