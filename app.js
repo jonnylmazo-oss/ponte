@@ -792,8 +792,24 @@
   }
 
   function switchTab(tabId) {
-    // DEBUG: title change visible in iOS Safari address bar — confirms function executed
-    document.title = 'TAB: ' + tabId;
+    // DEBUG: flash background — confirms function executed on iOS
+    document.body.style.background = (document.body.style.background === 'red') ? '' : 'red';
+
+    // Route shorthand IDs used by inline bottom-nav handlers
+    if (tabId === 'learn') {
+      tabId = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
+    } else if (tabId === 'practice') {
+      tabId = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
+    } else if (tabId === 'cards') {
+      tabId = 'flashcards';
+    } else if (tabId === 'more') {
+      if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
+        closeMorePanel();
+      } else {
+        openMorePanel();
+      }
+      return;
+    }
 
     const panel = $(`tab-${tabId}`);
     if (!panel) { console.warn('[Ponte] switchTab: no panel for', tabId); return; }
@@ -821,6 +837,8 @@
     // Close More panel if open
     closeMorePanel();
   }
+  // Expose globally so inline HTML onclick/ontouchend attributes can call it
+  window.switchTab = switchTab;
 
   // ── More panel (mobile) ───────────────────────────────────────────────────
   const morePanelEl   = $('more-panel');
@@ -886,69 +904,16 @@
       });
     });
 
-    // ── Bottom nav: explicit handler per item ─────────────────────────────
-    // iOS Safari sometimes fails to fire 'click' on position:fixed elements
-    // after scrolling. Attach both touchend + click with a dedup guard.
-    function onTap(el, handler) {
-      if (!el) return;
-      let touchFired = false;
-      el.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        touchFired = true;
-        handler(e);
-        setTimeout(() => { touchFired = false; }, 400);
-      }, { passive: false });
-      el.addEventListener('click', (e) => {
-        if (touchFired) { touchFired = false; return; }
-        handler(e);
-      });
-    }
-
-    const bnRead     = $('bn-read');
-    const bnLearn    = $('bn-learn');
-    const bnPractice = $('bn-practice');
-    const bnCards    = $('bn-cards');
-    const bnMore     = $('bn-more');
-
-    console.log('[Ponte] bottom nav elements:', { bnRead, bnLearn, bnPractice, bnCards, bnMore });
-
-    onTap(bnRead, () => {
-      console.log('[Ponte] bottom nav tap: Read');
-      switchTab('reader');
-    });
-    onTap(bnLearn, () => {
-      const dest = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
-      console.log('[Ponte] bottom nav tap: Learn →', dest);
-      switchTab(dest);
-    });
-    onTap(bnPractice, () => {
-      const dest = localStorage.getItem(LS_LAST_PRACTICE) || 'practice';
-      console.log('[Ponte] bottom nav tap: Practice →', dest);
-      switchTab(dest);
-    });
-    onTap(bnCards, () => {
-      console.log('[Ponte] bottom nav tap: Cards');
-      switchTab('flashcards');
-    });
-    onTap(bnMore, () => {
-      console.log('[Ponte] bottom nav tap: More');
-      if (morePanelEl && !morePanelEl.hidden && morePanelEl.classList.contains('open')) {
-        closeMorePanel();
-      } else {
-        openMorePanel();
-      }
-    });
+    // ── Bottom nav: handled by inline onclick/ontouchend in HTML ─────────
+    // (onTap/addEventListener approach was unreliable on iOS Safari)
 
     // ── More panel backdrop + items ───────────────────────────────────────
     if (moreBackdrop) {
-      onTap(moreBackdrop, closeMorePanel);
+      moreBackdrop.addEventListener('click', closeMorePanel);
     }
     if (morePanelEl) {
       morePanelEl.querySelectorAll('[data-tab]').forEach((btn) => {
-        onTap(btn, () => {
-          console.log('[Ponte] more panel tap:', btn.dataset.tab);
-          switchTab(btn.dataset.tab);
-        });
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
       });
     }
   }
