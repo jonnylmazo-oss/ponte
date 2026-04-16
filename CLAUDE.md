@@ -250,11 +250,12 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **`requireAuth` middleware** in `server.js`: checks `Authorization` header, returns 401 if missing/wrong
 - **`app.js` flow:**
   - `AUTH_KEY = 'ponte_auth_token'` in localStorage
-  - IIFE checks `getToken()` at startup — if no token, shows `#login-overlay`, sets window no-ops, and `return`s early (app uninitialised)
+  - `#login-overlay` is **visible by default** in HTML (`style="display:flex"`) — no JS needed to show it on first load
+  - `initApp()`: if token present, calls `hideLoginOverlay()` then boots app; if no token, calls `setLoginNoOps()` and returns early (overlay stays visible)
   - `window.doLogin()`: posts to `/api/login`, on success sets token + `window.location.reload()` (full re-init on reload)
   - All flashcard fetch calls include `authHeaders()` (`Authorization: Bearer <token>`)
-  - 401 response on any flashcard call → `handle401()` clears token + shows login overlay
-- **`#login-overlay`** in `index.html`: centered card (hidden by default), password input, Enter button, error message; `hidden` attribute → overlay shown by JS when needed
+  - 401 response on any flashcard call → `handle401()` clears token + calls `showLoginOverlay()` (sets `overlay.hidden = false`)
+- **`#login-overlay`** in `index.html`: centered card (visible by default via `style="display:flex"`), password input, Enter button, error message; `hideLoginOverlay()` sets `hidden = true` after token confirmed
 - **To set/change password on server:** edit `/home/ponte/.env` → `PONTE_PASSWORD=...` + `PONTE_SESSION_SECRET=...`, then `pm2 restart ponte-api --update-env`
 
 ## Audio pronunciation (issue #25, closed)
