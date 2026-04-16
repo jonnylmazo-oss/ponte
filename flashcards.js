@@ -389,7 +389,6 @@
   // ── Library render ────────────────────────────────────────────────────────
   function renderLibrary() {
     const total    = loadCards().length;
-    console.log('[fc] renderLibrary called, cards in localStorage:', total);
     const filtered = getFiltered();
 
     fcCount.textContent = filtered.length === total
@@ -1048,9 +1047,11 @@
   });
 
   // ── Init ─────────────────────────────────────────────────────────────────
-  // Render immediately with whatever is in localStorage (may be empty on first
-  // load). The existing ponte:flashcard-saved listener re-renders once
-  // syncFlashcardsFromServer() in app.js finishes and fires that event.
+  // Expose render function so app.js can call it directly after sync completes
+  // and on every Cards tab switch, bypassing any event-dispatch ambiguity.
+  window._ponteFCRender = function () { renderLibrary(); updateBadge(); };
+
+  // Render immediately with whatever is in localStorage (may be empty on first load).
   backfillDueDates(true);
   renderLibrary();
   updateBadge();

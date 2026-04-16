@@ -919,6 +919,12 @@
     currentTab = tabId;
     localStorage.setItem(LS_TAB, tabId);
 
+    // Re-render flashcard library on every switch to Cards tab so users
+    // always see up-to-date data even if the sync completed while on another tab.
+    if (tabId === 'flashcards' && typeof window._ponteFCRender === 'function') {
+      window._ponteFCRender();
+    }
+
     // Close More panel if open
     closeMorePanel();
   }
@@ -1166,14 +1172,10 @@
   // push any local-only cards back, then re-render badge.
   async function syncFlashcardsFromServer() {
     try {
-      const localBefore = JSON.parse(localStorage.getItem(FC_KEY) || '[]');
-      console.log('[sync] starting — localStorage has:', localBefore.length, 'cards; token:', getToken() ? 'present' : 'MISSING');
       const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
-      console.log('[sync] GET /api/flashcards status:', resp.status);
       if (resp.status === 401) { handle401(); signalFCReady(); return; }
-      if (!resp.ok) { console.warn('[sync] non-ok response:', resp.status); signalFCReady(); return; }
+      if (!resp.ok) { signalFCReady(); return; }
       const serverCards = await resp.json();
-      console.log('[sync] server returned:', Array.isArray(serverCards) ? serverCards.length : 'non-array', 'cards');
       if (!Array.isArray(serverCards)) { signalFCReady(); return; }
 
       const localCards = loadFlashcards();
@@ -1185,11 +1187,12 @@
 
       localStorage.setItem(FC_KEY, JSON.stringify(merged));
       updateFlashcardBadge();
+      // Re-render directly (belt-and-suspenders alongside the event for tab-switch cases)
+      if (typeof window._ponteFCRender === 'function') window._ponteFCRender();
       window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
       signalFCReady();
     } catch (err) {
-      console.warn('Flashcard initial sync failed (offline?):', err.message);
-      signalFCReady(); // still signal so flashcards.js renders from localStorage
+      signalFCReady();
     }
   }
 
