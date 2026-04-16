@@ -11,6 +11,78 @@
   const LS_TAB      = 'ponte_tab';
   const LS_SIDEBAR  = 'ponte_sidebar';
   const FC_KEY      = 'ponte_flashcards';
+  const AUTH_KEY    = 'ponte_auth_token';
+
+  // ── Auth helpers ─────────────────────────────────────────────────────────
+  function getToken() {
+    return localStorage.getItem(AUTH_KEY) || '';
+  }
+
+  function authHeaders() {
+    const token = getToken();
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+  }
+
+  function showLoginOverlay() {
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) overlay.hidden = false;
+    const input = document.getElementById('login-password');
+    if (input) { input.value = ''; setTimeout(() => input.focus(), 50); }
+  }
+
+  function hideLoginOverlay() {
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) overlay.hidden = true;
+  }
+
+  function handle401() {
+    localStorage.removeItem(AUTH_KEY);
+    showLoginOverlay();
+  }
+
+  window.doLogin = async function () {
+    const input = document.getElementById('login-password');
+    const errorEl = document.getElementById('login-error');
+    const btn = document.querySelector('.login-btn');
+    const password = input ? input.value.trim() : '';
+    if (!password) return;
+
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    if (errorEl) errorEl.hidden = true;
+
+    try {
+      const resp = await fetch(API_BASE + '/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (resp.ok) {
+        const { token } = await resp.json();
+        localStorage.setItem(AUTH_KEY, token);
+        window.location.reload();
+      } else {
+        if (errorEl) errorEl.hidden = false;
+        if (input) { input.value = ''; input.focus(); }
+      }
+    } catch {
+      if (errorEl) { errorEl.textContent = 'Network error. Try again.'; errorEl.hidden = false; }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Enter'; }
+    }
+  };
+
+  // Show login and stop init if no token stored.
+  // doLogin sets token then reloads the page — full init runs on reload.
+  if (!getToken()) {
+    showLoginOverlay();
+    // No-ops so other script modules don't crash while login screen is showing
+    window.manualSyncFlashcards = () => Promise.resolve();
+    window.ponteSpeak = () => {};
+    window.switchTab = () => {};
+    window.toggleNavGroup = () => {};
+    window.toggleTranslation = () => {};
+    return; // skip rest of IIFE — app uninitialised until reload after login
+  }
 
   const SURPRISE_TOPICS = [
     // Everyday life
@@ -1069,7 +1141,7 @@
     }
     fetch(API_BASE + '/api/flashcards', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body:    JSON.stringify(cards),
     }).catch((err) => console.warn('Flashcard sync to server failed:', err.message));
   }
@@ -1094,7 +1166,8 @@
   // push any local-only cards back, then re-render badge.
   async function syncFlashcardsFromServer() {
     try {
-      const resp = await fetch(API_BASE + '/api/flashcards');
+      const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
+      if (resp.status === 401) { handle401(); signalFCReady(); return; }
       if (!resp.ok) { signalFCReady(); return; }
       const serverCards = await resp.json();
       if (!Array.isArray(serverCards)) { signalFCReady(); return; }
@@ -1119,7 +1192,8 @@
   // Manual sync: re-pull from server, merge, update localStorage + UI.
   // Exposed on window so the Sync button in flashcards.js can call it.
   window.manualSyncFlashcards = async function() {
-    const resp = await fetch(API_BASE + '/api/flashcards');
+    const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
+    if (resp.status === 401) { handle401(); throw new Error('Unauthorized'); }
     if (!resp.ok) throw new Error('Server returned ' + resp.status);
     const serverCards = await resp.json();
     if (!Array.isArray(serverCards)) throw new Error('Invalid response');
@@ -1139,7 +1213,8 @@
   function startFlashcardPoll() {
     setInterval(async () => {
       try {
-        const resp = await fetch(API_BASE + '/api/flashcards');
+        const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
+        if (resp.status === 401) { handle401(); return; }
         if (!resp.ok) return;
         const serverCards = await resp.json();
         if (!Array.isArray(serverCards)) return;

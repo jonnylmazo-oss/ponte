@@ -5,6 +5,7 @@ const express  = require('express');
 const cors     = require('cors');
 const fs       = require('fs');
 const path     = require('path');
+const crypto   = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const app  = express();
@@ -33,6 +34,34 @@ app.use(express.json());
 
 const AnthropicClient = Anthropic.default || Anthropic;
 const client = new AnthropicClient({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ── Auth ───────────────────────────────────────────────────────────────────
+const PONTE_PASSWORD       = process.env.PONTE_PASSWORD || '';
+const PONTE_SESSION_SECRET = process.env.PONTE_SESSION_SECRET || 'dev-secret-change-me';
+
+function makeToken(password) {
+  return crypto.createHmac('sha256', PONTE_SESSION_SECRET).update(password).digest('hex');
+}
+
+function requireAuth(req, res, next) {
+  if (!PONTE_PASSWORD) return next(); // auth disabled if no password set
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!token || token !== makeToken(PONTE_PASSWORD)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+// ── Login — POST /api/login
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (!PONTE_PASSWORD) return res.json({ token: 'no-auth' });
+  if (!password || password !== PONTE_PASSWORD) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+  res.json({ token: makeToken(password) });
+});
 
 function buildPrompt(topic, difficulty, strict = false) {
   const strictNote = strict
@@ -348,7 +377,7 @@ Keep sentences short (8-12 words). Natural colloquial Italian, not textbook.`;
 });
 
 // ── Flashcard persistence — GET /api/flashcards
-app.get('/api/flashcards', (req, res) => {
+app.get('/api/flashcards', requireAuth, (req, res) => {
   try {
     if (!fs.existsSync(FLASHCARDS_PATH)) return res.json([]);
     const data = fs.readFileSync(FLASHCARDS_PATH, 'utf8');
@@ -361,7 +390,7 @@ app.get('/api/flashcards', (req, res) => {
 
 // ── Flashcard persistence — POST /api/flashcards
 // Body: full cards array — written atomically via temp file
-app.post('/api/flashcards', (req, res) => {
+app.post('/api/flashcards', requireAuth, (req, res) => {
   const cards = req.body;
   if (!Array.isArray(cards)) {
     return res.status(400).json({ error: 'Expected array' });
@@ -410,7 +439,7 @@ app.post('/api/flashcards', (req, res) => {
 // ── Backfill baseForm — POST /api/backfill-flashcards
 // Reads flashcards.json, calls /api/translate for cards missing baseForm,
 // writes results back. Rate-limited to 500ms between calls.
-app.post('/api/backfill-flashcards', async (req, res) => {
+app.post('/api/backfill-flashcards', requireAuth, async (req, res) => {
   let cards;
   try {
     if (!fs.existsSync(FLASHCARDS_PATH)) return res.json({ updated: 0, skipped: 0, errors: [] });
