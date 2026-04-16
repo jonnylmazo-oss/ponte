@@ -1448,11 +1448,14 @@
 
   // ── Init ───────────────────────────────────────────────────────────────
   function initApp() {
-    const token = localStorage.getItem('ponte_auth_token');
-    if (!token) {
-      document.getElementById('login-overlay').style.display = 'flex';
+    if (!getToken()) {
+      // Overlay is already visible in HTML — nothing to do
+      setLoginNoOps();
       return;
     }
+
+    // Token present — hide the overlay and boot the app
+    hideLoginOverlay();
 
     // Initialize immediately — do not block on network
     initTabs();
