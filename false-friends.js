@@ -21,11 +21,29 @@
     return a;
   }
 
+  // ── Drill progress persistence ─────────────────────────────────────────
+  const FF_DRILL_KEY = 'ponte_ff_drill';
+  const SC_DRILL_KEY = 'ponte_sc_drill';
+
+  function loadDrillStats(key) {
+    try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
+  }
+
+  function recordAnswer(key, cardId, correct) {
+    const stats = loadDrillStats(key);
+    const entry = stats[cardId] || { correct: 0, wrong: 0 };
+    if (correct) entry.correct++; else entry.wrong++;
+    entry.lastSeen = Date.now();
+    stats[cardId] = entry;
+    localStorage.setItem(key, JSON.stringify(stats));
+  }
+
   // ── State ──────────────────────────────────────────────────────────────
   const state = {
     filter:    'all',
     query:     '',
     drillMode: false,
+    drillTotal:   0,
     drillQueue:   [],
     drillDone:    [],
     drillFirstTry: 0,
@@ -38,6 +56,7 @@
     filter:    'all',
     query:     '',
     drillMode: false,
+    drillTotal:   0,
     drillQueue:   [],
     drillDone:    [],
     drillFirstTry: 0,
@@ -191,6 +210,7 @@
     if (cards.length === 0) return;
 
     state.drillMode    = true;
+    state.drillTotal   = cards.length;
     state.drillQueue   = shuffle(cards);
     state.drillDone    = [];
     state.drillFirstTry = 0;
@@ -243,10 +263,10 @@
   }
 
   function updateDrillProgress() {
-    const total     = state.drillDone.length + state.drillQueue.length + 1;
-    const remaining = state.drillQueue.length + 1;
-    ffDrillStatus.textContent = `${remaining} / ${total} remaining`;
-    syncFFStatus(`${remaining} / ${total}`);
+    const current = state.drillDone.length + 1;
+    const total   = state.drillTotal;
+    ffDrillStatus.textContent = `${current} / ${total}`;
+    syncFFStatus(`${current} / ${total}`);
   }
 
   function showDrillComplete() {
@@ -271,6 +291,7 @@
 
   ffGotBtn.addEventListener('click', () => {
     if (!state.flipped) return;
+    recordAnswer(FF_DRILL_KEY, state.currentCard.id, true);
     if (!state.drillSeenIds.has(state.currentCard.id)) {
       state.drillFirstTry++;
     }
@@ -280,6 +301,7 @@
 
   ffTrickyBtn.addEventListener('click', () => {
     if (!state.flipped) return;
+    recordAnswer(FF_DRILL_KEY, state.currentCard.id, false);
     state.drillSeenIds.add(state.currentCard.id);
     // Re-insert card in the latter half of the remaining queue
     const q = state.drillQueue;
@@ -424,6 +446,7 @@
     if (cards.length === 0) return;
 
     scState.drillMode    = true;
+    scState.drillTotal   = cards.length;
     scState.drillQueue   = shuffle(cards);
     scState.drillDone    = [];
     scState.drillFirstTry = 0;
@@ -472,10 +495,10 @@
       <div class="sc-flip-example-en">${esc(scState.currentCard.exampleEN)}</div>
     `;
 
-    const total     = scState.drillDone.length + scState.drillQueue.length + 1;
-    const remaining = scState.drillQueue.length + 1;
-    scDrillStatus.textContent = `${remaining} / ${total} remaining`;
-    syncFFStatus(`${remaining} / ${total}`);
+    const current = scState.drillDone.length + 1;
+    const total   = scState.drillTotal;
+    scDrillStatus.textContent = `${current} / ${total}`;
+    syncFFStatus(`${current} / ${total}`);
   }
 
   function scShowDrillComplete() {
@@ -497,6 +520,7 @@
 
   scGotBtn.addEventListener('click', () => {
     if (!scState.flipped) return;
+    recordAnswer(SC_DRILL_KEY, scState.currentCard.id, true);
     if (!scState.drillSeenIds.has(scState.currentCard.id)) scState.drillFirstTry++;
     scState.drillDone.push(scState.currentCard);
     scNextCard();
@@ -504,6 +528,7 @@
 
   scTrickyBtn.addEventListener('click', () => {
     if (!scState.flipped) return;
+    recordAnswer(SC_DRILL_KEY, scState.currentCard.id, false);
     scState.drillSeenIds.add(scState.currentCard.id);
     const q = scState.drillQueue;
     const insertAt = Math.max(1, Math.floor(q.length / 2)) +
