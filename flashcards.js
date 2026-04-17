@@ -691,8 +691,8 @@
     const color = CATEGORY_COLORS[card.category] || CATEGORY_COLORS['new'];
     const label = CATEGORY_LABELS[card.category]  || card.category;
 
-    fcDrillStatus.textContent = `${done} drilled`;
-    syncFsStatus(`${done} drilled`);
+    fcDrillStatus.textContent = `${done + 1} / ${drillTotal}`;
+    syncFsStatus(`${done + 1} / ${drillTotal}`);
 
     if (drillReverse) {
       fcFlipWord.textContent     = card.english;
