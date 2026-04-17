@@ -171,6 +171,20 @@
             </div>
           </div>
           <div class="header-right">
+            <div class="recent-wrap" id="recent-wrap" hidden>
+              <button class="recent-btn" id="recent-btn"
+                onclick="window.toggleRecent && window.toggleRecent()"
+                ontouchend="window.toggleRecent && window.toggleRecent(); return false;">Recent ▾</button>
+              <div class="recent-panel" id="recent-panel" hidden>
+                <input class="recent-search" id="recent-search" type="text" placeholder="Search articles…" autocomplete="off">
+                <div class="recent-list" id="recent-list"></div>
+                <div class="recent-footer">
+                  <button class="recent-clear-btn" id="recent-clear-btn"
+                    onclick="window.clearRecentArticles && window.clearRecentArticles()"
+                    ontouchend="window.clearRecentArticles && window.clearRecentArticles(); return false;">Clear history</button>
+                </div>
+              </div>
+            </div>
             <button class="quiz-header-btn" id="quiz-trigger-btn" hidden
               onclick="window.openQuiz && window.openQuiz()"
               ontouchend="window.openQuiz && window.openQuiz(); return false;">Test yourself</button>

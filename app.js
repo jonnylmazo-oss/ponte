@@ -218,6 +218,11 @@
   const quizRetakeBtn    = $('quiz-retake-btn');
   const quizDoneBtn      = $('quiz-done-btn');
 
+  const recentWrap   = $('recent-wrap');
+  const recentPanel  = $('recent-panel');
+  const recentSearch = $('recent-search');
+  const recentList   = $('recent-list');
+
   // Track the word/entry currently shown in the tooltip so save button can access it
   let currentTooltipWord  = '';
   let currentTooltipEntry = null;
@@ -295,6 +300,7 @@
     hideTooltip();
     applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
+    refreshRecentBtn();
   }
 
   function updateTranslation() {
@@ -430,7 +436,7 @@
       es.close();
       try {
         const article = JSON.parse(e.data);
-        localStorage.setItem(cacheKey, JSON.stringify(article));
+        localStorage.setItem(cacheKey, JSON.stringify({ ...article, savedAt: Date.now() }));
         renderArticle(article);
       } catch (err) {
         console.error('Failed to parse article from done event:', err.message);
@@ -460,6 +466,102 @@
       setLoading(false);
     };
   }
+
+  // ── Recent articles browser ────────────────────────────────────────────
+  function getRecentArticles() {
+    const results = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(CACHE_PREFIX)) continue;
+      try {
+        const article = JSON.parse(localStorage.getItem(key));
+        if (article && article.title) results.push({ ...article, _cacheKey: key });
+      } catch { /* skip corrupt */ }
+    }
+    results.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    return results.slice(0, 20);
+  }
+
+  function refreshRecentBtn() {
+    if (!recentWrap) return;
+    recentWrap.hidden = getRecentArticles().length === 0;
+  }
+
+  function renderRecentRows(filter) {
+    if (!recentList) return;
+    const all = getRecentArticles();
+    const q = (filter || '').toLowerCase().trim();
+    const list = q
+      ? all.filter(a => (a.title || '').toLowerCase().includes(q) || (a.topic || '').toLowerCase().includes(q))
+      : all;
+    if (list.length === 0) {
+      recentList.innerHTML = '<div class="recent-empty">' + (q ? 'No articles match' : 'No saved articles') + '</div>';
+      return;
+    }
+    recentList.innerHTML = list.map(a => {
+      const date = a.savedAt
+        ? new Date(a.savedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        : '';
+      return '<div class="recent-row" data-key="' + escapeHTML(a._cacheKey) + '">' +
+        '<span class="recent-row-title">' + escapeHTML(a.title || 'Untitled') + '</span>' +
+        '<span class="recent-row-meta">' +
+        (a.topic ? '<span class="recent-topic-badge">' + escapeHTML(a.topic) + '</span>' : '') +
+        (a.difficulty ? '<span class="badge recent-diff-badge">' + escapeHTML(a.difficulty) + '</span>' : '') +
+        (date ? '<span class="recent-date">' + date + '</span>' : '') +
+        '</span></div>';
+    }).join('');
+  }
+
+  function openRecentPanel() {
+    if (!recentPanel) return;
+    recentPanel.hidden = false;
+    document.getElementById('recent-btn').classList.add('open');
+    if (recentSearch) { recentSearch.value = ''; recentSearch.focus(); }
+    renderRecentRows('');
+  }
+
+  function closeRecentPanel() {
+    if (!recentPanel) return;
+    recentPanel.hidden = true;
+    const btn = document.getElementById('recent-btn');
+    if (btn) btn.classList.remove('open');
+  }
+
+  window.toggleRecent = function () {
+    if (!recentPanel) return;
+    recentPanel.hidden ? openRecentPanel() : closeRecentPanel();
+  };
+
+  window.clearRecentArticles = function () {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(CACHE_PREFIX)) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+    closeRecentPanel();
+    refreshRecentBtn();
+  };
+
+  if (recentList) {
+    recentList.addEventListener('click', (e) => {
+      const row = e.target.closest('.recent-row');
+      if (!row) return;
+      try {
+        const article = JSON.parse(localStorage.getItem(row.dataset.key));
+        if (article) { renderArticle(article); closeRecentPanel(); }
+      } catch { /* corrupt */ }
+    });
+  }
+
+  if (recentSearch) {
+    recentSearch.addEventListener('input', () => renderRecentRows(recentSearch.value));
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!recentWrap || !recentPanel || recentPanel.hidden) return;
+    if (!recentWrap.contains(e.target)) closeRecentPanel();
+  });
 
   // ── Tooltip ────────────────────────────────────────────────────────────
   function isMobile() {
@@ -1446,6 +1548,7 @@
   if (quizDoneBtn) quizDoneBtn.addEventListener('click', closeQuiz);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !quizOverlay.hidden) closeQuiz();
+    if (e.key === 'Escape' && recentPanel && !recentPanel.hidden) closeRecentPanel();
   });
 
   // ── Init ───────────────────────────────────────────────────────────────
@@ -1460,6 +1563,7 @@
     hideLoginOverlay();
 
     // Initialize immediately — do not block on network
+    refreshRecentBtn();
     initTabs();
     initSidebar();
     initTranslationToggle();
