@@ -1309,6 +1309,7 @@
   let quizAnswered  = false;
 
   function openQuiz() {
+    alert('quiz clicked — state.article: ' + (state.article ? state.article.title : 'NULL'));
     if (!state.article) return;
     quizOverlay.hidden = false;
     document.body.classList.add('quiz-open');
@@ -1424,7 +1425,7 @@
   }
 
   // Wire up quiz events
-  if (quizTriggerBtn) quizTriggerBtn.addEventListener('click', openQuiz);
+  window.openQuiz = openQuiz; // inline onclick on button (reliable on iOS Safari)
   if (quizClosBtn) quizClosBtn.addEventListener('click', closeQuiz);
   if (quizOverlay) quizOverlay.addEventListener('click', (e) => { if (e.target === quizOverlay) closeQuiz(); });
   if (quizNextBtn) quizNextBtn.addEventListener('click', () => {

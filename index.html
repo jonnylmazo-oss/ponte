@@ -171,7 +171,9 @@
             </div>
           </div>
           <div class="header-right">
-            <button class="quiz-header-btn" id="quiz-trigger-btn" hidden>Test yourself</button>
+            <button class="quiz-header-btn" id="quiz-trigger-btn" hidden
+              onclick="window.openQuiz && window.openQuiz()"
+              ontouchend="window.openQuiz && window.openQuiz(); return false;">Test yourself</button>
             <button class="transl-toggle" id="transl-toggle" aria-label="Toggle English translation"
               onclick="window.toggleTranslation && window.toggleTranslation()"
               ontouchend="window.toggleTranslation && window.toggleTranslation(); return false;">
