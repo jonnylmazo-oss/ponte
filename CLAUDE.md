@@ -110,8 +110,9 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - `startFlashcardPoll()` runs every 60s after initial sync — silently pulls new server cards into localStorage if any IDs are missing locally; fires `ponte:flashcard-saved` to re-render if changes found
   - `window.manualSyncFlashcards()` exposed for Sync button — same merge logic, throws on error so caller can show feedback
   - **Sync button** in Cards toolbar (`.fc-sync-btn`): shows "Syncing…" → "Synced ✓" or "Failed" → resets after 2s
-  - `mergeFlashcards(serverCards, localCards)` shared helper: server wins on ID conflicts, appends local-only cards
+  - `mergeFlashcards(serverCards, localCards)` shared helper: **most-recent `lastReviewed` wins** on ID conflicts (preserves local SM-2 drill progress if server POST failed); appends local-only cards
   - `syncFlashcardsFromServer()` always pushes merged result back to server (unconditional) — ensures server always has the complete union
+  - **Pending sync retry:** `saveCards()` in `flashcards.js` sets `ponte_pending_sync=true` in localStorage on POST failure; `syncFlashcardsFromServer()` checks this flag on load and pushes local cards to server before pulling, so the GET always sees the latest SM-2 data
   - **Race condition fix:** `backfillDueDates(silent=false)` — pre-sync init call passes `silent=true` (writes localStorage only, no server POST); post-sync `doInitialRender()` call passes `silent=false` (safe to POST). Prevents stale pre-sync array from wiping a larger server-side deck.
   - nginx `/api/` block sets `proxy_set_header X-Forwarded-For $remote_addr` — real client IPs visible in server logs
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
