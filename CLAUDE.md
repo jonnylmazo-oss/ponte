@@ -139,6 +139,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - Accuracy badge on library cards if drilled ≥1 time: 🟢 80%+, 🟡 50–79%, 🔴 <50%
   - Reset Scores button in toolbar: confirms then zeros `timesCorrect`, `timesWrong`, `lastDrilled` for all cards
 - **Drill setup screen:** shown when clicking "🃏 Drill mode"; lets user select word type (All/Nouns/Verbs/Adjectives/Phrases as radio buttons) before starting; applies on top of library filters; "Cancel" returns to library
+- **Drill session resume:** `ponte_drill_position` localStorage key stores `{ current, total, wordType, drillAll, remainingIds[] }` on every card shown; on exit mid-session a "Resume drill: X / Y cards" banner appears above toolbar with Resume → and ✕ buttons; `resumeDrill()` reconstructs queue from saved IDs (skips deleted cards); cleared on session complete or fresh start
 - **Word lookup modal** (`#wl-modal`): "**+ Add word**" button (`#fc-add-word-btn`, green) in `fc-toolbar-actions` opens a modal; user types an Italian word, "Translate →" calls `POST /api/translate`, shows word/EN/ES/category badge/note; "Save to Cards ★" saves a full card to the deck; detects duplicates and shows "Already saved ✓"; Escape or backdrop click closes; bottom-sheet on mobile (≤480px)
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js`
 
