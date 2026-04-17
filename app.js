@@ -1309,7 +1309,6 @@
   let quizAnswered  = false;
 
   function openQuiz() {
-    alert('quiz clicked — state.article: ' + (state.article ? state.article.title : 'NULL'));
     if (!state.article) return;
     quizOverlay.hidden = false;
     document.body.classList.add('quiz-open');

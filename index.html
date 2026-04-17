@@ -956,45 +956,6 @@
   </div>
 
 
-  <script src="utils.js"></script>
-  <script src="data/articles.js"></script>
-  <script src="data/wordmap.js"></script>
-  <script src="data/false-friends.js"></script>
-  <script src="data/safe-cognates.js"></script>
-  <script src="data/grammar.js"></script>
-  <script src="app.js"></script>
-  <script src="false-friends.js"></script>
-  <script src="grammar.js"></script>
-  <script src="flashcards.js"></script>
-  <script src="practice.js"></script>
-  <script src="dictionary.js"></script>
-  <script src="conversation.js"></script>
-
-  <!-- Service worker registration + install banner logic -->
-  <script>
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
-          console.warn('SW registration failed:', err);
-        });
-      });
-    }
-
-    // Install banner: show once on iOS if not installed and not dismissed
-    // Dismiss is handled by inline onclick on the button — no JS listener needed here
-    (function () {
-      const LS_KEY  = 'ponte_install_dismissed';
-      if (localStorage.getItem(LS_KEY)) return;
-      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      const isStandalone = navigator.standalone === true ||
-                           window.matchMedia('(display-mode: standalone)').matches;
-      if (!isIOS || isStandalone) return;
-      const banner = document.getElementById('install-banner');
-      if (banner) banner.hidden = false;
-    })();
-  </script>
-
   <!-- ── Quiz Modal ─────────────────────────────────────────────────────── -->
   <div class="quiz-overlay" id="quiz-overlay" hidden>
     <div class="quiz-modal" id="quiz-modal">
@@ -1035,5 +996,45 @@
       </div>
     </div>
   </div>
+
+  <script src="utils.js"></script>
+  <script src="data/articles.js"></script>
+  <script src="data/wordmap.js"></script>
+  <script src="data/false-friends.js"></script>
+  <script src="data/safe-cognates.js"></script>
+  <script src="data/grammar.js"></script>
+  <script src="app.js"></script>
+  <script src="false-friends.js"></script>
+  <script src="grammar.js"></script>
+  <script src="flashcards.js"></script>
+  <script src="practice.js"></script>
+  <script src="dictionary.js"></script>
+  <script src="conversation.js"></script>
+
+  <!-- Service worker registration + install banner logic -->
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+
+    // Install banner: show once on iOS if not installed and not dismissed
+    // Dismiss is handled by inline onclick on the button — no JS listener needed here
+    (function () {
+      const LS_KEY  = 'ponte_install_dismissed';
+      if (localStorage.getItem(LS_KEY)) return;
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isStandalone = navigator.standalone === true ||
+                           window.matchMedia('(display-mode: standalone)').matches;
+      if (!isIOS || isStandalone) return;
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.hidden = false;
+    })();
+  </script>
+
 </body>
 </html>
