@@ -1,8 +1,9 @@
 (function () {
   'use strict';
 
-  const FC_KEY  = 'ponte_flashcards';
-  const EP_KEY  = 'ponte_error_patterns';
+  const FC_KEY      = 'ponte_flashcards';
+  const EP_KEY      = 'ponte_error_patterns';
+  const PENDING_KEY = 'ponte_pending_sync';
   const API_BASE = (
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1'
@@ -45,7 +46,12 @@
       method:  'POST',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body:    JSON.stringify(cards),
-    }).catch(function(err) { console.warn('Flashcard sync failed:', err.message); });
+    }).then(() => {
+      localStorage.removeItem(PENDING_KEY);
+    }).catch(function(err) {
+      console.warn('Flashcard sync failed — will retry on next load:', err.message);
+      localStorage.setItem(PENDING_KEY, 'true');
+    });
   }
 
   const escapeHTML = window.ponteEsc;

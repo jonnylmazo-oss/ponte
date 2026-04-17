@@ -1250,13 +1250,24 @@
     }).catch((err) => console.warn('Flashcard sync to server failed:', err.message));
   }
 
-  // Core merge helper: union of server + local cards (server wins on id conflicts)
+  // Core merge helper: union of server + local cards.
+  // For ID conflicts, the card with the more recent lastReviewed wins.
+  // This preserves drill SM-2 progress made locally even if the server POST failed.
   function mergeFlashcards(serverCards, localCards) {
-    const merged = [...serverCards];
+    const byId = new Map();
+    serverCards.forEach((sc) => byId.set(sc.id, sc));
     localCards.forEach((lc) => {
-      if (!merged.find((sc) => sc.id === lc.id)) merged.push(lc);
+      const sc = byId.get(lc.id);
+      if (!sc) {
+        byId.set(lc.id, lc); // local-only card
+      } else {
+        const serverTs = sc.lastReviewed ? new Date(sc.lastReviewed).getTime() : 0;
+        const localTs  = lc.lastReviewed ? new Date(lc.lastReviewed).getTime() : 0;
+        if (localTs > serverTs) byId.set(lc.id, lc); // local is more recent
+        // else keep server card already in map
+      }
     });
-    return merged;
+    return Array.from(byId.values());
   }
 
   // Pull server cards, merge with localStorage, push merged result back.
@@ -1264,6 +1275,20 @@
   // On any other error, silently continues — app uses whatever is in localStorage.
   async function syncFlashcardsFromServer() {
     try {
+      // If a previous saveCards() POST failed, push local state first so the
+      // server has our latest SM-2 data before we pull and merge.
+      if (localStorage.getItem('ponte_pending_sync')) {
+        const pending = loadFlashcards();
+        if (pending.length > 0) {
+          await fetch(API_BASE + '/api/flashcards', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body:    JSON.stringify(pending),
+          });
+          localStorage.removeItem('ponte_pending_sync');
+        }
+      }
+
       const resp = await fetch(API_BASE + '/api/flashcards', { headers: authHeaders() });
       if (resp.status === 401) { handle401(); return false; }
       if (!resp.ok) return true;
