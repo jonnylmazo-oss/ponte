@@ -1,9 +1,10 @@
 (function () {
   'use strict';
 
-  const FC_KEY      = 'ponte_flashcards';
-  const EP_KEY      = 'ponte_error_patterns';
-  const PENDING_KEY = 'ponte_pending_sync';
+  const FC_KEY        = 'ponte_flashcards';
+  const EP_KEY        = 'ponte_error_patterns';
+  const PENDING_KEY   = 'ponte_pending_sync';
+  const DRILL_POS_KEY = 'ponte_drill_position';
   const API_BASE = (
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1'
@@ -291,14 +292,85 @@
   let activeStatuses      = new Set(['due', 'new-card', 'upcoming', 'mastered']);
   let openDropdownId      = null;
   let searchQuery         = '';
-  let drillQueue          = [];
-  let drillTotal          = 0;
-  let drillCorrect        = 0;
-  let trickyCards         = [];
+  let drillQueue           = [];
+  let drillTotal           = 0;
+  let drillCorrect         = 0;
+  let trickyCards          = [];
+  let currentDrillWordType = 'all';
+  let currentDrillAll      = true;
   let sessionCorrect      = 0;
   let sessionAgain        = 0;
   let sessionDrilledCards = new Map(); // id → { italian, interval }
   let drillReverse        = localStorage.getItem('ponte_drill_reverse') === 'true';
+
+  // ── Drill position persistence ────────────────────────────────────────────
+  function saveDrillPosition() {
+    if (!drillQueue.length) return;
+    const done = drillTotal - drillQueue.length;
+    localStorage.setItem(DRILL_POS_KEY, JSON.stringify({
+      current:      done + 1,
+      total:        drillTotal,
+      wordType:     currentDrillWordType,
+      drillAll:     currentDrillAll,
+      remainingIds: drillQueue.map((c) => c.id),
+    }));
+  }
+
+  function clearDrillPosition() {
+    localStorage.removeItem(DRILL_POS_KEY);
+    updateResumeIndicator();
+  }
+
+  function loadDrillPosition() {
+    try { return JSON.parse(localStorage.getItem(DRILL_POS_KEY)); }
+    catch { return null; }
+  }
+
+  function updateResumeIndicator() {
+    const banner = $('fc-resume-banner');
+    if (!banner) return;
+    const pos = loadDrillPosition();
+    if (!pos || !pos.remainingIds || !pos.remainingIds.length) {
+      banner.hidden = true;
+      return;
+    }
+    const textEl = $('fc-resume-text');
+    if (textEl) textEl.textContent = `Resume drill: ${pos.current} / ${pos.total} cards`;
+    banner.hidden = false;
+  }
+
+  function resumeDrill() {
+    const pos = loadDrillPosition();
+    if (!pos || !pos.remainingIds || !pos.remainingIds.length) return;
+    const cardMap = new Map(loadCards().map((c) => [c.id, c]));
+    const queue   = pos.remainingIds.map((id) => cardMap.get(id)).filter(Boolean);
+    if (!queue.length) { clearDrillPosition(); return; }
+
+    drillQueue           = queue;
+    drillTotal           = pos.total;
+    drillCorrect         = 0;
+    trickyCards          = [];
+    sessionCorrect       = 0;
+    sessionAgain         = 0;
+    sessionDrilledCards  = new Map();
+    currentDrillWordType = pos.wordType  || 'all';
+    currentDrillAll      = pos.drillAll !== undefined ? pos.drillAll : true;
+    updateSessionStats();
+
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
+    const banner = $('fc-resume-banner');
+    if (banner) banner.hidden = true;
+    if (fcNoDue) fcNoDue.hidden = true;
+    fcBrowse.hidden    = true;
+    fcToolbar.hidden   = true;
+    fcDrillDone.hidden = true;
+    if (fcFlipCard) fcFlipCard.style.visibility = 'hidden';
+    fcDrill.hidden = false;
+    showDrillCard();
+    if (fcFlipCard) fcFlipCard.style.visibility = '';
+    enterDrillFullscreen();
+  }
 
   // ── Filter helpers ────────────────────────────────────────────────────────
   const ALL_CATS     = ['cognate', 'false-friend', 'divergence', 'new'];
@@ -662,6 +734,8 @@
       queue = [...sortDueByPatterns(due), ...shuffle(notDue)];
     }
 
+    currentDrillWordType = wordType;
+    currentDrillAll      = drillAll;
     drillQueue          = queue;
     drillTotal          = drillQueue.length;
     drillCorrect        = 0;
@@ -669,6 +743,7 @@
     sessionCorrect      = 0;
     sessionAgain        = 0;
     sessionDrilledCards = new Map();
+    localStorage.removeItem(DRILL_POS_KEY); // fresh session — clear any old position
     updateSessionStats();
 
     if (fcNoDue) fcNoDue.hidden = true;
@@ -699,6 +774,7 @@
 
     fcDrillStatus.textContent = `${done + 1} / ${drillTotal}`;
     syncFsStatus(`${done + 1} / ${drillTotal}`);
+    saveDrillPosition();
 
     if (drillReverse) {
       fcFlipWord.textContent     = card.english;
@@ -739,6 +815,7 @@
   }
 
   function endDrill() {
+    clearDrillPosition(); // session complete — remove resume indicator
     fcDrill.hidden     = true;
     fcDrillDone.hidden = false;
 
@@ -785,6 +862,7 @@
     fcToolbar.hidden   = false;
     fcBrowse.hidden    = false;
     leaveDrillFullscreen();
+    updateResumeIndicator();
     renderLibrary();
     updateBadge();
   }
@@ -1097,7 +1175,14 @@
     backfillDueDates();
     renderLibrary();
     updateBadge();
+    updateResumeIndicator();
   };
+
+  // Wire up resume banner buttons
+  const fcResumeBtn     = $('fc-resume-btn');
+  const fcResumeDismiss = $('fc-resume-dismiss');
+  if (fcResumeBtn)     fcResumeBtn.addEventListener('click', resumeDrill);
+  if (fcResumeDismiss) fcResumeDismiss.addEventListener('click', clearDrillPosition);
 
   // Render immediately from whatever is in localStorage.
   // app.js re-renders after sync completes, so this initial pass may show
