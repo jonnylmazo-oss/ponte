@@ -436,7 +436,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **#31 Conversation simulator** — fully built: 10 scenarios, chat bubbles, feedback notes, session summary, save-to-flashcards, `POST /api/conversation`
 
 ### Still open — partial build
-- **#1 Article library + switcher** — superseded by #50; generation + Practice tab selector exist; no dedicated library browser UI
+- ~~**#1 Article library + switcher**~~ — **closed**, superseded by #50 (built)
 - **#3 Article difficulty filter** — difficulty selector in generator exists; no filter on stored articles (blocked by #50)
 - **#17 Mobile setup and testing** — app deployed at http://198.199.88.229; HTTPS / domain still needed for full PWA installability
 - **#27 Cognate categorization fix** — basic category guide in translate prompt exists; specific guardrails (register, gender, usage-breadth rules) not yet added
@@ -482,8 +482,8 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
 ### P2 — Medium priority
-- **#50** Article library browser: dropdown/search in Reader header; shows title, topic, difficulty, date; max 20 entries; clear cache option (supersedes #1)
-- **#3** Article difficulty filter: filter stored articles by difficulty (blocked by #50)
+- ~~**#50** Article library browser~~ — **closed, built**: "Recent ▾" dropdown in Reader header; scans `ponte_article_*` localStorage keys; max 20 entries sorted by `savedAt`; search filter, clear history; inline onclick pattern; `savedAt` timestamp added on generate
+- **#3** Article difficulty filter: filter stored articles by difficulty (now unblocked)
 - **#7** Shadowing mode: sentence-by-sentence audio + record & compare (blocked by #36)
 - **#8** Weak word tracker: track most-tapped words in reader; foundation for SRS
 - ~~**#10** Spaced repetition queue~~ — **closed, built** (see SM-2 section below)
