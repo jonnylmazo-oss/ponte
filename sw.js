@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v65';
+const CACHE_NAME = 'ponte-v66';
 
 const PRECACHE = [
   '/',
@@ -27,15 +27,16 @@ const PRECACHE = [
 // Install: pre-cache all static assets, bypassing browser HTTP cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      Promise.all(
-        PRECACHE.map((url) =>
-          fetch(url, { cache: 'reload' }).then((res) => cache.put(url, res))
+    caches.open(CACHE_NAME)
+      .then((cache) =>
+        Promise.all(
+          PRECACHE.map((url) =>
+            fetch(url, { cache: 'reload' }).then((res) => cache.put(url, res))
+          )
         )
       )
-    )
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 // Activate: delete old caches
@@ -59,7 +60,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request).catch(() =>
         new Response(
-          JSON.stringify({ error: 'You are offline. Connect to generate new articles.' }),
+          JSON.stringify({ offline: true, error: 'You are offline. Connect to use this feature.' }),
           { status: 503, headers: { 'Content-Type': 'application/json' } }
         )
       )
