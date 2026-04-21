@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v66';
+const CACHE_NAME = 'ponte-v67';
 
 const PRECACHE = [
   '/',
@@ -24,14 +24,20 @@ const PRECACHE = [
   '/data/grammar.js',
 ];
 
-// Install: pre-cache all static assets, bypassing browser HTTP cache
+// Install: pre-cache all static assets, bypassing browser HTTP cache.
+// Each URL is fetched independently — a single failure won't abort the whole install.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) =>
         Promise.all(
           PRECACHE.map((url) =>
-            fetch(url, { cache: 'reload' }).then((res) => cache.put(url, res))
+            fetch(url, { cache: 'reload' })
+              .then((res) => {
+                if (!res.ok) throw new Error(`${res.status} ${url}`);
+                return cache.put(url, res);
+              })
+              .catch((err) => console.warn('[SW] precache miss:', err.message))
           )
         )
       )
@@ -39,16 +45,17 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: delete old caches
+// Activate: delete old caches, then claim all clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+    caches.keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Fetch: network-first for API calls, cache-first for static assets
