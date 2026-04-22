@@ -632,49 +632,112 @@
       <div class="tab-panel" id="tab-conversation">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
 
-        <!-- Setup screen -->
-        <div id="conv-setup" class="conv-setup">
-          <div class="conv-setup-inner">
-            <h2 class="conv-heading">Conversation</h2>
-            <p class="conv-subheading">Practice Italian in a real exchange. No scripts — just talk.</p>
-            <div class="conv-scenario-grid" id="conv-scenario-grid"></div>
-            <button id="conv-start-btn" class="conv-start-btn" disabled>Start Conversation →</button>
-          </div>
+        <!-- Sub-tabs: Scripted | Free -->
+        <div class="conv-subtabs" id="conv-subtabs">
+          <button class="conv-subtab active" data-conv-panel="scripted"
+            onclick="window.switchConvTab&&window.switchConvTab('scripted')"
+            ontouchend="window.switchConvTab&&window.switchConvTab('scripted');return false;">🎬 Scripted</button>
+          <button class="conv-subtab" data-conv-panel="free"
+            onclick="window.switchConvTab&&window.switchConvTab('free')"
+            ontouchend="window.switchConvTab&&window.switchConvTab('free');return false;">💬 Free</button>
         </div>
 
-        <!-- Chat screen -->
-        <div id="conv-chat" class="conv-chat" hidden>
-          <div class="conv-chat-topbar">
-            <span class="conv-topbar-scenario" id="conv-scenario-label"></span>
-            <span class="conv-topbar-counter" id="conv-exchange-counter">0 / 20</span>
-            <button class="conv-exit-btn" id="conv-exit-btn">End session</button>
-          </div>
-          <div class="conv-messages" id="conv-messages"></div>
-          <div class="conv-input-row">
-            <input type="text" id="conv-input" class="conv-input"
-              placeholder="Scrivi in italiano…"
-              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-            <button id="conv-send-btn" class="conv-send-btn">Invia</button>
-          </div>
-        </div>
+        <!-- ═══ SCRIPTED DIALOGUE PANEL ═══ -->
+        <div id="conv-panel-scripted">
 
-        <!-- Summary screen -->
-        <div id="conv-summary" class="conv-summary" hidden>
-          <div class="conv-summary-card">
-            <div class="conv-summary-check" id="conv-summary-check">✓</div>
-            <h2 class="conv-summary-title">Sessione completata</h2>
-            <p class="conv-summary-meta" id="conv-summary-stats"></p>
-            <div class="conv-errors-section" id="conv-errors-section" hidden>
-              <h3 class="conv-errors-heading">Errors to review</h3>
-              <div class="conv-errors-list" id="conv-errors-list"></div>
-            </div>
-            <div class="conv-summary-actions">
-              <button class="conv-save-errors-btn" id="conv-save-errors-btn" hidden>Save flagged words to Flashcards ★</button>
-              <button class="conv-new-btn" id="conv-new-btn">Start new conversation</button>
-              <button class="conv-back-btn" id="conv-back-btn">← Change scenario</button>
+          <!-- Scripted: Setup -->
+          <div id="sdlg-setup" class="conv-setup">
+            <div class="conv-setup-inner">
+              <h2 class="conv-heading">Scripted Dialogue</h2>
+              <p class="conv-subheading">A scripted scene plays out — you fill in your lines.</p>
+              <div class="conv-scenario-grid" id="sdlg-scenario-grid"></div>
+              <div class="sdlg-diff-row">
+                <span class="sdlg-diff-label">Difficulty:</span>
+                <button class="sdlg-diff-btn active" data-diff="B1">B1</button>
+                <button class="sdlg-diff-btn" data-diff="B2">B2</button>
+              </div>
+              <button id="sdlg-generate-btn" class="conv-start-btn" disabled>Generate dialogue →</button>
             </div>
           </div>
-        </div>
+
+          <!-- Scripted: Player -->
+          <div id="sdlg-player" hidden>
+            <div class="sdlg-topbar">
+              <span class="sdlg-topbar-label" id="sdlg-scenario-label"></span>
+              <div class="sdlg-topbar-actions">
+                <button class="sdlg-mode-toggle" id="sdlg-mode-toggle">⌨ Type-it</button>
+                <button class="sdlg-exit-btn" id="sdlg-exit-btn">✕ Exit</button>
+              </div>
+            </div>
+            <div class="sdlg-progress-bar" id="sdlg-progress"></div>
+            <div class="sdlg-messages" id="sdlg-messages"></div>
+            <div class="sdlg-action-area" id="sdlg-action-area"></div>
+          </div>
+
+          <!-- Scripted: End screen -->
+          <div id="sdlg-end" class="conv-summary" hidden>
+            <div class="conv-summary-card">
+              <div class="sdlg-end-score" id="sdlg-end-score"></div>
+              <h2 class="conv-summary-title">Dialogo completato!</h2>
+              <div id="sdlg-end-phrases"></div>
+              <div class="conv-summary-actions">
+                <button id="sdlg-save-btn" class="conv-save-errors-btn" hidden>Save missed phrases to Flashcards ★</button>
+                <button id="sdlg-retry-btn" class="conv-new-btn">↺ Try again</button>
+                <button id="sdlg-new-btn" class="conv-back-btn">← New scenario</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- #conv-panel-scripted -->
+
+        <!-- ═══ FREE CONVERSATION PANEL ═══ -->
+        <div id="conv-panel-free" hidden>
+
+          <!-- Setup screen -->
+          <div id="conv-setup" class="conv-setup">
+            <div class="conv-setup-inner">
+              <h2 class="conv-heading">Free Conversation</h2>
+              <p class="conv-subheading">Practice Italian in a real exchange. No scripts — just talk.</p>
+              <div class="conv-scenario-grid" id="conv-scenario-grid"></div>
+              <button id="conv-start-btn" class="conv-start-btn" disabled>Start Conversation →</button>
+            </div>
+          </div>
+
+          <!-- Chat screen -->
+          <div id="conv-chat" class="conv-chat" hidden>
+            <div class="conv-chat-topbar">
+              <span class="conv-topbar-scenario" id="conv-scenario-label"></span>
+              <span class="conv-topbar-counter" id="conv-exchange-counter">0 / 20</span>
+              <button class="conv-exit-btn" id="conv-exit-btn">End session</button>
+            </div>
+            <div class="conv-messages" id="conv-messages"></div>
+            <div class="conv-input-row">
+              <input type="text" id="conv-input" class="conv-input"
+                placeholder="Scrivi in italiano…"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button id="conv-send-btn" class="conv-send-btn">Invia</button>
+            </div>
+          </div>
+
+          <!-- Summary screen -->
+          <div id="conv-summary" class="conv-summary" hidden>
+            <div class="conv-summary-card">
+              <div class="conv-summary-check" id="conv-summary-check">✓</div>
+              <h2 class="conv-summary-title">Sessione completata</h2>
+              <p class="conv-summary-meta" id="conv-summary-stats"></p>
+              <div class="conv-errors-section" id="conv-errors-section" hidden>
+                <h3 class="conv-errors-heading">Errors to review</h3>
+                <div class="conv-errors-list" id="conv-errors-list"></div>
+              </div>
+              <div class="conv-summary-actions">
+                <button class="conv-save-errors-btn" id="conv-save-errors-btn" hidden>Save flagged words to Flashcards ★</button>
+                <button class="conv-new-btn" id="conv-new-btn">Start new conversation</button>
+                <button class="conv-back-btn" id="conv-back-btn">← Change scenario</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- #conv-panel-free -->
 
       </div><!-- #tab-conversation -->
 
@@ -789,6 +852,7 @@
                     <div class="fc-flip-word" id="fc-flip-word"></div>
                     <button class="speak-btn" id="fc-front-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
                   </div>
+                  <p class="fc-flip-base" id="fc-flip-front-meta" hidden></p>
                   <p class="fc-flip-source" id="fc-flip-source"></p>
                   <p class="fc-flip-prompt" id="fc-flip-prompt">What does this mean?</p>
                   <button class="fc-flip-btn" id="fc-flip-btn">Flip</button>
