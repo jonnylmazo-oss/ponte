@@ -447,6 +447,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | # | Title | Priority |
 |---|-------|----------|
 | #7 | Shadowing mode | P1 (requires #36) |
+| #51 | Scripted dialogue mode with audio and fill-in-blank | P1 |
 | #8 | Weak word tracker | P2 |
 | #10 | Spaced repetition queue | P2 |
 | #11 | Onboarding flow | P3 |
@@ -481,6 +482,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - ~~**#32** Error-to-drill engine~~ — **closed, built** (see Error-to-Drill section below)
 - ~~**#33** Sentence rebuilding mode~~ — **closed, built** (see Sentence Rebuild section in Practice tab)
 - ~~**#24** Post-reading quiz~~ — **closed, built** (see Post-reading Quiz section)
+- **#51** Scripted dialogue mode: new sub-tab in Conversation tab ('Scripted' | 'Free conversation'); Claude generates 8-12 exchange scripted dialogue; plays with Web Speech API auto-audio; pauses at user turns for MC or type-it response; end screen saves missed phrases to flashcards; `POST /api/generate-dialogue` → `{ title, context, exchanges: [{speaker, italian, english, isUserTurn, options?}] }`
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
 ### P2 — Medium priority
