@@ -316,20 +316,38 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **Progress bar** + X/Y counter at top
 - sw.js bumped to `ponte-v22`
 
-## Conversation tab (issue #31, closed)
-- `conversation.js`: IIFE — AI conversation simulator; Claude plays native Italian speaker
-- **Setup screen:** dropdown of 10 scenarios (Al bar, Dal fruttivendolo, Con un amico, Chiedere indicazioni, Al ristorante, Una discussione, Raccontare un aneddoto, Conoscere qualcuno, Dal medico, Fare un reclamo); "Start Conversation →" button
+## Conversation tab (issues #31 + #51, both closed)
+
+`conversation.js` IIFE — two sub-tabs at top: **🎬 Scripted** (default) and **💬 Free**.
+`window.switchConvTab(which)` exposed; sub-tab buttons use inline `onclick`/`ontouchend`.
+
+### Scripted Dialogue (issue #51, closed)
+- **Setup:** same 10 scenarios as Free; B1/B2 difficulty selector (`.sdlg-diff-btn`); "Generate dialogue →" button (`#sdlg-generate-btn`)
+- **Backend:** `POST /api/generate-dialogue` — `{ scenario, difficulty }` → `{ title, context, characters: {native, learner}, exchanges: [{speaker, italian, english, isUserTurn, options?}] }`; 10-14 exchanges; 4-5 user turns; each user turn has `options: [correct, wrong1, wrong2, wrong3]` (correct always index 0); `max_tokens: 1400`, `temperature: 0.8`
+- **Player:** sequential reveal — exchanges accumulate in scrollable `#sdlg-messages`; fixed `#sdlg-action-area` at bottom
+  - **Native turn:** sepia bubble with avatar + speaker name + Italian + English; auto-plays audio (300ms delay); "Next →" in action area
+  - **User turn MC:** "Your turn:" label; 4 shuffled MC buttons; correct → green highlight + audio + auto-advance 1.5s; wrong → red highlight + correct shown + Next button
+  - **User turn Type-it:** text input + submit; fuzzy match (Levenshtein ≤ max(2, 12% of target length)); same feedback flow as MC
+  - **Mode toggle** (`#sdlg-mode-toggle`): switches MC ↔ Type-it mid-session
+  - **Progress bar** (`#sdlg-progress`): one segment per exchange; `.sdlg-seg-native`, `.sdlg-seg-user`, `.sdlg-seg-current`, `.sdlg-seg-done`, `.sdlg-seg-correct`, `.sdlg-seg-wrong`
+- **End screen:** score circle (green ≥80%, amber ≥50%, red <50%); missed phrases list; "Save missed phrases to Flashcards ★" (hidden if perfect); "↺ Try again" (replays same dialogue); "← New scenario" (returns to setup)
+- **Save to flashcards:** missed user turns saved as `wordType: 'phrase'`, `sourceArticle: 'Scripted: [scenario]'`; fires `ponte:flashcard-saved`
+- `nativeName()` extracts first word/name from `characters.native` string
+
+### Free Conversation (issue #31, closed)
+- **Setup screen:** 10 scenario cards; "Start Conversation →" button — unchanged, now inside `#conv-panel-free`
 - **Chat screen:** alternating bubbles (Claude left, user right); `conv-chat-topbar` with scenario label + "End session" button; scrollable `conv-messages` area; text input + "Invia" button; Enter key sends
-- **Claude bubbles:** sepia card style, 🔊 button (top-right) triggers `window.ponteSpeak`; loading state shows 3-dot bounce animation
+- **Claude bubbles:** sepia card style, 🔊 button triggers `window.ponteSpeak`; loading state shows 3-dot bounce animation
 - **User bubbles:** `#0055AA` blue background, white text
 - **Feedback notes:** shown below Claude bubbles; `---` separator parsed from API response; errors shown with left border; `conv-feedback-ok` (green) for "✓ Ottimo!"
-- **Session summary:** exchange count, numbered error cards, "Save flagged words to Flashcards ★" button (hidden if no errors), "Start new conversation" button
-- **Save to flashcards:** extracts Italian word/phrase from error note (regex: quoted "right" form); saves as `wordType: 'phrase'`, `category: 'new'`, `sourceArticle: 'Conversation: [scenario]'`; fires `ponte:flashcard-saved` event
-- **History management:** stores only clean Italian in history (no feedback); caps at 40 messages (20 exchanges); persisted in `localStorage` as `ponte_conversation_session`
-- **Backend:** `POST /api/conversation` — `{ scenario, history, userMessage }`; system prompt has Claude respond in Italian + add `---` + feedback note; first message injected as "Ciao!" if history empty; `max_tokens: 400`, `temperature: 0.8`
+- **Session summary:** exchange count, numbered error cards, "Save flagged words to Flashcards ★" button
+- **Save to flashcards:** `sourceArticle: 'Conversation: [scenario]'`
+- **History management:** caps at 40 messages; persisted in `localStorage` as `ponte_conversation_session`
+- **Backend:** `POST /api/conversation` — `{ scenario, history, userMessage }`; `max_tokens: 400`, `temperature: 0.8`
+
 - **Tab position:** between Practice and Flashcards; icon 💬; mobile label "Chat"
 - Script load order: `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
-- sw.js bumped to `ponte-v15`
+- sw.js bumped to `ponte-v68`
 
 ## Post-reading Quiz (issue #24, closed)
 - **Trigger:** "Test yourself" button in `header-right` (next to EN toggle), hidden until first article renders; `renderArticle` shows it and also resets translation to Italian-only (collapsed)
@@ -447,7 +465,6 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | # | Title | Priority |
 |---|-------|----------|
 | #7 | Shadowing mode | P1 (requires #36) |
-| #51 | Scripted dialogue mode with audio and fill-in-blank | P1 |
 | #8 | Weak word tracker | P2 |
 | #10 | Spaced repetition queue | P2 |
 | #11 | Onboarding flow | P3 |
@@ -482,7 +499,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - ~~**#32** Error-to-drill engine~~ — **closed, built** (see Error-to-Drill section below)
 - ~~**#33** Sentence rebuilding mode~~ — **closed, built** (see Sentence Rebuild section in Practice tab)
 - ~~**#24** Post-reading quiz~~ — **closed, built** (see Post-reading Quiz section)
-- **#51** Scripted dialogue mode: new sub-tab in Conversation tab ('Scripted' | 'Free conversation'); Claude generates 8-12 exchange scripted dialogue; plays with Web Speech API auto-audio; pauses at user turns for MC or type-it response; end screen saves missed phrases to flashcards; `POST /api/generate-dialogue` → `{ title, context, exchanges: [{speaker, italian, english, isUserTurn, options?}] }`
+- ~~**#51** Scripted dialogue mode~~ — **closed, built** (see Scripted Dialogue section above)
 - **#27** Cognate categorization fix: tighten translate/generate prompts with register/gender/usage-breadth guardrails
 
 ### P2 — Medium priority
