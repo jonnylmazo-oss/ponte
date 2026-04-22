@@ -24,6 +24,23 @@
     'new':          '#888888',
   };
 
+  const IRREGULAR_VERBS = new Set([
+    'essere','avere','andare','fare','dire','venire','uscire','tenere','sapere',
+    'volere','potere','dovere','stare','dare','bere','produrre','tradurre',
+    'condurre','porre','trarre','rimanere','salire','scegliere','togliere',
+    'cogliere','sciogliere','volare','morire','udire','vedere','prendere',
+    'mettere','scrivere','leggere','aprire','chiedere','rispondere','vincere',
+    'perdere','correre','vivere','nascere','crescere','conoscere','piacere',
+    'nuocere','giacere','tacere','cuocere',
+  ]);
+
+  function irregularBadge(card) {
+    if (card.wordType !== 'verb') return '';
+    const check = (s) => s && IRREGULAR_VERBS.has(s.toLowerCase().trim());
+    if (!check(card.italian) && !check(card.baseForm)) return '';
+    return '<span class="fc-irreg-badge">IRREGULAR</span>';
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
 
@@ -530,6 +547,7 @@
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
             <div class="fc-card-foot">
               <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>
+              ${irregularBadge(card)}
               ${dueLabel}
               ${accuracyBadge}
             </div>
@@ -788,7 +806,7 @@
         fcFlipBase.hidden = !card.baseForm;
       }
       fcFlipAnswer.innerHTML =
-        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
+        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`;
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden = !card.note;
     } else {
@@ -805,7 +823,7 @@
       fcFlipAnswer.innerHTML = `
         <div class="fc-flip-en">${escapeHTML(card.english)}</div>
         ${card.spanish ? `<div class="fc-flip-es">${escapeHTML(card.spanish)}</div>` : ''}
-        <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>`;
+        <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`;
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden = !card.note;
     }

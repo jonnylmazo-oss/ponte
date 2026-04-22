@@ -3023,6 +3023,16 @@ header {
   white-space: nowrap;
 }
 
+.fc-irreg-badge {
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #CC6600;
+  border-radius: 10px;
+  padding: 2px 7px;
+  color: #CC6600;
+  white-space: nowrap;
+}
+
 .fc-delete-btn {
   background: transparent;
   border: none;
