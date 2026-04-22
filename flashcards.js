@@ -274,6 +274,24 @@
   const fcDrillReverseBtn = $('fc-drill-reverse-btn');
   const fcFlipPrompt      = $('fc-flip-prompt');
   const fcFlipCard        = $('fc-flip-card');
+  const fcFlipFrontMeta   = $('fc-flip-front-meta');
+
+  function buildFrontMeta(card) {
+    if (card.wordType !== 'verb') return '';
+    const parts = [];
+    const italian  = (card.italian  || '').trim().toLowerCase();
+    const baseForm = (card.baseForm || '').trim();
+    if (baseForm && baseForm.toLowerCase() !== italian) parts.push(baseForm);
+    if (card.tense && card.tense !== 'null') parts.push(card.tense);
+    return parts.join(' · ');
+  }
+
+  function renderFrontMeta(card) {
+    if (!fcFlipFrontMeta) return;
+    const meta = buildFrontMeta(card);
+    fcFlipFrontMeta.textContent = meta;
+    fcFlipFrontMeta.hidden = !meta;
+  }
 
   if (!fcGrid) return; // tab not present in DOM
 
@@ -799,6 +817,7 @@
       fcFlipSource.textContent   = '';
       if (fcFlipPrompt) fcFlipPrompt.textContent = 'What is this in Italian?';
       if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = true;
+      renderFrontMeta(card);
 
       fcFlipWordBack.textContent = card.italian;
       if (fcFlipBase) {
@@ -814,6 +833,7 @@
       fcFlipSource.textContent   = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
       if (fcFlipPrompt) fcFlipPrompt.textContent = 'What does this mean?';
       if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = false;
+      renderFrontMeta(card);
 
       fcFlipWordBack.textContent = card.italian;
       if (fcFlipBase) {
