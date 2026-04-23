@@ -277,6 +277,9 @@
   const fcFlipFrontMeta   = $('fc-flip-front-meta');
 
   function buildFrontMeta(card) {
+    if (card.wordType === 'noun') {
+      return card.nounNumber ? `(${card.nounNumber})` : '';
+    }
     if (card.wordType !== 'verb') return '';
     const parts = [];
     const italian  = (card.italian  || '').trim().toLowerCase();
@@ -556,7 +559,7 @@
         <details class="fc-card" data-id="${card.id}" style="--fc-cat:${color}">
           <summary class="fc-card-body">
             <div class="fc-card-it-row">
-              <span class="fc-card-italian">${escapeHTML(card.italian)}</span>
+              <span class="fc-card-italian">${escapeHTML(card.italian)}</span>${card.nounNumber ? `<span class="fc-noun-number">(${card.nounNumber})</span>` : ''}
               <div class="fc-card-head-actions">
                 <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
                 <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
@@ -572,6 +575,7 @@
           </summary>
           <div class="fc-card-details">
             ${card.baseForm ? `<div class="fc-card-base">Base: ${escapeHTML(card.baseForm)} · ${escapeHTML(card.baseFormEN)}</div>` : ''}
+            ${card.nounOtherForm ? `<div class="fc-card-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : ''}
             ${card.example ? `<div class="fc-card-example"><span class="fc-card-example-it">${escapeHTML(card.example)}</span><span class="fc-card-example-en">${escapeHTML(card.exampleEN || '')}</span></div>` : ''}
             ${card.note ? `<p class="fc-card-note">${escapeHTML(card.note)}</p>` : ''}
             <span class="fc-card-source">${escapeHTML(source)}</span>
@@ -825,7 +829,8 @@
         fcFlipBase.hidden = !card.baseForm;
       }
       fcFlipAnswer.innerHTML =
-        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`;
+        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`
+        + (card.nounOtherForm ? `<div class="fc-flip-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : '');
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden = !card.note;
     } else {
@@ -843,7 +848,8 @@
       fcFlipAnswer.innerHTML = `
         <div class="fc-flip-en">${escapeHTML(card.english)}</div>
         ${card.spanish ? `<div class="fc-flip-es">${escapeHTML(card.spanish)}</div>` : ''}
-        <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`;
+        <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`
+        + (card.nounOtherForm ? `<div class="fc-flip-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : '');
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden = !card.note;
     }
@@ -1174,10 +1180,12 @@
         spanish:      entry.spanish  || '',
         category:     entry.category || 'new',
         note:         entry.note     || '',
-        wordType:     entry.wordType || 'other',
-        baseForm:     entry.baseForm    || '',
-        baseFormEN:   entry.baseFormEN  || '',
-        savedAt:      new Date().toISOString(),
+        wordType:      entry.wordType      || 'other',
+        baseForm:      entry.baseForm      || '',
+        baseFormEN:    entry.baseFormEN    || '',
+        nounNumber:    entry.nounNumber    || null,
+        nounOtherForm: entry.nounOtherForm || null,
+        savedAt:       new Date().toISOString(),
         sourceArticle: 'Word lookup',
         timesCorrect: 0,
         timesWrong:   0,

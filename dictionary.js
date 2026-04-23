@@ -243,6 +243,8 @@
         savedAt:       new Date().toISOString(),
         sourceArticle: 'Translate lookup',
         wordType:      currentEntry.wordType      || 'other',
+        nounNumber:    currentEntry.nounNumber    || null,
+        nounOtherForm: currentEntry.nounOtherForm || null,
         timesCorrect:  0,
         timesWrong:    0,
         lastSeen:      null,
