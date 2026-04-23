@@ -1023,6 +1023,11 @@
       window._ponteFCRender();
     }
 
+    // Re-render progress dashboard on every switch so it reflects latest data.
+    if (tabId === 'progress' && typeof window._ponteProgressRender === 'function') {
+      window._ponteProgressRender();
+    }
+
     // Close More panel if open
     closeMorePanel();
   }

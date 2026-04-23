@@ -12,6 +12,7 @@ ponte/
 ├── false-friends.js    — False Friends tab UI IIFE
 ├── grammar.js          — Grammar tab UI IIFE
 ├── conversation.js     — Conversation Simulator tab UI IIFE
+├── progress.js         — Progress Dashboard tab UI IIFE
 ├── flashcards.js       — Flashcards tab UI IIFE (library + drill)
 ├── style.css           — Kindle sepia design system
 ├── data/
@@ -435,6 +436,19 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - Exit button `onclick` reassigned per drill module on entry
 - `sw.js` bumped to `ponte-v13`
 
+## Progress Dashboard (issue #12, closed)
+- `progress.js`: IIFE — reads localStorage data and renders dashboard into `#tab-progress`; no server calls; `window._ponteProgressRender()` exposed
+- Triggered on: tab switch (`switchTab('progress')` in `app.js`), `ponte:flashcard-saved` event
+- Sections:
+  - **Overview** (4 metric cards): total cards saved, mastered (interval > 21), articles read (`ponte_article_*` count), drill accuracy % (timesCorrect / all reviews)
+  - **Card breakdown** (two bar charts side by side): by category (cognate/false-friend/divergence/new) and by status (New/Learning/Mastered)
+  - **Weak areas**: top 5 from `ponte_error_patterns` sorted by count; "Study →" button navigates to Grammar tab
+  - **Recent activity**: 7-day CSS bar chart from `lastReviewed` timestamps on cards
+  - **Quiz trend**: this week vs last week quiz accuracy from `ponte_quiz_scores`; up/down indicator
+- All sections show graceful empty states if no data
+- Style: `#F0EBE3` bg cards, 10px uppercase section headers; `.prog-container` max-width 820px centered; 2-col breakdown collapses to 1-col on mobile (≤600px), metrics go 2×2
+- sw.js bumped to `ponte-v69`
+
 ## Kindle Sepia theme (current)
 - Warm parchment background with brown text and blue accent
 - CSS variables in `:root`: `--bg: #F8F1E3`, `--bg-card: #FBF5E9`, `--bg-italian: #F0E6D0`, `--border: #D9C9A8`, `--text: #3B2D1F`, `--text-mid: #6B5744`, `--text-dim: #9B8470`
@@ -469,7 +483,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 | #8 | Weak word tracker | P2 |
 | #10 | Spaced repetition queue | P2 |
 | #11 | Onboarding flow | P3 |
-| #12 | Progress dashboard | P3 |
+| ~~#12~~ | ~~Progress dashboard~~ | closed |
 | #13 | Mobile layout polish | P3 |
 | #14 | Public false friend SEO page | P3 |
 | #18 | Flashcard visual images via Unsplash | P2 |
@@ -509,7 +523,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - **#7** Shadowing mode: sentence-by-sentence audio + record & compare (blocked by #36)
 - **#8** Weak word tracker: track most-tapped words in reader; foundation for SRS
 - ~~**#10** Spaced repetition queue~~ — **closed, built** (see SM-2 section below)
-- **#12** Progress dashboard: learning stats across tabs
+- ~~**#12** Progress dashboard~~ — **closed, built** (see Progress Dashboard section)
 - **#17** Mobile setup and iPhone testing: HTTPS + domain still needed; checklist not fully verified
 - **#18** Flashcard visual images via Unsplash API: contextual photos on noun flashcards
 - **#26** Classic literature content category: dedicated UI button/tier for literary-register articles
