@@ -116,10 +116,11 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - **Race condition fix:** `backfillDueDates(silent=false)` — pre-sync init call passes `silent=true` (writes localStorage only, no server POST); post-sync `doInitialRender()` call passes `silent=false` (safe to POST). Prevents stale pre-sync array from wiping a larger server-side deck.
   - nginx `/api/` block sets `proxy_set_header X-Forwarded-For $remote_addr` — real client IPs visible in server logs
 - `app.js`: `FC_KEY = 'ponte_flashcards'`; tooltip has **Save ★** button; `populateTooltip` sets `currentTooltipEntry`/`currentTooltipWord` so the button knows what to save
-- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, example, exampleEN, timesCorrect, timesWrong, lastSeen, lastDrilled, interval, easeFactor, dueDate, reviewCount, lastReviewed}`
+- Card structure: `{id, italian, english, spanish, category, note, savedAt, sourceArticle, wordType, baseForm, baseFormEN, example, exampleEN, nounNumber, nounOtherForm, timesCorrect, timesWrong, lastSeen, lastDrilled, interval, easeFactor, dueDate, reviewCount, lastReviewed}`
 - `wordType`: populated from `/api/translate` response — "noun" | "verb" | "adjective" | "adverb" | "phrase" | "other"
 - `baseForm` / `baseFormEN`: dictionary/infinitive form + English meaning, from `/api/translate`; shown as italic grey "Base: [form] · [meaning]" line below Italian word in library and drill back face; absent on older saved cards (shows nothing)
 - `example` / `exampleEN`: natural Italian sentence using the word + English translation, from `/api/translate`; stored on card at save time; backfilled on all starter deck cards via `backfill-examples.js`
+- `nounNumber` / `nounOtherForm`: for noun cards — `'singular'` or `'plural'` + the opposite form (e.g. amico→amici); from `/api/translate`; absent on older cards (shows nothing); library collapsed view shows `(singular)`/`(plural)` tag in muted italic next to Italian word; expanded view shows "Other form: [form]"; drill front face shows number below Italian word (via `buildFrontMeta`); drill back face shows "Other form" below category badge
 - **Backfill (completed):** `backfill.js` one-time script and `POST /api/backfill-flashcards` endpoint used to populate `baseForm`/`baseFormEN` on all 92 existing cards. `backfill-examples.js` used to populate `example`/`exampleEN` on all 105 starter deck cards. Scripts remain in codebase for future use; no UI buttons.
 - `lastDrilled`: ISO timestamp set on every Got it / Tricky action in drill mode
 - Save button: shows "Saved ✓" (green) if already in deck; click saves with flash animation; click again removes card
@@ -192,7 +193,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
 - `activeXlatText` guards against stale results from superseded requests
 - Results cached in `localStorage` under key `ponte_xlat_{text}`
 - `server.js`: `POST /api/translate` endpoint, `max_tokens: 500`, `temperature: 0.2`
-- Response fields: `{italian, english, spanish, note, category, tense, root, pronunciation, wordType, baseForm, baseFormEN, example, exampleEN}`
+- Response fields: `{italian, english, spanish, note, category, tense, root, pronunciation, wordType, baseForm, baseFormEN, example, exampleEN, nounNumber, nounOtherForm}`
   - `tense`: conjugated verb description e.g. `"passato prossimo, 1st person singular"`, or null
   - `root`: infinitive form e.g. `"svegliarsi"`, or null — displayed in cyan, reserved for future tap-to-look-up
   - `pronunciation`: always present, stress-marked e.g. `"TAR-di"`
