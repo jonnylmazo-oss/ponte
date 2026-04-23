@@ -80,7 +80,13 @@ function buildPrompt(topic, difficulty, strict = false) {
     { "w": "italian word", "en": "english", "es": "spanish", "c": "cognate|false-friend|divergence|new", "n": "one short note", "p": "stress hint e.g. BUR-ro" }
   ]
 }
-The words array must include minimum 6 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish. Return only the JSON object, no markdown, no code fences.${strictNote}`;
+The words array must include minimum 6 annotated words covering all four categories: cognate, false-friend, divergence, new. For false-friend and divergence entries, the note field must explain specifically how it differs from Spanish.
+Category rules for the "c" field — choose exactly one per word:
+"cognate" — ONLY if the Italian word looks visually similar to the Spanish equivalent (shares ≥60% of letters in similar positions) AND means the same thing. Examples: turista/turista, direzione/dirección, musica/música. Do NOT use cognate just because meanings overlap — the words must also look similar.
+"false-friend" — the Italian word looks similar to a Spanish word BUT means something different. Examples: burro (Italian=butter, Spanish=donkey), largo (Italian=wide, Spanish=long).
+"divergence" — the Italian word exists in Spanish and looks similar, but is used differently, in different contexts, or with different grammar. Examples: già vs ya (broader use in Italian).
+"new" — the Italian word looks nothing like its Spanish equivalent, or has no Spanish equivalent. Examples: sotto (under) vs bajo, scegliere vs elegir.
+Return only the JSON object, no markdown, no code fences.${strictNote}`;
 }
 
 // Replace curly/smart quotes with straight ASCII equivalents so JSON.parse succeeds.
@@ -316,7 +322,11 @@ Return JSON only — no markdown, no code fences:
   "example": "a natural Italian sentence using the word in context (10-15 words)",
   "exampleEN": "English translation of the example sentence"
 }
-Category guide — "cognate": looks and means the same as Spanish; "false-friend": looks Spanish but means something different; "divergence": exists in Spanish but used differently in Italian; "new": no close Spanish equivalent.
+Category rules — choose exactly one:
+'cognate' — ONLY if the Italian word looks visually similar to the Spanish equivalent (shares ≥60% of letters in similar positions) AND means the same thing. Examples: turista/turista, direzione/dirección, musica/música. Do NOT use cognate just because meanings overlap — the words must also look similar.
+'false-friend' — the Italian word looks similar to a Spanish word BUT means something different. Examples: burro (Italian=butter, Spanish=donkey), largo (Italian=wide, Spanish=long), sensato (Italian=sensible, Spanish=sensitive).
+'divergence' — the Italian word exists in Spanish and looks similar, but is used differently, in different contexts, or with different grammar. Examples: già vs ya (broader use in Italian), ancora vs ancora (different meaning in Spanish).
+'new' — the Italian word looks nothing like its Spanish equivalent, or has no Spanish equivalent. The Spanish speaker would not recognize it from Spanish. Examples: sotto (under) vs bajo, scegliere (to choose) vs elegir.
 wordType guide — classify the selected text: "noun" (includes proper nouns), "verb" (any conjugated form or infinitive), "adjective", "adverb", "phrase" (multi-word expression), "other" (conjunctions, prepositions, articles, etc.).`;
 
   try {
@@ -524,7 +534,11 @@ Return JSON only — no markdown, no code fences:
   "pronunciation": "stress-marked syllable pronunciation of the Italian word e.g. 'TAR-di' — always include",
   "wordType": "noun or verb or adjective or adverb or phrase or other"
 }
-Category guide — cognate: looks and means the same as Spanish; false-friend: looks Spanish but means something different; divergence: exists in Spanish but used differently in Italian; new: no close Spanish equivalent.`;
+Category rules — choose exactly one:
+'cognate' — ONLY if the Italian word looks visually similar to the Spanish equivalent (shares ≥60% of letters in similar positions) AND means the same thing. Examples: turista/turista, direzione/dirección, musica/música. Do NOT use cognate just because meanings overlap — the words must also look similar.
+'false-friend' — the Italian word looks similar to a Spanish word BUT means something different. Examples: burro (Italian=butter, Spanish=donkey), largo (Italian=wide, Spanish=long).
+'divergence' — the Italian word exists in Spanish and looks similar, but is used differently, in different contexts, or with different grammar. Examples: già vs ya (broader use in Italian), ancora vs ancora (different meaning in Spanish).
+'new' — the Italian word looks nothing like its Spanish equivalent, or has no Spanish equivalent. Examples: sotto (under) vs bajo, scegliere (to choose) vs elegir.`;
 
   try {
     const message = await client.messages.create({
@@ -755,8 +769,8 @@ Category: "${category || ''}"
 Note: "${note || ''}"
 
 Return ONLY a JSON array of pattern keys from this list (return empty array [] if none apply):
-- "false-friend" — word is a false cognate with Spanish
-- "divergence" — used differently than Spanish equivalent
+- "false-friend" — word looks similar to a Spanish word but means something different
+- "divergence" — word looks similar to a Spanish word but is used differently in Italian
 - "verb-essere" — uses essere as auxiliary in perfect tenses
 - "passato-prossimo" — passato prossimo conjugation
 - "clitic-placement" — clitic or object pronoun placement
