@@ -164,7 +164,7 @@ Generated articles are cached in `localStorage` with key `ponte_article_{topic}_
   - `window.switchTab` exposed from IIFE; handles shorthand IDs: `'learn'` → last learn tab, `'practice'` → last practice, `'more'` → toggle More panel; `'flashcards'` is passed directly
   - All 5 buttons keep `data-tab` or `data-nav-group` attributes for `updateNavActive()` active state highlighting
   - CSS: `touch-action: manipulation` on `.bottom-nav-item` removes 300ms tap delay; `.bottom-nav-item > * { pointer-events: none }` ensures taps target the button, not inner SVG/span; `-webkit-tap-highlight-color` provides tap feedback
-- **More panel** (`#more-panel`): slide-up sheet above mobile bottom nav; backdrop `#more-panel-backdrop` (z-index 28); panel z-index 29; `.open` class triggers `transform: translateY(0)` transition; `hidden` attribute used for display-none when closed
+- **More panel** (`#more-panel`): slide-up sheet above mobile bottom nav; backdrop `#more-panel-backdrop` (z-index 28); panel z-index 29; `.open` class triggers `transform: translateY(0)` transition; `hidden` attribute used for display-none when closed; items: 💬 Conversation, 🔄 Translate, 🎙️ Shadowing, 📊 Progress; Conversation item uses inline `onclick`/`ontouchend` → `switchTab('conversation')`
 - `switchTab(tabId)`: hides all `.tab-panel`, shows `#tab-{id}`, calls `updateNavActive()`, tracks last-visited, calls `closeMorePanel()`; no-ops if panel doesn't exist; skips if already active
 - Active tab persisted in `localStorage` (`ponte_tab`); 150ms fade-in on switch
 - Non-reader tabs (except False Friends, Grammar, Flashcards) show a coming-soon placeholder
