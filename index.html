@@ -955,6 +955,12 @@
   <div class="more-panel-backdrop" id="more-panel-backdrop" hidden></div>
   <div class="more-panel" id="more-panel" hidden>
     <div class="more-panel-handle"></div>
+    <button class="more-panel-item" data-tab="conversation"
+      onclick="window.switchTab&&window.switchTab('conversation')"
+      ontouchend="window.switchTab&&window.switchTab('conversation');return false;">
+      <span class="more-panel-icon">💬</span>
+      <span class="more-panel-label">Conversation</span>
+    </button>
     <button class="more-panel-item" data-tab="dictionary">
       <span class="more-panel-icon">🔄</span>
       <span class="more-panel-label">Translate</span>
