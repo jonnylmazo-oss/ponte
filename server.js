@@ -1,9 +1,9 @@
 'use strict';
 
-require('dotenv').config();
+const fs = require('fs');
+require('dotenv').config({ path: fs.existsSync('/root/ponte.env') ? '/root/ponte.env' : '.env' });
 const express  = require('express');
 const cors     = require('cors');
-const fs       = require('fs');
 const path     = require('path');
 const crypto   = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
