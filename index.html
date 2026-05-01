@@ -839,6 +839,12 @@
           <div class="fc-drill-setup-inner">
             <h3 class="fc-drill-setup-title">What do you want to drill?</h3>
             <p class="fc-drill-setup-sub">Applies on top of active library filters</p>
+            <div class="fc-drill-section-label">Direction</div>
+            <div class="fc-drill-dir-btns" id="fc-drill-dir-btns">
+              <button type="button" class="fc-drill-dir-btn" data-dir="it-en">🇮🇹 Italian → English</button>
+              <button type="button" class="fc-drill-dir-btn" data-dir="en-it">🇬🇧 English → Italian</button>
+            </div>
+            <div class="fc-drill-section-label">Subset</div>
             <div class="fc-drill-setup-types">
               <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="all" checked> All word types</label>
               <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="noun"> Nouns</label>
@@ -896,6 +902,7 @@
                     <div class="fc-flip-word" id="fc-flip-word"></div>
                     <button class="speak-btn" id="fc-front-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
                   </div>
+                  <div class="fc-flip-front-badges" id="fc-flip-front-badges" hidden></div>
                   <p class="fc-flip-base" id="fc-flip-front-meta" hidden></p>
                   <p class="fc-flip-source" id="fc-flip-source"></p>
                   <p class="fc-flip-prompt" id="fc-flip-prompt">What does this mean?</p>
@@ -909,6 +916,10 @@
                     </div>
                     <p class="fc-flip-base" id="fc-flip-base" hidden></p>
                     <div class="fc-flip-answer" id="fc-flip-answer"></div>
+                    <div class="fc-flip-example" id="fc-flip-example" hidden>
+                      <span class="fc-flip-example-it" id="fc-flip-example-it"></span>
+                      <span class="fc-flip-example-en" id="fc-flip-example-en"></span>
+                    </div>
                     <p class="fc-flip-note" id="fc-flip-note"></p>
                   </div>
                   <div class="drill-card-buttons">

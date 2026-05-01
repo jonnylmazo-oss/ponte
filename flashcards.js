@@ -276,6 +276,15 @@
   const fcFlipPrompt      = $('fc-flip-prompt');
   const fcFlipCard        = $('fc-flip-card');
   const fcFlipFrontMeta   = $('fc-flip-front-meta');
+  const fcFlipFrontBadges = $('fc-flip-front-badges');
+  const fcFlipExample     = $('fc-flip-example');
+  const fcFlipExampleIt   = $('fc-flip-example-it');
+  const fcFlipExampleEn   = $('fc-flip-example-en');
+
+  const WORD_TYPE_DISPLAY = {
+    noun: 'Noun', verb: 'Verb', adjective: 'Adjective',
+    adverb: 'Adverb', phrase: 'Phrase', other: 'Other',
+  };
 
   function buildFrontMeta(card) {
     if (card.wordType === 'noun') {
@@ -343,7 +352,17 @@
   let sessionCorrect      = 0;
   let sessionAgain        = 0;
   let sessionDrilledCards = new Map(); // id → { italian, interval }
-  let drillReverse        = localStorage.getItem('ponte_drill_reverse') === 'true';
+  // Drill direction is persisted as 'it-en' or 'en-it' under ponte_drill_direction.
+  // Falls back to the legacy ponte_drill_reverse boolean flag if the new key is unset.
+  let drillReverse = (function () {
+    const dir = localStorage.getItem('ponte_drill_direction');
+    if (dir === 'en-it') return true;
+    if (dir === 'it-en') return false;
+    return localStorage.getItem('ponte_drill_reverse') === 'true';
+  })();
+  function persistDrillDirection() {
+    localStorage.setItem('ponte_drill_direction', drillReverse ? 'en-it' : 'it-en');
+  }
 
   // ── Drill position persistence ────────────────────────────────────────────
   function saveDrillPosition() {
@@ -802,21 +821,47 @@
     renderLibrary();
   });
 
-  // ── Reverse drill mode ────────────────────────────────────────────────────
-  function updateReverseBtn() {
-    if (!fcDrillReverseBtn) return;
-    fcDrillReverseBtn.textContent = drillReverse ? 'Standard' : 'Reverse';
-    fcDrillReverseBtn.classList.toggle('active', drillReverse);
+  // ── Drill direction (IT→EN / EN→IT) ───────────────────────────────────────
+  // The setup screen buttons select direction before a session starts; the
+  // topbar pill mirrors current direction and toggles mid-session. Both share
+  // the drillReverse flag and persist via persistDrillDirection().
+  function updateDirectionUI() {
+    // Setup screen buttons
+    document.querySelectorAll('#fc-drill-dir-btns .fc-drill-dir-btn').forEach(b => {
+      const isActive = (b.dataset.dir === 'en-it') === drillReverse;
+      b.classList.toggle('active', isActive);
+    });
+    // Topbar indicator (also acts as a click-to-toggle)
+    if (fcDrillReverseBtn) {
+      fcDrillReverseBtn.textContent = drillReverse
+        ? '🇬🇧 English → Italian'
+        : '🇮🇹 Italian → English';
+      fcDrillReverseBtn.title = 'Click to switch drill direction';
+      fcDrillReverseBtn.classList.toggle('active', drillReverse);
+    }
   }
 
-  fcDrillReverseBtn && fcDrillReverseBtn.addEventListener('click', () => {
-    drillReverse = !drillReverse;
-    localStorage.setItem('ponte_drill_reverse', drillReverse);
-    updateReverseBtn();
+  function setDrillDirection(reverse) {
+    if (drillReverse === reverse) return;
+    drillReverse = reverse;
+    persistDrillDirection();
+    updateDirectionUI();
     if (!fcDrill.hidden && drillQueue.length) showDrillCard();
+  }
+
+  // Setup-screen buttons
+  document.querySelectorAll('#fc-drill-dir-btns .fc-drill-dir-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setDrillDirection(btn.dataset.dir === 'en-it');
+    });
   });
 
-  updateReverseBtn();
+  // Topbar pill — toggles current direction mid-session
+  fcDrillReverseBtn && fcDrillReverseBtn.addEventListener('click', () => {
+    setDrillDirection(!drillReverse);
+  });
+
+  updateDirectionUI();
 
   // ── Drill mode ────────────────────────────────────────────────────────────
   function shuffle(arr) {
@@ -938,34 +983,84 @@
     syncFsStatus(`${done + 1} / ${drillTotal}`);
     saveDrillPosition();
 
-    if (drillReverse) {
-      fcFlipWord.textContent     = card.english;
-      fcFlipSource.textContent   = '';
-      if (fcFlipPrompt) fcFlipPrompt.textContent = 'What is this in Italian?';
-      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = true;
-      renderFrontMeta(card);
+    // Shared back-side example block (rendered once for both directions)
+    const renderExampleBlock = () => {
+      if (!fcFlipExample) return;
+      if (card.example) {
+        fcFlipExampleIt.textContent = card.example;
+        if (card.exampleEN) {
+          fcFlipExampleEn.textContent = card.exampleEN;
+          fcFlipExampleEn.hidden = false;
+        } else {
+          fcFlipExampleEn.hidden = true;
+        }
+        fcFlipExample.hidden = false;
+      } else {
+        fcFlipExample.hidden = true;
+      }
+    };
 
+    if (drillReverse) {
+      // ── Front: English ──────────────────────────────────────────────────
+      fcFlipWord.textContent   = card.english;
+      fcFlipSource.textContent = '';
+      if (fcFlipPrompt)    fcFlipPrompt.textContent = 'What is this in Italian?';
+      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden  = true;
+
+      // Word-type badge (Noun / Verb / etc.)
+      if (fcFlipFrontBadges) {
+        const wt = card.wordType && WORD_TYPE_DISPLAY[card.wordType];
+        if (wt) {
+          fcFlipFrontBadges.innerHTML =
+            `<span class="fc-wordtype-badge">${escapeHTML(wt)}</span>`;
+          fcFlipFrontBadges.hidden = false;
+        } else {
+          fcFlipFrontBadges.innerHTML = '';
+          fcFlipFrontBadges.hidden    = true;
+        }
+      }
+
+      // Front meta: (singular)/(plural) for nouns; English base form otherwise
+      const metaParts = [];
+      if (card.wordType === 'noun' && card.nounNumber) {
+        metaParts.push(`(${card.nounNumber})`);
+      } else if (card.baseFormEN && card.baseFormEN.trim().toLowerCase() !== (card.english || '').trim().toLowerCase()) {
+        metaParts.push(`Base: ${card.baseFormEN}`);
+      }
+      if (fcFlipFrontMeta) {
+        fcFlipFrontMeta.textContent = metaParts.join(' · ');
+        fcFlipFrontMeta.hidden      = metaParts.length === 0;
+      }
+
+      // ── Back: Italian ───────────────────────────────────────────────────
       fcFlipWordBack.textContent = card.italian;
       if (fcFlipBase) {
-        fcFlipBase.textContent = card.baseForm ? `Base: ${card.baseForm} · ${card.baseFormEN}` : '';
-        fcFlipBase.hidden = !card.baseForm;
+        fcFlipBase.textContent = card.baseForm ? `Base: ${card.baseForm}` : '';
+        fcFlipBase.hidden      = !card.baseForm;
       }
       fcFlipAnswer.innerHTML =
         `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`
         + (card.nounOtherForm ? `<div class="fc-flip-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : '');
       fcFlipNote.textContent = card.note || '';
-      fcFlipNote.hidden = !card.note;
+      fcFlipNote.hidden      = !card.note;
+      renderExampleBlock();
     } else {
+      // ── Front: Italian ──────────────────────────────────────────────────
       fcFlipWord.textContent     = card.italian;
       fcFlipSource.textContent   = card.sourceArticle ? `From: ${card.sourceArticle}` : '';
-      if (fcFlipPrompt) fcFlipPrompt.textContent = 'What does this mean?';
-      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden = false;
+      if (fcFlipPrompt)    fcFlipPrompt.textContent = 'What does this mean?';
+      if (fcFrontSpeakBtn) fcFrontSpeakBtn.hidden  = false;
+      if (fcFlipFrontBadges) {
+        fcFlipFrontBadges.innerHTML = '';
+        fcFlipFrontBadges.hidden    = true;
+      }
       renderFrontMeta(card);
 
+      // ── Back: English ───────────────────────────────────────────────────
       fcFlipWordBack.textContent = card.italian;
       if (fcFlipBase) {
         fcFlipBase.textContent = card.baseForm ? `Base: ${card.baseForm} · ${card.baseFormEN}` : '';
-        fcFlipBase.hidden = !card.baseForm;
+        fcFlipBase.hidden      = !card.baseForm;
       }
       fcFlipAnswer.innerHTML = `
         <div class="fc-flip-en">${escapeHTML(card.english)}</div>
@@ -973,7 +1068,8 @@
         <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`
         + (card.nounOtherForm ? `<div class="fc-flip-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : '');
       fcFlipNote.textContent = card.note || '';
-      fcFlipNote.hidden = !card.note;
+      fcFlipNote.hidden      = !card.note;
+      renderExampleBlock();
     }
 
     fcFlipInner.classList.remove('flipped');
