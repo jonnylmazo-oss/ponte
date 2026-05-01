@@ -246,6 +246,7 @@
   const fcBrowse      = $('fc-browse');
   const fcNoDue       = $('fc-no-due');
   const fcNoDueMsg    = $('fc-no-due-msg');
+  const fcNoWeak      = $('fc-no-weak');
   const fcDrillAnyway = $('fc-drill-anyway');
   const fcDrill       = $('fc-drill');
   const fcDrillDone   = $('fc-drill-done');
@@ -400,7 +401,8 @@
     if (fcDrillSetup) fcDrillSetup.hidden = true;
     const banner = $('fc-resume-banner');
     if (banner) banner.hidden = true;
-    if (fcNoDue) fcNoDue.hidden = true;
+    if (fcNoDue)  fcNoDue.hidden  = true;
+    if (fcNoWeak) fcNoWeak.hidden = true;
     fcBrowse.hidden    = true;
     fcToolbar.hidden   = true;
     fcDrillDone.hidden = true;
@@ -744,6 +746,16 @@
     fcNoDue.hidden   = false;
   }
 
+  function showNoWeakScreen() {
+    if (!fcNoWeak) return;
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
+    fcBrowse.hidden  = true;
+    fcToolbar.hidden = false;
+    if (fcNoDue) fcNoDue.hidden = true;
+    fcNoWeak.hidden  = false;
+  }
+
   function startDrill(drillAll) {
     // Read selected word type from radio button (if drill setup was shown)
     const typeRadio   = document.querySelector('.fc-drill-type-radio:checked');
@@ -752,7 +764,17 @@
     if (fcDrillSetup) fcDrillSetup.hidden = true;
 
     let filtered = getFiltered();
-    if (wordType !== 'all') {
+    if (wordType === 'weak') {
+      filtered = filtered.filter((c) => {
+        if (!(c.reviewCount > 0)) return false;
+        const total = (c.timesCorrect || 0) + (c.timesWrong || 0);
+        return total > 0 && (c.timesCorrect || 0) / total <= 0.5;
+      });
+      if (!filtered.length) {
+        showNoWeakScreen();
+        return;
+      }
+    } else if (wordType !== 'all') {
       filtered = filtered.filter((c) => (c.wordType || 'other') === wordType);
     }
     if (!filtered.length) return;
@@ -783,7 +805,8 @@
     localStorage.removeItem(DRILL_POS_KEY); // fresh session — clear any old position
     updateSessionStats();
 
-    if (fcNoDue) fcNoDue.hidden = true;
+    if (fcNoDue)  fcNoDue.hidden  = true;
+    if (fcNoWeak) fcNoWeak.hidden = true;
     fcBrowse.hidden    = true;
     fcToolbar.hidden   = true;
     fcDrillDone.hidden = true;
@@ -795,7 +818,8 @@
   }
 
   fcDrillAnyway && fcDrillAnyway.addEventListener('click', () => {
-    if (fcNoDue) fcNoDue.hidden = true;
+    if (fcNoDue)  fcNoDue.hidden  = true;
+    if (fcNoWeak) fcNoWeak.hidden = true;
     startDrill(true);
   });
 
@@ -897,7 +921,8 @@
   function exitDrill() {
     fcDrill.hidden     = true;
     fcDrillDone.hidden = true;
-    if (fcNoDue) fcNoDue.hidden = true;
+    if (fcNoDue)  fcNoDue.hidden  = true;
+    if (fcNoWeak) fcNoWeak.hidden = true;
     const fcDrillSetup = $('fc-drill-setup');
     if (fcDrillSetup) fcDrillSetup.hidden = true;
     fcToolbar.hidden   = false;

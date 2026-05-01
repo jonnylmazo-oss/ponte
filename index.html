@@ -808,6 +808,7 @@
               <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="verb"> Verbs</label>
               <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="adjective"> Adjectives</label>
               <label class="fc-drill-type-item"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="phrase"> Phrases</label>
+              <label class="fc-drill-type-item fc-drill-type-weak"><input type="radio" name="fc-drill-type" class="fc-drill-type-radio" value="weak"> Weak words</label>
             </div>
             <div class="fc-drill-setup-actions">
               <button class="fc-drill-start-btn" id="fc-drill-start-btn">Start Drill →</button>
@@ -832,6 +833,12 @@
           <h3 class="fc-no-due-title">No cards due for review today</h3>
           <p class="fc-no-due-msg" id="fc-no-due-msg"></p>
           <button class="fc-drill-anyway" id="fc-drill-anyway">Drill anyway →</button>
+        </div>
+
+        <div class="fc-no-due" id="fc-no-weak" hidden>
+          <div class="fc-no-due-icon">💪</div>
+          <h3 class="fc-no-due-title">No weak words yet</h3>
+          <p class="fc-no-due-msg">Keep drilling — cards you get wrong will appear here.</p>
         </div>
 
         <!-- Drill mode -->
