@@ -166,9 +166,9 @@
     // ── Build HTML ────────────────────────────────────────────────────────
 
     const catColors = {
-      'cognate':      '#4A90D9',
-      'false-friend': '#C9A800',
-      'divergence':   '#C06800',
+      'cognate':      '#2E6B3E',
+      'false-friend': '#B83232',
+      'divergence':   '#B85C00',
       'new':          '#888888',
     };
     const catLabels = {
@@ -326,10 +326,13 @@
   // Expose for tab-switch hook and event listeners
   window._ponteProgressRender = render;
 
-  // Re-render when flashcard data changes
-  window.addEventListener('ponte:flashcard-saved', () => {
-    if (document.getElementById('tab-progress')?.classList.contains('active')) render();
-  });
+  // Re-render whenever flashcard or error-pattern data changes.
+  // Always re-render unconditionally — the panel may be active, and the render
+  // is cheap (pure localStorage read + innerHTML). switchTab also calls render
+  // on every navigation to this tab, so stale data is never visible on arrival.
+  window.addEventListener('ponte:flashcard-saved',         render);
+  window.addEventListener('ponte:flashcards-synced',       render);
+  window.addEventListener('ponte:error-patterns-updated',  render);
 
   // Initial render
   render();
