@@ -3257,6 +3257,7 @@ header {
   display: flex;
   gap: 8px;
   padding: 12px 16px 16px;
+  margin-bottom: 12px;
   border-top: 1px solid var(--border);
   background: var(--bg-card);
   width: 100%;
@@ -5222,7 +5223,9 @@ body.drill-fullscreen .ff-drill-arena {
 body.drill-fullscreen .fc-flip-card,
 body.drill-fullscreen .ff-flip-card {
   max-width: 600px;
-  height: clamp(300px, calc(100vh - 96px), 700px);
+  height: clamp(300px, 78vh, 700px);
+  margin-top: clamp(20px, 10vh, 72px);
+  margin-bottom: clamp(20px, 10vh, 72px);
   max-height: none;
 }
 
