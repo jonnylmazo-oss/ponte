@@ -301,6 +301,10 @@
     applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
     refreshRecentBtn();
+    // Fire only for real articles, not the fallback (which always passes wordmapOverride)
+    if (!wordmapOverride) {
+      window.dispatchEvent(new CustomEvent('ponte:article-read'));
+    }
   }
 
   function updateTranslation() {

@@ -32,6 +32,7 @@ flashcards.js      Cards tab IIFE (library + SM-2 drill)
 practice.js        Practice tab IIFE
 dictionary.js      Translate tab IIFE
 conversation.js    Conversation tab IIFE
+mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
 style.css          Kindle sepia design system
 server.js          Express API
@@ -43,7 +44,7 @@ data/
   grammar.js       45 grammar cards + 30 pattern drills
 ```
 
-Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js`
+Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js`
 
 ## Features
 
@@ -54,7 +55,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Conversation** — Scripted Dialogue (MC or Type-it against native speaker) + Free Conversation chat with error feedback
 - **Cards** — SM-2 spaced repetition; standard + reverse drill; fullscreen mode; word lookup modal (IT↔EN); cross-device sync
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
-- **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend
+- **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 
 ## API endpoints
 
@@ -100,6 +101,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 | `ponte_recent_topics` | Last 10 article topics (surprise dedup) |
 | `ponte_drill_reverse` | Drill direction toggle state |
 | `ponte_pending_sync` | Flag to retry failed server sync |
+| `ponte_weekly_mission` | Weekly mission state `{ week, mission, progress, completed }` |
 
 ## Flashcard card structure
 
@@ -130,7 +132,7 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v69`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v71`)
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates
 - **IIFE globals:** expose needed functions on `window` (e.g. `window.switchTab`, `window.ponteSpeak`, `window._ponteFCRender`, `window._ponteProgressRender`, `window.toggleNavGroup`)
@@ -152,7 +154,7 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 | #26 | Classic literature content category | P1 |
 | #27 | Cognate categorization guardrails in prompts | P2 |
 | #34 | Cultural context layer in Reader | P2 |
-| #35 | Weekly learning mission | P2 |
+| ~~#35~~ | ~~Weekly learning mission~~ | ~~P2~~ ✓ |
 | #36 | Native audio per article | P2 |
 | #37 | Pronunciation lab (blocked by #36) | P3 |
 | #38 | Collaborative deck sharing | P3 |

@@ -469,6 +469,7 @@
     }
 
     if (sdlgSaveBtn) sdlgSaveBtn.hidden = missed.length === 0;
+    window.dispatchEvent(new CustomEvent('ponte:dialogue-completed'));
     showSdlgScreen('end');
   }
 

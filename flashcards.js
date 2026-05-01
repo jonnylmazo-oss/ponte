@@ -886,6 +886,9 @@
 
     const pct = drillTotal > 0 ? Math.round((drillCorrect / drillTotal) * 100) : 0;
     fcDrillScore.textContent = `${drillCorrect} / ${drillTotal} correct (${pct}%)`;
+    window.dispatchEvent(new CustomEvent('ponte:drill-session-ended', {
+      detail: { count: drillTotal, correct: drillCorrect, accuracy: pct, isWeak: currentDrillWordType === 'weak' },
+    }));
 
     // Next review dates for cards drilled this session
     const fcNextReview     = $('fc-next-review');

@@ -317,8 +317,11 @@
     }
 
     // Assemble content (topbar + sections)
+    const missionHTML = (typeof window._ponteMissionCardHTML === 'function')
+      ? window._ponteMissionCardHTML()
+      : '';
     const topbar = `<div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>`;
-    const container = `<div class="prog-container">${overviewHTML}${breakdownHTML}${weakHTML}${activityHTML}${trendHTML}</div>`;
+    const container = `<div class="prog-container">${missionHTML}${overviewHTML}${breakdownHTML}${weakHTML}${activityHTML}${trendHTML}</div>`;
 
     panel.innerHTML = topbar + container;
   }
@@ -333,6 +336,7 @@
   window.addEventListener('ponte:flashcard-saved',         render);
   window.addEventListener('ponte:flashcards-synced',       render);
   window.addEventListener('ponte:error-patterns-updated',  render);
+  window.addEventListener('ponte:mission-updated',         render);
 
   // Initial render
   render();

@@ -31,6 +31,18 @@
     'at the hotel', 'on public transport', 'at the restaurant', 'sightseeing',
   ];
 
+  // Maps error pattern keys → grammar card title (for "See grammar card →")
+  const PATTERN_TO_GRAMMAR = {
+    'verb-essere':      'Essere vs Avere',
+    'passato-prossimo': 'Passato Prossimo',
+    'clitic-placement': 'Pronoun placement',
+    'subjunctive':      'Congiuntivo',
+    'geminates':        'Geminate consonants',
+    'verb-general':     'Verb conjugation',
+    'false-friend':     'False friends',
+    'divergence':       'Divergent usage',
+  };
+
   // Maps error pattern keys → user-friendly practice topics
   const PATTERN_TOPICS = {
     'false-friend':     'false friends and confusing Italian-Spanish pairs',
@@ -129,6 +141,7 @@
   const pracBackBtn       = $('prac-back-btn');
   const pracMissedList    = $('prac-missed-list');
   const pracSaveMissed    = $('prac-save-missed-btn');
+  const pracSRFeedback    = $('prac-sr-feedback');
 
   // ── State ─────────────────────────────────────────────────────────────────
   let currentTopic      = '';
@@ -340,6 +353,81 @@
     }
   });
 
+  // ── Error-to-drill helpers ────────────────────────────────────────────────
+
+  function pracAuthHeaders() {
+    const token = localStorage.getItem('ponte_auth_token');
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  }
+
+  function recordPracticeError(item) {
+    fetch(API_BASE + '/api/detect-patterns', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        italian:  item.italian  || '',
+        english:  item.english  || '',
+        category: item.category || 'new',
+        note:     item.note     || '',
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data.patterns) || !data.patterns.length) return;
+      let patterns = {};
+      try { patterns = JSON.parse(localStorage.getItem(EP_KEY) || '{}'); } catch (e) {}
+      const now = new Date().toISOString();
+      data.patterns.forEach(key => {
+        if (!patterns[key]) patterns[key] = { count: 0, lastSeen: null };
+        patterns[key].count++;
+        patterns[key].lastSeen = now;
+      });
+      localStorage.setItem(EP_KEY, JSON.stringify(patterns));
+      window.dispatchEvent(new CustomEvent('ponte:error-patterns-updated'));
+    })
+    .catch(() => {});
+  }
+
+  function saveCorrectSentence(item) {
+    let cards = [];
+    try { cards = JSON.parse(localStorage.getItem(FC_KEY) || '[]'); } catch (e) {}
+    const italian = item.italian || '';
+    if (!italian) return false;
+    if (cards.some(c => c.italian.toLowerCase() === italian.toLowerCase())) return false;
+    cards.push({
+      id:            Date.now(),
+      italian,
+      english:       item.english || '',
+      spanish:       '',
+      category:      'new',
+      note:          'Practice correction',
+      savedAt:       new Date().toISOString(),
+      sourceArticle: 'Practice: ' + currentTopic,
+      wordType:      'phrase',
+      timesCorrect:  0,
+      timesWrong:    0,
+      lastSeen:      null,
+      lastDrilled:   null,
+    });
+    localStorage.setItem(FC_KEY, JSON.stringify(cards));
+    fetch(API_BASE + '/api/flashcards', {
+      method:  'POST',
+      headers: pracAuthHeaders(),
+      body:    JSON.stringify(cards),
+    }).catch(() => {});
+    window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+    return true;
+  }
+
+  function actionButtonsHTML() {
+    return `<div class="prac-action-btns">
+      <button class="prac-action-btn" data-action="save">Save sentence to Flashcards →</button>
+      <button class="prac-action-btn" data-action="grammar">See grammar card →</button>
+    </div>`;
+  }
+
   // ── Multiple Choice drill ─────────────────────────────────────────────────
   function showDrillItem() {
     if (drillIndex >= drillItems.length) { endDrill(); return; }
@@ -385,6 +473,29 @@
     if (item) handleAnswer(btn.dataset.val, item);
   });
 
+  function handleActionBtn(btn) {
+    const action = btn.dataset.action;
+    const item = drillItems[drillIndex];
+    if (!item) return;
+    if (action === 'save') {
+      const saved = saveCorrectSentence(item);
+      btn.textContent = saved ? '✓ Saved to Flashcards' : '✓ Already in deck';
+      btn.disabled = true;
+    } else if (action === 'grammar') {
+      window.switchTab && window.switchTab('grammar');
+    }
+  }
+
+  pracFeedback.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prac-action-btn');
+    if (btn) handleActionBtn(btn);
+  });
+
+  pracSRFeedback && pracSRFeedback.addEventListener('click', (e) => {
+    const btn = e.target.closest('.prac-action-btn');
+    if (btn) handleActionBtn(btn);
+  });
+
   function handleAnswer(answer, item) {
     if (drillAnswered) return;
     drillAnswered = true;
@@ -413,6 +524,11 @@
       ${item.note ? `<div class="prac-feedback-note">${escapeHTML(item.note)}</div>` : ''}
       <span class="prac-cat-badge" style="border-color:${color};color:${color}">${catLabel}</span>
     `;
+    window.dispatchEvent(new CustomEvent('ponte:practice-answered'));
+    if (!correct) {
+      recordPracticeError(item);
+      pracFeedback.insertAdjacentHTML('beforeend', actionButtonsHTML());
+    }
     pracFeedback.hidden = false;
     pracNextBtn.hidden  = false;
     pracNextBtn.focus();
@@ -501,7 +617,7 @@
     localStorage.setItem(FC_KEY, JSON.stringify(cards));
     fetch(API_BASE + '/api/flashcards', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: pracAuthHeaders(),
       body:    JSON.stringify(cards),
     }).catch(() => {});
     window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
@@ -820,6 +936,11 @@
     }
 
     fbEl.innerHTML = html;
+    window.dispatchEvent(new CustomEvent('ponte:practice-answered'));
+    if (!correct) {
+      recordPracticeError(item);
+      fbEl.insertAdjacentHTML('beforeend', actionButtonsHTML());
+    }
     fbEl.hidden    = false;
     if (subEl) subEl.hidden = true;
     if (nxtEl) { nxtEl.hidden = false; nxtEl.focus(); }
