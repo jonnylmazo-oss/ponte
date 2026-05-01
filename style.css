@@ -7041,6 +7041,44 @@ body.drill-fullscreen .ff-flip-card {
 }
 .wl-close:hover { color: var(--text); }
 
+.wl-lang-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 12px 18px 0;
+}
+
+.wl-lang-btn {
+  flex: 1;
+  padding: 7px 12px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.wl-lang-btn.active {
+  background: #0055AA;
+  color: #fff;
+  border-color: #0055AA;
+}
+
+.wl-lang-btn:not(.active):hover {
+  border-color: #0055AA;
+  color: #0055AA;
+}
+
+.wl-hint {
+  margin: 0;
+  padding: 6px 18px 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
 .wl-search-row {
   display: flex;
   gap: 8px;

@@ -1043,6 +1043,28 @@
   const wlResultNote  = $('wl-result-note');
   const wlSaveBtn     = $('wl-save-btn');
   const fcAddWordBtn  = $('fc-add-word-btn');
+  const wlLangIt      = $('wl-lang-it');
+  const wlLangEn      = $('wl-lang-en');
+  const wlHint        = $('wl-hint');
+
+  let wlDirection = 'it'; // 'it' | 'en'
+
+  function setWlDirection(dir) {
+    wlDirection = dir;
+    wlLangIt && wlLangIt.classList.toggle('active', dir === 'it');
+    wlLangEn && wlLangEn.classList.toggle('active', dir === 'en');
+    if (wlInput) {
+      wlInput.placeholder = dir === 'en' ? 'Enter an English word…' : 'Italian word or phrase…';
+    }
+    if (wlHint) {
+      wlHint.textContent = dir === 'en'
+        ? 'Enter an English word to find the Italian translation'
+        : 'Enter an Italian word to look up and save';
+    }
+    if (wlResult) wlResult.hidden = true;
+    if (wlStatus) wlStatus.hidden = true;
+    wlCurrentEntry = null;
+  }
 
   const BADGE_COLORS = {
     'cognate':      '#2E6B3E',
@@ -1062,9 +1084,8 @@
   function openWordLookup() {
     if (!wlModal) return;
     wlInput.value = '';
-    wlStatus.hidden = true;
-    wlResult.hidden = true;
     wlCurrentEntry = null;
+    setWlDirection('it');
     wlBackdrop.hidden = false;
     wlModal.hidden = false;
     setTimeout(() => wlInput.focus(), 50);
@@ -1086,14 +1107,28 @@
     wlStatus.textContent = 'Translating…';
     wlCurrentEntry = null;
 
+    const endpoint = wlDirection === 'en' ? '/api/translate-to-italian' : '/api/translate';
+    const body = wlDirection === 'en'
+      ? JSON.stringify({ text: word })
+      : JSON.stringify({ text: word, context: '' });
+
+    const NO_RESULT_MSG = wlDirection === 'en'
+      ? 'No Italian translation found. Try a different English word.'
+      : "No Italian word found. Try entering an Italian word (e.g. 'mangiare', 'bello', 'subito')";
+
     try {
-      const resp = await fetch(API_BASE + '/api/translate', {
+      const resp = await fetch(API_BASE + endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: word, context: '' }),
+        body,
       });
       if (!resp.ok) throw new Error('Server error');
       const entry = await resp.json();
+
+      if (!entry.italian || entry.english === '(translation failed)') {
+        wlStatus.textContent = NO_RESULT_MSG;
+        return;
+      }
 
       wlCurrentEntry = entry;
       wlStatus.hidden = true;
@@ -1120,7 +1155,7 @@
 
       wlResult.hidden = false;
     } catch (err) {
-      wlStatus.textContent = 'Translation failed — please try again.';
+      wlStatus.textContent = NO_RESULT_MSG;
     } finally {
       wlSearchBtn.disabled = false;
     }
@@ -1151,6 +1186,8 @@
   }
   if (wlClose)    wlClose.addEventListener('click', closeWordLookup);
   if (wlBackdrop) wlBackdrop.addEventListener('click', closeWordLookup);
+  if (wlLangIt)   wlLangIt.addEventListener('click', () => setWlDirection('it'));
+  if (wlLangEn)   wlLangEn.addEventListener('click', () => setWlDirection('en'));
 
   if (wlSearchBtn) {
     wlSearchBtn.addEventListener('click', runWordLookup);
