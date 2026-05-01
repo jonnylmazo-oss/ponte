@@ -150,17 +150,21 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 | # | Title | Priority |
 |---|-------|----------|
 | #3 | Article difficulty filter | P2 |
-| #7 | Shadowing mode (blocked by #36) | P1 |
-| #8 | Weak word tracker | P2 |
+| #7 | Shadowing mode (blocked by #36) | P2 |
+| #8 | Weak word tracker (reader-tap) | P2 |
 | #11 | Onboarding flow | P3 |
 | #13 | Mobile layout polish | P3 |
 | #14 | Public false friend SEO page | P3 |
 | #17 | HTTPS + domain for full PWA installability | P2 |
 | #18 | Flashcard images via Unsplash | P2 |
 | #26 | Classic literature content category | P1 |
-| #27 | Cognate categorization guardrails in prompts | P2 |
 | #34 | Cultural context layer in Reader | P2 |
-| ~~#35~~ | ~~Weekly learning mission~~ | ~~P2~~ ✓ |
 | #36 | Native audio per article | P2 |
 | #37 | Pronunciation lab (blocked by #36) | P3 |
 | #38 | Collaborative deck sharing | P3 |
+| #53 | Resume drill drops deleted cards | P1 |
+| #54 | Double-submit race in Practice free recall | P1 |
+| #55 | Mobile touch targets below 44px | P2 |
+| #56 | 100vh → 100dvh for fullscreen drill | P2 |
+| #57 | Wire up PATTERN_TO_GRAMMAR map | P3 |
+| #58 | Mission 4 double-counts re-saves | P3 |
