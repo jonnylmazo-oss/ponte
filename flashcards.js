@@ -299,9 +299,10 @@
   if (!fcGrid) return; // tab not present in DOM
 
   // ── Fullscreen helpers ────────────────────────────────────────────────────
-  const drillFsHeader = $('drill-fullscreen-header');
-  const drillFsStatus = $('drill-fs-status');
-  const drillFsExit   = $('drill-fs-exit');
+  const drillFsHeader  = $('drill-fullscreen-header');
+  const drillFsStatus  = $('drill-fs-status');
+  const drillFsSession = $('drill-fs-session');
+  const drillFsExit    = $('drill-fs-exit');
 
   function enterDrillFullscreen() {
     document.body.classList.add('drill-fullscreen');
@@ -724,14 +725,10 @@
   }
 
   function updateSessionStats() {
-    if (!fcSessionStats) return;
     const total = sessionCorrect + sessionAgain;
-    const pct   = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0;
-    if (total === 0) {
-      fcSessionStats.textContent = '';
-      return;
-    }
-    fcSessionStats.textContent = `${sessionCorrect} correct · ${sessionAgain} again · ${pct}% this session`;
+    const text  = total === 0 ? '' : `This session: ${sessionCorrect}/${total} correct`;
+    if (fcSessionStats)  fcSessionStats.textContent  = text;
+    if (drillFsSession)  drillFsSession.textContent  = text;
   }
 
   function showNoDueScreen(notDue) {
