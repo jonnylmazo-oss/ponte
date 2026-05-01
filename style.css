@@ -2737,12 +2737,31 @@ header {
   user-select: none;
 }
 .fc-dropdown-item:hover { background: var(--bg); }
-.fc-dropdown-item input[type="checkbox"] {
+.fc-dropdown-item input[type="checkbox"],
+.fc-dropdown-item input[type="radio"] {
   width: 15px;
   height: 15px;
   accent-color: #0055AA;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+/* Clear-all filters button — same pill style, danger accent */
+.fc-clear-filters-btn {
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: #B83232;
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, background 0.12s;
+}
+.fc-clear-filters-btn:hover {
+  border-color: #B83232;
+  background: rgba(184, 50, 50, 0.06);
 }
 .fc-dropdown-section-title {
   font-size: 11px;

@@ -327,11 +327,13 @@
   });
 
   // ── State ────────────────────────────────────────────────────────────────
-  let activeCats          = new Set(['cognate', 'false-friend', 'divergence', 'new']);
-  let activeWordTypes     = new Set(['noun', 'verb', 'adjective', 'adverb', 'phrase']);
-  let activeStatuses      = new Set(['due', 'new-card', 'upcoming', 'mastered']);
-  let openDropdownId      = null;
-  let searchQuery         = '';
+  // New filter system: 4 single-select filters + sort + search.
+  let activePerf     = 'all'; // all|new|struggling|learning|strong|mastered|due
+  let activeWordType = 'all'; // all|noun|verb|adjective|adverb|phrase|verb-irregular
+  let activeCategory = 'all'; // all|cognate|false-friend|divergence|new
+  let activeSource   = 'all'; // all|starter|reader|practice|scripted|conversation|manual
+  let activeSort     = 'due'; // due|accuracy-asc|accuracy-desc|recent|oldest|most-drilled|alpha
+  let searchQuery    = '';
   let drillQueue           = [];
   let drillTotal           = 0;
   let drillCorrect         = 0;
@@ -414,123 +416,238 @@
   }
 
   // ── Filter helpers ────────────────────────────────────────────────────────
-  const ALL_CATS     = ['cognate', 'false-friend', 'divergence', 'new'];
-  const ALL_WORD_TYPES = ['noun', 'verb', 'adjective', 'adverb', 'phrase'];
-  const ALL_STATUSES = ['due', 'new-card', 'upcoming', 'mastered'];
 
-  const CAT_NAMES = {
+  const PERF_LABELS = {
+    'all':        'All',
+    'new':        'New',
+    'struggling': 'Struggling',
+    'learning':   'Learning',
+    'strong':     'Strong',
+    'mastered':   'Mastered',
+    'due':        'Due today',
+  };
+  const TYPE_LABELS = {
+    'all':            'All',
+    'noun':           'Noun',
+    'verb':           'Verb',
+    'adjective':      'Adjective',
+    'adverb':         'Adverb',
+    'phrase':         'Phrase',
+    'verb-irregular': 'Irregular verbs',
+  };
+  const CAT_LABELS_SHORT = {
+    'all':          'All',
     'cognate':      'Same in Spanish',
     'false-friend': 'False Friend',
     'divergence':   'Used differently',
     'new':          'New word',
   };
-  const WORD_TYPE_NAMES = {
-    'noun': 'Noun',
-    'verb': 'Verb',
-    'adjective': 'Adjective',
-    'adverb': 'Adverb',
-    'phrase': 'Phrase',
+  const SRC_LABELS = {
+    'all':          'All',
+    'starter':      'Starter deck',
+    'reader':       'Reader',
+    'practice':     'Practice',
+    'scripted':     'Scripted dialogue',
+    'conversation': 'Conversation',
+    'manual':       'Manually added',
   };
-  const STATUS_NAMES = {
-    'due':      'Due today',
-    'new-card': 'New',
-    'upcoming': 'Upcoming',
-    'mastered': 'Mastered',
+  const SORT_LABELS = {
+    'due':            'Due date',
+    'accuracy-asc':   'Worst accuracy first',
+    'accuracy-desc':  'Best accuracy first',
+    'recent':         'Most recently added',
+    'oldest':         'Oldest first',
+    'most-drilled':   'Most drilled',
+    'alpha':          'Alphabetical (Italian)',
   };
 
-  function getCardStatus(card) {
-    if (!card.reviewCount) return 'new-card';
-    if (isDue(card))       return 'due';
-    if ((card.easeFactor || 2.5) > 3.5 && (card.interval || 0) > 30) return 'mastered';
-    return 'upcoming';
+  // Accuracy as a 0–1 fraction; null if never drilled.
+  function cardAccuracy(card) {
+    const total = (card.timesCorrect || 0) + (card.timesWrong || 0);
+    if (total === 0) return null;
+    return (card.timesCorrect || 0) / total;
+  }
+
+  function isIrregularVerb(card) {
+    if (card.wordType !== 'verb') return false;
+    const check = (s) => s && IRREGULAR_VERBS.has(s.toLowerCase().trim());
+    return check(card.italian) || check(card.baseForm);
+  }
+
+  function isMasteredCard(card) {
+    return (card.interval || 0) > 21;
+  }
+
+  function isDueOrOverdue(card) {
+    if (card.dueDate == null) return (card.reviewCount || 0) > 0;
+    return new Date(card.dueDate).getTime() <= Date.now();
+  }
+
+  function getCardSource(card) {
+    const src = card.sourceArticle;
+    if (src == null || src === '')         return 'manual';
+    if (src === 'Starter deck')            return 'starter';
+    if (src === 'Word lookup' ||
+        src === 'Translate lookup')        return 'manual';
+    if (src.startsWith('Practice'))        return 'practice';
+    if (src.startsWith('Scripted:'))       return 'scripted';
+    if (src.startsWith('Conversation:'))   return 'conversation';
+    return 'reader'; // any non-empty, non-prefixed source = reader article title
+  }
+
+  function matchesPerformance(card) {
+    if (activePerf === 'all') return true;
+    const acc = cardAccuracy(card);
+    switch (activePerf) {
+      case 'new':        return (card.reviewCount || 0) === 0;
+      case 'struggling': return acc !== null && acc < 0.5;
+      case 'learning':   return acc !== null && acc >= 0.5 && acc < 0.8;
+      case 'strong':     return acc !== null && acc >= 0.8;
+      case 'mastered':   return isMasteredCard(card);
+      case 'due':        return isDueOrOverdue(card);
+      default:           return true;
+    }
+  }
+
+  function matchesWordType(card) {
+    if (activeWordType === 'all') return true;
+    if (activeWordType === 'verb-irregular') return isIrregularVerb(card);
+    return (card.wordType || 'other') === activeWordType;
+  }
+
+  function matchesCategory(card) {
+    if (activeCategory === 'all') return true;
+    return (card.category || 'new') === activeCategory;
+  }
+
+  function matchesSource(card) {
+    if (activeSource === 'all') return true;
+    return getCardSource(card) === activeSource;
+  }
+
+  function matchesSearch(card) {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (card.italian || '').toLowerCase().includes(q) ||
+      (card.english || '').toLowerCase().includes(q) ||
+      (card.spanish || '').toLowerCase().includes(q)
+    );
   }
 
   function getFiltered() {
-    const cards       = loadCards();
-    const allCatsOn   = ALL_CATS.every(c => activeCats.has(c));
-    const allWordTypesOn = ALL_WORD_TYPES.every(wt => activeWordTypes.has(wt));
-    const allStatusOn = ALL_STATUSES.every(s => activeStatuses.has(s));
-    return cards.filter((c) => {
-      if (!allCatsOn && !activeCats.has(c.category || 'new')) return false;
-      if (!allWordTypesOn && !activeWordTypes.has((c.wordType || 'other'))) return false;
-      if (!allStatusOn && !activeStatuses.has(getCardStatus(c))) return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        return (
-          c.italian.toLowerCase().includes(q) ||
-          c.english.toLowerCase().includes(q) ||
-          (c.spanish || '').toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
+    return loadCards().filter(c =>
+      matchesPerformance(c) &&
+      matchesWordType(c) &&
+      matchesCategory(c) &&
+      matchesSource(c) &&
+      matchesSearch(c)
+    );
   }
 
-  // ── Dropdown helpers ──────────────────────────────────────────────────────
-  function updateCatBtn() {
-    const btn = $('fc-cat-btn');
-    if (!btn) return;
-    const allCatsOn = ALL_CATS.every(c => activeCats.has(c));
-    const allWordTypesOn = ALL_WORD_TYPES.every(wt => activeWordTypes.has(wt));
-    if (allCatsOn && allWordTypesOn) {
-      btn.textContent = 'Type: All ▾';
-      btn.classList.remove('fc-dropdown-btn--active');
-    } else {
-      const catLabels = allCatsOn
-        ? []
-        : ALL_CATS.filter(c => activeCats.has(c)).map(c => CAT_NAMES[c]);
-      const wordTypeLabels = allWordTypesOn
-        ? []
-        : ALL_WORD_TYPES.filter(wt => activeWordTypes.has(wt)).map(wt => WORD_TYPE_NAMES[wt]);
-      const labels = [...catLabels, ...wordTypeLabels];
-      btn.textContent = labels.length ? `Type: ${labels.join(', ')} ▾` : 'Type: All ▾';
-      btn.classList.toggle('fc-dropdown-btn--active', labels.length > 0);
+  function applySort(cards) {
+    const out = cards.slice();
+    switch (activeSort) {
+      case 'due':
+        // Most overdue first; never-drilled-and-no-due last
+        out.sort((a, b) => {
+          const ta = a.dueDate ? new Date(a.dueDate).getTime()
+                                : ((a.reviewCount || 0) > 0 ? -1 : Infinity);
+          const tb = b.dueDate ? new Date(b.dueDate).getTime()
+                                : ((b.reviewCount || 0) > 0 ? -1 : Infinity);
+          return ta - tb;
+        });
+        break;
+      case 'accuracy-asc':
+        out.sort((a, b) => {
+          const aa = cardAccuracy(a), ab = cardAccuracy(b);
+          if (aa === null && ab === null) return 0;
+          if (aa === null) return 1;
+          if (ab === null) return -1;
+          return aa - ab;
+        });
+        break;
+      case 'accuracy-desc':
+        out.sort((a, b) => {
+          const aa = cardAccuracy(a), ab = cardAccuracy(b);
+          if (aa === null && ab === null) return 0;
+          if (aa === null) return 1;
+          if (ab === null) return -1;
+          return ab - aa;
+        });
+        break;
+      case 'recent':
+        out.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+        break;
+      case 'oldest':
+        out.sort((a, b) => new Date(a.savedAt || 0) - new Date(b.savedAt || 0));
+        break;
+      case 'most-drilled':
+        out.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+        break;
+      case 'alpha':
+        out.sort((a, b) => (a.italian || '').localeCompare(b.italian || '', 'it'));
+        break;
     }
+    return out;
   }
 
-  function updateStatusBtn() {
-    const btn = $('fc-status-btn');
-    if (!btn) return;
-    const allOn = ALL_STATUSES.every(s => activeStatuses.has(s));
-    if (allOn) {
-      btn.textContent = 'Status: All ▾';
-      btn.classList.remove('fc-dropdown-btn--active');
-    } else {
-      const labels = ALL_STATUSES.filter(s => activeStatuses.has(s)).map(s => STATUS_NAMES[s]);
-      btn.textContent = labels.length ? `Status: ${labels.join(', ')} ▾` : 'Status: None ▾';
-      btn.classList.toggle('fc-dropdown-btn--active', labels.length > 0);
-    }
+  function activeFilterCount() {
+    let n = 0;
+    if (activePerf     !== 'all') n++;
+    if (activeWordType !== 'all') n++;
+    if (activeCategory !== 'all') n++;
+    if (activeSource   !== 'all') n++;
+    return n;
+  }
+
+  // ── Dropdown UI helpers ───────────────────────────────────────────────────
+
+  function updateFilterButtons() {
+    const setBtn = (id, prefix, value, labels, isFilter) => {
+      const btn = $(id);
+      if (!btn) return;
+      btn.textContent = `${prefix}: ${labels[value] || 'All'} ▾`;
+      btn.classList.toggle('fc-dropdown-btn--active', isFilter && value !== 'all');
+    };
+    setBtn('fc-perf-btn', 'Performance', activePerf,     PERF_LABELS,      true);
+    setBtn('fc-type-btn', 'Type',        activeWordType, TYPE_LABELS,      true);
+    setBtn('fc-cat-btn',  'Category',    activeCategory, CAT_LABELS_SHORT, true);
+    setBtn('fc-src-btn',  'Source',      activeSource,   SRC_LABELS,       true);
+    setBtn('fc-sort-btn', 'Sort',        activeSort,     SORT_LABELS,      false);
+
+    const clearBtn = $('fc-clear-filters');
+    if (clearBtn) clearBtn.hidden = activeFilterCount() === 0;
+  }
+
+  function clearAllFilters() {
+    activePerf = activeWordType = activeCategory = activeSource = 'all';
+    document.querySelectorAll('input[name="fc-perf"], input[name="fc-type"], input[name="fc-cat"], input[name="fc-src"]')
+      .forEach(r => { r.checked = (r.value === 'all'); });
+    updateFilterButtons();
+    renderLibrary();
   }
 
   function closeDropdowns() {
-    const cp = $('fc-cat-panel'), sp = $('fc-status-panel');
-    if (cp) cp.hidden = true;
-    if (sp) sp.hidden = true;
-    openDropdownId = null;
-  }
-
-  function toggleDropdown(which) {
-    const targetPanel = which === 'cat' ? $('fc-cat-panel') : $('fc-status-panel');
-    const otherPanel  = which === 'cat' ? $('fc-status-panel') : $('fc-cat-panel');
-    if (!targetPanel) return;
-    if (openDropdownId === which) {
-      targetPanel.hidden = true;
-      openDropdownId = null;
-    } else {
-      if (otherPanel) otherPanel.hidden = true;
-      targetPanel.hidden = false;
-      openDropdownId = which;
-    }
+    document.querySelectorAll('#fc-toolbar .fc-dropdown-panel').forEach(p => { p.hidden = true; });
   }
 
   // ── Library render ────────────────────────────────────────────────────────
   function renderLibrary() {
-    const total    = loadCards().length;
-    const filtered = getFiltered();
+    const total      = loadCards().length;
+    const filtered   = applySort(getFiltered());
+    const filterN    = activeFilterCount();
 
-    fcCount.textContent = filtered.length === total
-      ? `${total} card${total !== 1 ? 's' : ''}`
-      : `${filtered.length} of ${total}`;
+    let countText;
+    if (filterN === 0 && !searchQuery) {
+      countText = `${total} card${total !== 1 ? 's' : ''}`;
+    } else {
+      const pre = filterN > 0
+        ? `${filterN} filter${filterN !== 1 ? 's' : ''} active · `
+        : '';
+      countText = `${pre}${filtered.length} of ${total}`;
+    }
+    fcCount.textContent = countText;
 
     if (total === 0) {
       fcEmpty.hidden = false;
@@ -605,63 +722,50 @@
   });
 
   // ── Dropdown filter wiring ────────────────────────────────────────────────
-  const catBtn    = $('fc-cat-btn');
-  const statusBtn = $('fc-status-btn');
-
-  catBtn && catBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('cat'); });
-  statusBtn && statusBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('status'); });
-
-  // Close on outside click
+  // One delegated click handler opens/closes any of the 5 dropdowns; a click
+  // outside any of them closes everything.
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.fc-dropdown-wrap')) closeDropdowns();
+    const btn = e.target.closest('#fc-toolbar .fc-dropdown-btn');
+    if (btn) {
+      e.stopPropagation();
+      const panel = btn.parentElement && btn.parentElement.querySelector('.fc-dropdown-panel');
+      if (!panel) return;
+      const wasOpen = !panel.hidden;
+      closeDropdowns();
+      if (!wasOpen) panel.hidden = false;
+      return;
+    }
+    if (!e.target.closest('#fc-toolbar .fc-dropdown-wrap')) closeDropdowns();
   });
 
-  // Single delegated 'change' listener for all filter checkboxes — one binding,
-  // robust to any future re-render of the dropdown panels.
+  // Single delegated 'change' handler maps each radio name → state slot.
+  // Map-driven so adding a new filter is one entry plus an HTML block.
+  const RADIO_HANDLERS = {
+    'fc-perf': (v) => { activePerf     = v; },
+    'fc-type': (v) => { activeWordType = v; },
+    'fc-cat':  (v) => { activeCategory = v; },
+    'fc-src':  (v) => { activeSource   = v; },
+    'fc-sort': (v) => { activeSort     = v; },
+  };
   document.addEventListener('change', (e) => {
-    const cb = e.target;
-    if (!cb || !cb.classList) return;
-
-    if (cb.classList.contains('fc-cat-check')) {
-      if (cb.checked) activeCats.add(cb.dataset.cat);
-      else            activeCats.delete(cb.dataset.cat);
-      if (activeCats.size === 0) {
-        ALL_CATS.forEach(c => activeCats.add(c));
-        document.querySelectorAll('.fc-cat-check').forEach(c => { c.checked = true; });
-      }
-      updateCatBtn();
-      renderLibrary();
-      return;
-    }
-
-    if (cb.classList.contains('fc-wordtype-check')) {
-      if (cb.checked) activeWordTypes.add(cb.dataset.wordtype);
-      else            activeWordTypes.delete(cb.dataset.wordtype);
-      if (activeWordTypes.size === 0) {
-        ALL_WORD_TYPES.forEach(wt => activeWordTypes.add(wt));
-        document.querySelectorAll('.fc-wordtype-check').forEach(c => { c.checked = true; });
-      }
-      updateCatBtn();
-      renderLibrary();
-      return;
-    }
-
-    if (cb.classList.contains('fc-status-check')) {
-      if (cb.checked) activeStatuses.add(cb.dataset.status);
-      else            activeStatuses.delete(cb.dataset.status);
-      if (activeStatuses.size === 0) {
-        ALL_STATUSES.forEach(s => activeStatuses.add(s));
-        document.querySelectorAll('.fc-status-check').forEach(c => { c.checked = true; });
-      }
-      updateStatusBtn();
-      renderLibrary();
-    }
+    const r = e.target;
+    if (!r || r.type !== 'radio' || !RADIO_HANDLERS[r.name]) return;
+    RADIO_HANDLERS[r.name](r.value);
+    updateFilterButtons();
+    closeDropdowns();
+    renderLibrary();
   });
+
+  const fcClearFilters = $('fc-clear-filters');
+  fcClearFilters && fcClearFilters.addEventListener('click', clearAllFilters);
 
   fcSearch.addEventListener('input', () => {
     searchQuery = fcSearch.value.trim();
     renderLibrary();
   });
+
+  // Initial filter button state
+  updateFilterButtons();
 
   // ── Badge update ──────────────────────────────────────────────────────────
   function updateBadge() {
