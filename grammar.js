@@ -183,26 +183,28 @@
             </div>`;
         }).join('')}
       </div>`;
+  }
 
-    // Wire Study → buttons
-    panelWeakAreas.querySelectorAll('.gr-weak-study-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const stageId = parseInt(btn.dataset.stage, 10);
+  // Single delegated click handler on the weak-areas panel — survives every
+  // re-render of innerHTML, so listeners can never accumulate.
+  if (panelWeakAreas) {
+    panelWeakAreas.addEventListener('click', (e) => {
+      const studyBtn = e.target.closest('.gr-weak-study-btn');
+      if (studyBtn) {
+        const stageId = parseInt(studyBtn.dataset.stage, 10);
         switchPanel('stages');
         openStage(stageId);
-      });
-    });
-
-    // Wire Drill → buttons
-    panelWeakAreas.querySelectorAll('.gr-weak-drill-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cat = btn.dataset.cat;
+        return;
+      }
+      const drillBtn = e.target.closest('.gr-weak-drill-btn');
+      if (drillBtn) {
+        const cat = drillBtn.dataset.cat;
         switchPanel('drills');
         drillCatFilter = cat;
         drillCardId    = null;
         drillCatBtns.forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
         startDrills();
-      });
+      }
     });
   }
 

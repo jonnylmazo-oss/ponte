@@ -10,6 +10,13 @@
 
   const FC_KEY      = 'ponte_flashcards';
   const SESSION_KEY = 'ponte_conversation_session';
+
+  function convAuthHeaders() {
+    const token = localStorage.getItem('ponte_auth_token') || '';
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  }
   const MAX_EXCHANGES = 20;
   const MAX_HISTORY   = MAX_EXCHANGES * 2;
 
@@ -119,7 +126,7 @@
     try {
       const res = await fetch(API_BASE + '/api/generate-dialogue', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: convAuthHeaders(),
         body:    JSON.stringify({ scenario: sdlgSelectedScen.italian, difficulty: sdlgDifficulty }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -509,7 +516,7 @@
         localStorage.setItem(FC_KEY, JSON.stringify(cards));
         fetch(API_BASE + '/api/flashcards', {
           method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: convAuthHeaders(),
           body:    JSON.stringify(cards),
         }).catch(() => {});
         window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
@@ -696,7 +703,7 @@
   async function callAPI(userMessage) {
     const res = await fetch(API_BASE + '/api/conversation', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: convAuthHeaders(),
       body: JSON.stringify({ scenario: currentScenario, history, userMessage }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -839,7 +846,7 @@
       localStorage.setItem(FC_KEY, JSON.stringify(cards));
       fetch(API_BASE + '/api/flashcards', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: convAuthHeaders(),
         body: JSON.stringify(cards),
       }).catch(() => {});
       window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));

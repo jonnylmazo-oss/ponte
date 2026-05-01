@@ -81,7 +81,13 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 
 - `.env` at `/root/ponte.env` — outside web root, never served by nginx
 - nginx blocks dotfiles: `location ~ /\. { deny all; }`
-- Flashcard endpoints require `Authorization: Bearer <token>` (HMAC-SHA256 of password + secret)
+- Server fails-fast at startup if `PONTE_SESSION_SECRET` is unset or equals `dev-secret-change-me`
+- `Authorization: Bearer <token>` (HMAC-SHA256 of password + secret) required on:
+  - flashcard GET/POST
+  - generation endpoints: `/api/generate-article-full`, `/api/generate-practice`, `/api/generate-dialogue`, `/api/conversation`
+- SSE endpoint `/api/generate-article-stream` accepts the same token via `?token=` query param (EventSource cannot send headers)
+- Unauthenticated endpoints (kept open for now): `/api/translate`, `/api/translate-to-italian`, `/api/check-usage`, `/api/check-sentence`, `/api/distractors`, `/api/grammar-examples`, `/api/reading-quiz`, `/api/detect-patterns`
+- Flashcard POST: in-memory write lock returns 409 on concurrent attempts; rejects shrinks > 10% unless `{ override: true }`
 - Auth disabled if `PONTE_PASSWORD` env var not set
 - Change password: edit `/root/ponte.env` → `pm2 restart ponte-api --update-env`
 
@@ -132,7 +138,7 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v71`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v72`)
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates
 - **IIFE globals:** expose needed functions on `window` (e.g. `window.switchTab`, `window.ponteSpeak`, `window._ponteFCRender`, `window._ponteProgressRender`, `window.toggleNavGroup`)

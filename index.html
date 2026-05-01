@@ -960,15 +960,21 @@
       <span class="more-panel-icon">💬</span>
       <span class="more-panel-label">Conversation</span>
     </button>
-    <button class="more-panel-item" data-tab="dictionary">
+    <button class="more-panel-item" data-tab="dictionary"
+      onclick="window.switchTab&&window.switchTab('dictionary')"
+      ontouchend="window.switchTab&&window.switchTab('dictionary');return false;">
       <span class="more-panel-icon">🔄</span>
       <span class="more-panel-label">Translate</span>
     </button>
-    <button class="more-panel-item" data-tab="shadowing">
+    <button class="more-panel-item" data-tab="shadowing"
+      onclick="window.switchTab&&window.switchTab('shadowing')"
+      ontouchend="window.switchTab&&window.switchTab('shadowing');return false;">
       <span class="more-panel-icon">🎙️</span>
       <span class="more-panel-label">Shadowing</span>
     </button>
-    <button class="more-panel-item" data-tab="progress">
+    <button class="more-panel-item" data-tab="progress"
+      onclick="window.switchTab&&window.switchTab('progress')"
+      ontouchend="window.switchTab&&window.switchTab('progress');return false;">
       <span class="more-panel-icon">📊</span>
       <span class="more-panel-label">Progress</span>
     </button>

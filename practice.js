@@ -232,7 +232,7 @@
   async function generatePractice(topic, difficulty) {
     const resp = await fetch(API_BASE + '/api/generate-practice', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: pracAuthHeaders(),
       body:    JSON.stringify({ topic, difficulty }),
     });
     if (!resp.ok) throw new Error('API error ' + resp.status);

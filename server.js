@@ -37,7 +37,13 @@ const client = new AnthropicClient({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Auth ───────────────────────────────────────────────────────────────────
 const PONTE_PASSWORD       = process.env.PONTE_PASSWORD || '';
-const PONTE_SESSION_SECRET = process.env.PONTE_SESSION_SECRET || 'dev-secret-change-me';
+const PONTE_SESSION_SECRET = process.env.PONTE_SESSION_SECRET || '';
+
+// Fail-fast on insecure session secret — never run in prod with the placeholder
+if (!PONTE_SESSION_SECRET || PONTE_SESSION_SECRET === 'dev-secret-change-me') {
+  console.error('FATAL: PONTE_SESSION_SECRET not set or is default. Exiting.');
+  process.exit(1);
+}
 
 function makeToken(password) {
   return crypto.createHmac('sha256', PONTE_SESSION_SECRET).update(password).digest('hex');
@@ -47,6 +53,18 @@ function requireAuth(req, res, next) {
   if (!PONTE_PASSWORD) return next(); // auth disabled if no password set
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!token || token !== makeToken(PONTE_PASSWORD)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+// SSE/EventSource cannot send custom headers, so this variant accepts ?token=
+// in the query string. Query-param tokens are acceptable here because traffic
+// is HTTPS in production and tokens are derived HMACs (not the password).
+function requireAuthQuery(req, res, next) {
+  if (!PONTE_PASSWORD) return next();
+  const token = req.query.token || '';
   if (!token || token !== makeToken(PONTE_PASSWORD)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -196,8 +214,8 @@ function parseArticleJSON(raw) {
   }
 }
 
-// ── SSE streaming endpoint — GET /api/generate-article-stream?topic=...&difficulty=...
-app.get('/api/generate-article-stream', async (req, res) => {
+// ── SSE streaming endpoint — GET /api/generate-article-stream?topic=...&difficulty=...&token=...
+app.get('/api/generate-article-stream', requireAuthQuery, async (req, res) => {
   const { topic, difficulty } = req.query;
 
   if (!topic || !difficulty) {
@@ -269,7 +287,7 @@ app.get('/api/generate-article-stream', async (req, res) => {
 });
 
 // ── Non-streaming fallback — POST /api/generate-article-full
-app.post('/api/generate-article-full', async (req, res) => {
+app.post('/api/generate-article-full', requireAuth, async (req, res) => {
   const { topic, difficulty } = req.body;
 
   if (!topic || !difficulty) {
@@ -404,14 +422,25 @@ app.get('/api/flashcards', requireAuth, (req, res) => {
 });
 
 // ── Flashcard persistence — POST /api/flashcards
-// Body: full cards array — written atomically via temp file
+// Body: full cards array (optionally { cards, override: true } to bypass shrink guard)
+// In-memory write lock prevents concurrent writes from clobbering each other.
+let flashcardWriteLock = false;
+
 app.post('/api/flashcards', requireAuth, (req, res) => {
-  const cards = req.body;
+  // Accept both { cards, override } envelope and a bare array (legacy clients)
+  const isEnvelope = req.body && !Array.isArray(req.body) && Array.isArray(req.body.cards);
+  const cards    = isEnvelope ? req.body.cards    : req.body;
+  const override = isEnvelope ? req.body.override === true : false;
+
   if (!Array.isArray(cards)) {
-    return res.status(400).json({ error: 'Expected array' });
+    return res.status(400).json({ error: 'Expected array (or { cards, override })' });
   }
 
-  // Read current count before writing
+  if (flashcardWriteLock) {
+    return res.status(409).json({ error: 'Another write in progress — retry in 500ms', retryMs: 500 });
+  }
+
+  // Read current count before acquiring the lock
   let currentCount = 0;
   try {
     if (fs.existsSync(FLASHCARDS_PATH)) {
@@ -421,7 +450,7 @@ app.post('/api/flashcards', requireAuth, (req, res) => {
   } catch (_) { /* ignore read errors */ }
 
   const clientIp = req.headers['x-forwarded-for'] || req.ip;
-  console.log(`[flashcards] POST from ${clientIp}: incoming=${cards.length} current=${currentCount}`);
+  console.log(`[flashcards] POST from ${clientIp}: incoming=${cards.length} current=${currentCount}${override ? ' override=true' : ''}`);
 
   // Reject empty-overwrite: never allow wiping a non-empty deck
   if (cards.length === 0 && currentCount > 0) {
@@ -429,25 +458,38 @@ app.post('/api/flashcards', requireAuth, (req, res) => {
     return res.status(409).json({ error: `Refusing to overwrite ${currentCount} cards with empty array` });
   }
 
-  // Warn if incoming is smaller than current (possible data loss, but allow it — may be a deliberate delete)
-  if (currentCount > 0 && cards.length < currentCount) {
-    console.warn(`[flashcards] WARNING: incoming ${cards.length} < current ${currentCount} — writing anyway`);
+  // Hard shrink guard: reject writes that drop > 10% of cards unless override:true
+  if (!override && currentCount > 0 && cards.length < currentCount * 0.9) {
+    console.error(`[flashcards] BLOCKED: incoming ${cards.length} < 90% of current ${currentCount}`);
+    return res.status(409).json({
+      error:    `Refusing write — incoming deck (${cards.length}) is significantly smaller than current (${currentCount}). Send override:true to force.`,
+      incoming: cards.length,
+      current:  currentCount,
+    });
   }
 
+  // Backup BEFORE acquiring the lock so concurrent writes don't clobber the backup
   try {
     fs.mkdirSync(path.dirname(FLASHCARDS_PATH), { recursive: true });
-    // Backup before every write
     if (fs.existsSync(FLASHCARDS_PATH)) {
-      const backupPath = FLASHCARDS_PATH + '.bak';
-      fs.copyFileSync(FLASHCARDS_PATH, backupPath);
+      fs.copyFileSync(FLASHCARDS_PATH, FLASHCARDS_PATH + '.bak');
     }
+  } catch (err) {
+    console.error('[flashcards] backup failed:', err.message);
+    return res.status(500).json({ error: 'Backup failed before write' });
+  }
+
+  flashcardWriteLock = true;
+  try {
     const tmp = FLASHCARDS_PATH + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(cards, null, 2), 'utf8');
+    fs.writeFileSync(tmp, JSON.stringify(cards), 'utf8');
     fs.renameSync(tmp, FLASHCARDS_PATH);
     res.json({ ok: true, count: cards.length });
   } catch (err) {
     console.error('Error writing flashcards:', err.message);
     res.status(500).json({ error: 'Failed to save flashcards' });
+  } finally {
+    flashcardWriteLock = false;
   }
 });
 
@@ -506,7 +548,7 @@ Return JSON only — no markdown, no code fences:
   // Write back atomically
   try {
     const tmp = FLASHCARDS_PATH + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(cards, null, 2), 'utf8');
+    fs.writeFileSync(tmp, JSON.stringify(cards), 'utf8');
     fs.renameSync(tmp, FLASHCARDS_PATH);
   } catch (err) {
     return res.status(500).json({ error: 'Failed to write flashcards: ' + err.message });
@@ -670,7 +712,7 @@ If the sentence is correct, errors should be an empty array.`;
 });
 
 // ── Conversation simulator — POST /api/conversation ──────────────
-app.post('/api/conversation', async (req, res) => {
+app.post('/api/conversation', requireAuth, async (req, res) => {
   const { scenario, history = [], userMessage } = req.body;
 
   if (!scenario || !scenario.trim()) {
@@ -805,7 +847,7 @@ Return only the JSON array, no explanation.`;
 
 // ── Generate practice sentences ───────────────────────────────────────────
 // Body: { topic, difficulty }
-app.post('/api/generate-practice', async (req, res) => {
+app.post('/api/generate-practice', requireAuth, async (req, res) => {
   const { topic, difficulty } = req.body;
   if (!topic || !topic.trim()) return res.status(400).json({ error: 'topic required' });
   const diff = difficulty || 'B1';
@@ -911,7 +953,7 @@ For tf: "correct" is 0 for True, 1 for False.`,
 
 // ── Scripted dialogue — POST /api/generate-dialogue
 // Body: { scenario, difficulty }
-app.post('/api/generate-dialogue', async (req, res) => {
+app.post('/api/generate-dialogue', requireAuth, async (req, res) => {
   const { scenario, difficulty } = req.body;
   if (!scenario || !scenario.trim()) {
     return res.status(400).json({ error: 'scenario is required' });

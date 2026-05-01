@@ -424,7 +424,11 @@
     articleDifficulty.textContent = difficulty;
     articleTopic.textContent      = topic;
 
+    // EventSource cannot send custom headers — token goes in the query string.
+    // (HTTPS in prod; token is a derived HMAC, not the password.)
     const params = new URLSearchParams({ topic, difficulty });
+    const tok = getToken();
+    if (tok) params.set('token', tok);
     const es = new EventSource(`${API_BASE}/api/generate-article-stream?${params}`);
     let tokenBuffer = '';
     let streamDone  = false;

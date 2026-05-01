@@ -616,49 +616,46 @@
     if (!e.target.closest('.fc-dropdown-wrap')) closeDropdowns();
   });
 
-  // Category checkboxes
-  document.querySelectorAll('.fc-cat-check').forEach((cb) => {
-    cb.addEventListener('change', () => {
+  // Single delegated 'change' listener for all filter checkboxes — one binding,
+  // robust to any future re-render of the dropdown panels.
+  document.addEventListener('change', (e) => {
+    const cb = e.target;
+    if (!cb || !cb.classList) return;
+
+    if (cb.classList.contains('fc-cat-check')) {
       if (cb.checked) activeCats.add(cb.dataset.cat);
       else            activeCats.delete(cb.dataset.cat);
-      // If nothing selected, reset to all
       if (activeCats.size === 0) {
         ALL_CATS.forEach(c => activeCats.add(c));
         document.querySelectorAll('.fc-cat-check').forEach(c => { c.checked = true; });
       }
       updateCatBtn();
       renderLibrary();
-    });
-  });
+      return;
+    }
 
-  // Word type checkboxes
-  document.querySelectorAll('.fc-wordtype-check').forEach((cb) => {
-    cb.addEventListener('change', () => {
+    if (cb.classList.contains('fc-wordtype-check')) {
       if (cb.checked) activeWordTypes.add(cb.dataset.wordtype);
       else            activeWordTypes.delete(cb.dataset.wordtype);
-      // If nothing selected, reset to all
       if (activeWordTypes.size === 0) {
         ALL_WORD_TYPES.forEach(wt => activeWordTypes.add(wt));
         document.querySelectorAll('.fc-wordtype-check').forEach(c => { c.checked = true; });
       }
       updateCatBtn();
       renderLibrary();
-    });
-  });
+      return;
+    }
 
-  // Status checkboxes
-  document.querySelectorAll('.fc-status-check').forEach((cb) => {
-    cb.addEventListener('change', () => {
+    if (cb.classList.contains('fc-status-check')) {
       if (cb.checked) activeStatuses.add(cb.dataset.status);
       else            activeStatuses.delete(cb.dataset.status);
-      // If nothing selected, reset to all
       if (activeStatuses.size === 0) {
         ALL_STATUSES.forEach(s => activeStatuses.add(s));
         document.querySelectorAll('.fc-status-check').forEach(c => { c.checked = true; });
       }
       updateStatusBtn();
       renderLibrary();
-    });
+    }
   });
 
   fcSearch.addEventListener('input', () => {
