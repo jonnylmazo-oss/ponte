@@ -102,7 +102,8 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 | `ponte_error_patterns` | Grammar error counts for weak areas |
 | `ponte_quiz_scores` | Quiz history (max 20) |
 | `ponte_grammar_viewed` | Viewed grammar card IDs |
-| `ponte_drill_position` | Mid-session drill resume state |
+| `ponte_drill_position_it-en` | Mid-session resume state — IT→EN drills (independent of EN→IT) |
+| `ponte_drill_position_en-it` | Mid-session resume state — EN→IT drills (independent of IT→EN) |
 | `ponte_auth_token` | Bearer token for flashcard API |
 | `ponte_recent_topics` | Last 10 article topics (surprise dedup) |
 | `ponte_drill_direction` | Drill direction (`'it-en'` or `'en-it'`); legacy `ponte_drill_reverse` boolean read as fallback |
@@ -138,7 +139,7 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v74`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v75`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates

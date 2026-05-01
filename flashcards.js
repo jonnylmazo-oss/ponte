@@ -1,10 +1,14 @@
 (function () {
   'use strict';
 
-  const FC_KEY        = 'ponte_flashcards';
-  const EP_KEY        = 'ponte_error_patterns';
-  const PENDING_KEY   = 'ponte_pending_sync';
-  const DRILL_POS_KEY = 'ponte_drill_position';
+  const FC_KEY      = 'ponte_flashcards';
+  const EP_KEY      = 'ponte_error_patterns';
+  const PENDING_KEY = 'ponte_pending_sync';
+  // Drill resume state is now direction-specific:
+  //   ponte_drill_position_it-en  — Italian → English session
+  //   ponte_drill_position_en-it  — English → Italian session
+  // The legacy single key ponte_drill_position is migrated below.
+  const DRILL_POS_PREFIX = 'ponte_drill_position_';
   const API_BASE = (
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1'
@@ -365,10 +369,31 @@
   }
 
   // ── Drill position persistence ────────────────────────────────────────────
+  // Each direction has its own resume state so IT→EN and EN→IT progress
+  // counters never overwrite each other.
+  function drillPosKey(reverse) {
+    const dir = (reverse === undefined ? drillReverse : reverse) ? 'en-it' : 'it-en';
+    return DRILL_POS_PREFIX + dir;
+  }
+
+  // One-time migration from the legacy single key. Runs synchronously at
+  // module init (see IIFE call below).
+  function migrateLegacyDrillPosition() {
+    const legacy = localStorage.getItem('ponte_drill_position');
+    if (!legacy) return;
+    const itEnKey = DRILL_POS_PREFIX + 'it-en';
+    if (!localStorage.getItem(itEnKey)) {
+      // Pre-direction sessions were always IT→EN — preserve as such.
+      localStorage.setItem(itEnKey, legacy);
+    }
+    localStorage.removeItem('ponte_drill_position');
+  }
+  migrateLegacyDrillPosition();
+
   function saveDrillPosition() {
     if (!drillQueue.length) return;
     const done = drillTotal - drillQueue.length;
-    localStorage.setItem(DRILL_POS_KEY, JSON.stringify({
+    localStorage.setItem(drillPosKey(), JSON.stringify({
       current:      done + 1,
       total:        drillTotal,
       wordType:     currentDrillWordType,
@@ -378,12 +403,12 @@
   }
 
   function clearDrillPosition() {
-    localStorage.removeItem(DRILL_POS_KEY);
+    localStorage.removeItem(drillPosKey());
     updateResumeIndicator();
   }
 
   function loadDrillPosition() {
-    try { return JSON.parse(localStorage.getItem(DRILL_POS_KEY)); }
+    try { return JSON.parse(localStorage.getItem(drillPosKey())); }
     catch { return null; }
   }
 
@@ -846,6 +871,9 @@
     drillReverse = reverse;
     persistDrillDirection();
     updateDirectionUI();
+    // Each direction has its own resume state — refresh the banner so it
+    // reflects the new direction when the library next becomes visible.
+    updateResumeIndicator();
     if (!fcDrill.hidden && drillQueue.length) showDrillCard();
   }
 
@@ -948,7 +976,7 @@
     sessionCorrect      = 0;
     sessionAgain        = 0;
     sessionDrilledCards = new Map();
-    localStorage.removeItem(DRILL_POS_KEY); // fresh session — clear any old position
+    localStorage.removeItem(drillPosKey()); // fresh session — clear current direction's saved state
     updateSessionStats();
 
     if (fcNoDue)  fcNoDue.hidden  = true;
