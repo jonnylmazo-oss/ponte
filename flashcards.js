@@ -177,9 +177,10 @@
       else               newInterval = Math.round(iv * 1.2);
       newEF = ef; // unchanged on hard
     } else { // 'easy'
+      const MAX_INTERVAL = 180;
       if (rc === 0)      newInterval = 1;
       else if (rc === 1) newInterval = 6;
-      else               newInterval = Math.round(iv * ef * 1.3);
+      else               newInterval = Math.min(MAX_INTERVAL, Math.round(iv * ef));
       newEF = Math.min(4.0, ef + 0.15);
     }
 
@@ -399,6 +400,7 @@
       wordType:     currentDrillWordType,
       drillAll:     currentDrillAll,
       remainingIds: drillQueue.map((c) => c.id),
+      correct:      drillCorrect,
     }));
   }
 
@@ -434,7 +436,7 @@
 
     drillQueue           = queue;
     drillTotal           = pos.total;
-    drillCorrect         = 0;
+    drillCorrect         = pos.correct || 0;
     trickyCards          = [];
     sessionCorrect       = 0;
     sessionAgain         = 0;
