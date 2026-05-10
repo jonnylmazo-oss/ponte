@@ -53,7 +53,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Grammar** — 4-stage learning path (45 cards), 30 pattern drills, weak areas panel fed by error tracking
 - **Practice** — fill-in-the-blank (Multiple Choice / Type It / Sentence Rebuild); saves missed words to flashcards
 - **Conversation** — Scripted Dialogue (MC or Type-it against native speaker) + Free Conversation chat with error feedback
-- **Cards** — SM-2 spaced repetition; bidirectional drill (IT→EN / EN→IT, picked in setup screen, mid-session toggle in topbar); fullscreen mode; word lookup modal (IT↔EN); cross-device sync; library filter+sort bar (Performance / Word Type / Category / Source / Sort + Clear all)
+- **Cards** — SM-2 spaced repetition; bidirectional drill (IT→EN / EN→IT, picked in setup screen, mid-session toggle in topbar); drill subset picker (Due today default + All / word types / Weak words, with live (N) counts respecting active library filters); fullscreen mode; word lookup modal (IT↔EN); cross-device sync; library filter+sort bar (Performance / Word Type / Category / Source / Sort + Clear all)
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 
@@ -139,7 +139,7 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v76`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v77`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates

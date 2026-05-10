@@ -2863,7 +2863,15 @@ header {
   user-select: none;
 }
 .fc-drill-type-item:hover { background: var(--bg); border-color: var(--border-mid); }
+.fc-drill-type-due  { border-bottom: 1px solid var(--border); margin-bottom: 4px; padding-bottom: 13px; }
 .fc-drill-type-weak { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 13px; }
+.fc-drill-type-count {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.fc-drill-type-count:empty { display: none; }
 .fc-drill-type-item input[type="radio"] {
   width: 15px;
   height: 15px;

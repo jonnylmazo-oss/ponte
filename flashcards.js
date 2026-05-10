@@ -221,6 +221,14 @@
     return new Date(card.dueDate).getTime() <= Date.now();
   }
 
+  // Stricter than isDue: excludes never-drilled cards (those are "new", not due).
+  // Used by the "Due today" drill subset.
+  function isDueToday(card) {
+    if (!(card.reviewCount > 0)) return false;
+    if (!card.dueDate) return true;
+    return new Date(card.dueDate).getTime() <= Date.now();
+  }
+
   function countDue(cards) {
     return cards.filter(isDue).length;
   }
@@ -911,15 +919,60 @@
 
   function showNoDueScreen(notDue) {
     if (!fcNoDue) return;
+    const titleEl = fcNoDue.querySelector('.fc-no-due-title');
+    if (titleEl) titleEl.textContent = 'No cards due for review today';
     const soonest = [...notDue].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
     if (fcNoDueMsg && soonest) {
       fcNoDueMsg.textContent = `Next card due: ${formatAbsDate(soonest.dueDate)}`;
     }
+    const drillAnyway = $('fc-drill-anyway');
+    if (drillAnyway) drillAnyway.hidden = false;
     const fcDrillSetup = $('fc-drill-setup');
     if (fcDrillSetup) fcDrillSetup.hidden = true;
     fcBrowse.hidden  = true;
     fcToolbar.hidden = false;
     fcNoDue.hidden   = false;
+  }
+
+  function showNoDueTodayScreen() {
+    if (!fcNoDue) return;
+    const titleEl = fcNoDue.querySelector('.fc-no-due-title');
+    if (titleEl) titleEl.textContent = 'No cards due today — great work!';
+    if (fcNoDueMsg) {
+      fcNoDueMsg.textContent = 'Try Weak words or drill by category.';
+    }
+    const drillAnyway = $('fc-drill-anyway');
+    if (drillAnyway) drillAnyway.hidden = true;
+    const fcDrillSetup = $('fc-drill-setup');
+    if (fcDrillSetup) fcDrillSetup.hidden = true;
+    fcBrowse.hidden  = true;
+    fcToolbar.hidden = false;
+    fcNoDue.hidden   = false;
+  }
+
+  // Refresh the (N) count next to each subset radio. Counts respect the
+  // active library filters from getFiltered().
+  function updateDrillSubsetCounts() {
+    const base = getFiltered();
+    const counts = {
+      due:       base.filter(isDueToday).length,
+      all:       base.length,
+      noun:      base.filter((c) => (c.wordType || 'other') === 'noun').length,
+      verb:      base.filter((c) => (c.wordType || 'other') === 'verb').length,
+      adjective: base.filter((c) => (c.wordType || 'other') === 'adjective').length,
+      adverb:    base.filter((c) => (c.wordType || 'other') === 'adverb').length,
+      phrase:    base.filter((c) => (c.wordType || 'other') === 'phrase').length,
+      weak:      base.filter((c) => {
+        if (!(c.reviewCount > 0)) return false;
+        const total = (c.timesCorrect || 0) + (c.timesWrong || 0);
+        return total > 0 && (c.timesCorrect || 0) / total <= 0.5;
+      }).length,
+    };
+    document.querySelectorAll('.fc-drill-type-count').forEach((el) => {
+      const key = el.dataset.countFor;
+      const n   = counts[key];
+      el.textContent = (n === undefined) ? '' : `(${n})`;
+    });
   }
 
   function showNoWeakScreen() {
@@ -935,12 +988,20 @@
   function startDrill(drillAll) {
     // Read selected word type from radio button (if drill setup was shown)
     const typeRadio   = document.querySelector('.fc-drill-type-radio:checked');
-    const wordType    = typeRadio ? typeRadio.value : 'all';
+    const wordType    = typeRadio ? typeRadio.value : 'due';
     const fcDrillSetup = $('fc-drill-setup');
     if (fcDrillSetup) fcDrillSetup.hidden = true;
 
     let filtered = getFiltered();
-    if (wordType === 'weak') {
+    let dueOnly  = false;
+    if (wordType === 'due') {
+      filtered = filtered.filter(isDueToday);
+      if (!filtered.length) {
+        showNoDueTodayScreen();
+        return;
+      }
+      dueOnly = true;
+    } else if (wordType === 'weak') {
       filtered = filtered.filter((c) => {
         if (!(c.reviewCount > 0)) return false;
         const total = (c.timesCorrect || 0) + (c.timesWrong || 0);
@@ -956,7 +1017,9 @@
     if (!filtered.length) return;
 
     let queue;
-    if (drillAll) {
+    if (dueOnly) {
+      queue = sortDueByPatterns(filtered);
+    } else if (drillAll) {
       queue = shuffle([...filtered]);
     } else {
       const due    = filtered.filter(isDue);
@@ -1250,9 +1313,10 @@
     closeDropdowns();
     const fcDrillSetup = $('fc-drill-setup');
     if (!fcDrillSetup) { startDrill(false); return; }
-    // Reset radio to "all"
-    const allRadio = document.querySelector('.fc-drill-type-radio[value="all"]');
-    if (allRadio) allRadio.checked = true;
+    // Default to "Due today" — correct SRS practice instead of drilling everything
+    const dueRadio = document.querySelector('.fc-drill-type-radio[value="due"]');
+    if (dueRadio) dueRadio.checked = true;
+    updateDrillSubsetCounts();
     fcBrowse.hidden    = true;
     fcToolbar.hidden   = true;
     fcDrillSetup.hidden = false;
