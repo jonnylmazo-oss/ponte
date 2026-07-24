@@ -7,15 +7,17 @@ Ponte is a vanilla HTML/CSS/JS Italian reading app for English speakers who know
 
 | Layer | Detail |
 |-------|--------|
-| Backend | Node.js/Express, `server.js`, port 3000 |
-| Frontend | Static files (served locally via `python3 -m http.server`) |
-| Data | `data/flashcards.json` (or `FLASHCARDS_PATH`) |
-| Config | `.env` — `ANTHROPIC_API_KEY`, `PORT=3000`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`, `FLASHCARDS_PATH` |
+| Hosting | **Vercel** (static frontend + serverless functions, same domain) |
+| Backend (prod) | Vercel serverless functions in `/api/*.js`; shared helpers in `lib/ponte.js` |
+| Backend (local dev) | Legacy `server.js` (Express, port 3000) — kept for reference, not deployed |
+| Frontend | Static files served from repo root by Vercel |
+| Data | **Vercel KV** — key `flashcards` (deck), `flashcards_bak` (backup) |
+| Config | env vars (Vercel dashboard / local `.env`) — see `.env.example` |
 | Model | `claude-sonnet-4-6` |
 
-**Deploy:** Hosting TBD — migration in progress. (The previous host has been shut down; no production host is configured. Local changes + git commit only until a new host is chosen.)
+**Deploy:** `git push` (Vercel auto-deploys the connected `jonnylmazo-oss/ponte` repo), or `vercel --prod` from the CLI. Node version pinned to 20.x via `package.json` `engines`. Env vars (`ANTHROPIC_API_KEY`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`) set in the Vercel dashboard; KV vars are auto-provisioned when the KV store is linked.
 
-**Local dev:** `npm start` (backend :3000) + `python3 -m http.server 8080` (frontend :8080)
+**Local dev:** `npm start` (legacy Express backend :3000) + `python3 -m http.server 8080` (frontend :8080). Note: local flashcard persistence uses the legacy file-based `server.js`; the Vercel KV path only runs in the deployed functions (or via `vercel dev` with KV env vars).
 
 ## File map
 
@@ -32,7 +34,14 @@ conversation.js    Conversation tab IIFE
 mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
 style.css          Kindle sepia design system
-server.js          Express API
+server.js          Legacy Express API (local dev reference only — prod uses /api)
+api/               Vercel serverless functions — one file per endpoint (login,
+                   flashcards [KV], translate, generate-*, check-*, etc.)
+lib/
+  ponte.js         Shared helpers for /api (Anthropic client, auth guards,
+                   buildPrompt, sanitizeUserText, parseArticleJSON, …)
+vercel.json        Vercel config (function maxDuration; static + /api auto-routed)
+.env.example       Placeholder env vars for local dev / Vercel dashboard
 data/
   articles.js      fallback article ("Una mattina a Roma")
   wordmap.js       static wordmap for fallback article

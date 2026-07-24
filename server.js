@@ -1,5 +1,8 @@
 'use strict';
 
+// Legacy Express server — kept for local dev reference. Production runs on Vercel
+// functions in /api/ (shared helpers in lib/ponte.js; flashcards persist to Vercel KV).
+
 const fs = require('fs');
 require('dotenv').config({ path: fs.existsSync('/root/ponte.env') ? '/root/ponte.env' : '.env' });
 const express  = require('express');
