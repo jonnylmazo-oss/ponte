@@ -831,14 +831,23 @@
   }
 
   async function submitRecall(item) {
+    // #54: lock out double-submits on the very first line, before any other
+    // logic, so a rapid second click/Ctrl+Enter can't fire a duplicate request.
+    if (srAnswered) return;
     srAnswered = true;
     const inp  = srEl('prac-sr-recall-input');
     const btn  = srEl('prac-sr-submit-btn');
-    const userItalian = inp ? inp.value.trim() : '';
-    if (!userItalian) { srAnswered = false; return; }
-
     if (inp) inp.disabled = true;
     if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+
+    const userItalian = inp ? inp.value.trim() : '';
+    if (!userItalian) {
+      // Nothing to check — undo the lock so the user can try again.
+      srAnswered = false;
+      if (inp) { inp.disabled = false; inp.focus(); }
+      if (btn) { btn.disabled = false; btn.textContent = 'Check →'; }
+      return;
+    }
 
     let result   = null;
     let isCorrect = false;

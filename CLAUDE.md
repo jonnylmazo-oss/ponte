@@ -7,18 +7,15 @@ Ponte is a vanilla HTML/CSS/JS Italian reading app for English speakers who know
 
 | Layer | Detail |
 |-------|--------|
-| Backend | Node.js/Express, `server.js`, port 3001, PM2 `ponte-api` |
-| Frontend | Static files served by nginx from `/home/ponte/` |
-| Data | `/home/ponte/data/flashcards.json` |
-| Config | `/root/ponte.env` — `ANTHROPIC_API_KEY`, `PORT=3001`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`, `FLASHCARDS_PATH` |
-| Model | `claude-sonnet-4-20250514` |
-| Prod | `198.199.88.229` (DigitalOcean Ubuntu 24.04) |
-| nginx config | `/etc/nginx/sites-available/ponte` → symlinked to `sites-enabled/default` |
+| Backend | Node.js/Express, `server.js`, port 3000 |
+| Frontend | Static files (served locally via `python3 -m http.server`) |
+| Data | `data/flashcards.json` (or `FLASHCARDS_PATH`) |
+| Config | `.env` — `ANTHROPIC_API_KEY`, `PORT=3000`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`, `FLASHCARDS_PATH` |
+| Model | `claude-sonnet-4-6` |
 
-**Deploy:** `git add . && git commit -m "..." && git push && ssh root@198.199.88.229 "cd /home/ponte && bash deploy.sh"`
-(deploy.sh: `git pull && npm install --production && pm2 restart ponte-api`)
+**Deploy:** Hosting TBD — migration in progress. (The previous host has been shut down; no production host is configured. Local changes + git commit only until a new host is chosen.)
 
-**Local dev:** `npm start` (backend :3001) + `python3 -m http.server 8080` (frontend :8080)
+**Local dev:** `npm start` (backend :3000) + `python3 -m http.server 8080` (frontend :8080)
 
 ## File map
 
@@ -79,9 +76,9 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 
 ## Security
 
-- `.env` at `/root/ponte.env` — outside web root, never served by nginx
-- nginx blocks dotfiles: `location ~ /\. { deny all; }`
+- `.env` holds secrets — keep it outside any future web root and never serve it (host TBD; when a reverse proxy is added, block dotfile requests, e.g. nginx `location ~ /\. { deny all; }`)
 - Server fails-fast at startup if `PONTE_SESSION_SECRET` is unset or equals `dev-secret-change-me`
+- User free-text is passed through `sanitizeUserText()` before entering any Claude prompt template (strips control chars/newlines, neutralizes code fences, caps length) — mitigates prompt injection
 - `Authorization: Bearer <token>` (HMAC-SHA256 of password + secret) required on:
   - flashcard GET/POST
   - generation endpoints: `/api/generate-article-full`, `/api/generate-practice`, `/api/generate-dialogue`, `/api/conversation`
@@ -89,7 +86,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - Unauthenticated endpoints (kept open for now): `/api/translate`, `/api/translate-to-italian`, `/api/check-usage`, `/api/check-sentence`, `/api/distractors`, `/api/grammar-examples`, `/api/reading-quiz`, `/api/detect-patterns`
 - Flashcard POST: in-memory write lock returns 409 on concurrent attempts; rejects shrinks > 10% unless `{ override: true }`
 - Auth disabled if `PONTE_PASSWORD` env var not set
-- Change password: edit `/root/ponte.env` → `pm2 restart ponte-api --update-env`
+- Change password: edit `.env` → restart the server (`npm start`)
 
 ## Key localStorage keys
 
@@ -109,6 +106,15 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 | `ponte_drill_direction` | Drill direction (`'it-en'` or `'en-it'`); legacy `ponte_drill_reverse` boolean read as fallback |
 | `ponte_pending_sync` | Flag to retry failed server sync |
 | `ponte_weekly_mission` | Weekly mission state `{ week, mission, progress, completed }` |
+| `ponte_sidebar` | Desktop sidebar collapsed/expanded state (`'1'`/`'0'`) |
+| `ponte_conversation_session` | Free Conversation session state (scenario + message history) |
+| `ponte_dict_history` | Translate tab recent lookup history |
+| `ponte_ff_drill` | False Friends drill progress/position |
+| `ponte_sc_drill` | Safe Cognates drill progress/position |
+| `ponte_last_learn` | Last active sub-tab within the Learn nav group |
+| `ponte_last_more` | Last active sub-tab within the More nav group |
+| `ponte_last_practice` | Last active sub-tab within the Practice nav group |
+| `ponte_translation` | Reader translation column open/closed toggle (`'1'`/`'0'`) |
 
 ## Flashcard card structure
 
@@ -164,8 +170,6 @@ Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
 | #36 | Native audio per article | P2 |
 | #37 | Pronunciation lab (blocked by #36) | P3 |
 | #38 | Collaborative deck sharing | P3 |
-| #53 | Resume drill drops deleted cards | P1 |
-| #54 | Double-submit race in Practice free recall | P1 |
 | #55 | Mobile touch targets below 44px | P2 |
 | #56 | 100vh → 100dvh for fullscreen drill | P2 |
 | #57 | Wire up PATTERN_TO_GRAMMAR map | P3 |

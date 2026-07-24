@@ -442,8 +442,14 @@
     const queue   = pos.remainingIds.map((id) => cardMap.get(id)).filter(Boolean);
     if (!queue.length) { clearDrillPosition(); return; }
 
+    // #53: cards deleted since the session was saved are silently dropped by the
+    // filter above. Reduce the session total by the number dropped so the X/Y
+    // progress counter (and the final score) stay accurate for the rest of the
+    // session instead of counting phantom, no-longer-existent cards.
+    const dropped = pos.remainingIds.length - queue.length;
+
     drillQueue           = queue;
-    drillTotal           = pos.total;
+    drillTotal           = pos.total - dropped;
     drillCorrect         = pos.correct || 0;
     trickyCards          = [];
     sessionCorrect       = 0;
@@ -733,7 +739,7 @@
         <details class="fc-card" data-id="${card.id}" style="--fc-cat:${color}">
           <summary class="fc-card-body">
             <div class="fc-card-it-row">
-              <span class="fc-card-italian">${escapeHTML(card.italian)}</span>${card.nounNumber ? `<span class="fc-noun-number">(${card.nounNumber})</span>` : ''}
+              <span class="fc-card-italian">${escapeHTML(card.italian)}</span>${card.nounNumber ? `<span class="fc-noun-number">(${escapeHTML(card.nounNumber)})</span>` : ''}
               <div class="fc-card-head-actions">
                 <button class="speak-btn fc-card-speak-btn" data-word="${escapeHTML(card.italian)}" aria-label="Pronounce" title="Pronounce">🔊</button>
                 <button class="fc-delete-btn" data-id="${card.id}" aria-label="Delete card">✕</button>
@@ -741,7 +747,7 @@
             </div>
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
             <div class="fc-card-foot">
-              <span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>
+              <span class="fc-cat-badge" style="border-color:${color};color:${color}">${escapeHTML(label)}</span>
               ${irregularBadge(card)}
               ${dueLabel}
               ${accuracyBadge}
@@ -1132,7 +1138,7 @@
         fcFlipBase.hidden      = !card.baseForm;
       }
       fcFlipAnswer.innerHTML =
-        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${label}</span>${irregularBadge(card)}`
+        `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${escapeHTML(label)}</span>${irregularBadge(card)}`
         + (card.nounOtherForm ? `<div class="fc-flip-other-form">Other form: ${escapeHTML(card.nounOtherForm)}</div>` : '');
       fcFlipNote.textContent = card.note || '';
       fcFlipNote.hidden      = !card.note;

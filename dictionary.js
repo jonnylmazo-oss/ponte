@@ -343,7 +343,7 @@
               <span class="dict-usage-fix">${escapeHTML(err.correction)}</span>
             </div>
             <p class="dict-usage-explanation">${escapeHTML(err.explanation)}</p>
-            <span class="dict-usage-type-badge" style="border-color:${color};color:${color}">${typeLabel}</span>
+            <span class="dict-usage-type-badge" style="border-color:${color};color:${color}">${escapeHTML(typeLabel)}</span>
           </div>`;
         }
         html += '</div>';

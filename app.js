@@ -279,7 +279,7 @@
       const key   = word.toLowerCase();
       const entry = state.activeWordmap[key];
       if (entry) {
-        return `<span class="word word-${entry.category}" data-word="${key}" data-has-entry="true">${word}</span>`;
+        return `<span class="word word-${escapeHTML(entry.category)}" data-word="${key}" data-has-entry="true">${word}</span>`;
       }
       return `<span class="word" data-word="${key}">${word}</span>`;
     });
@@ -1558,7 +1558,7 @@
         recent.map((s) => {
           const d = new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
           const p = Math.round((s.score / s.total) * 100);
-          return `<div class="quiz-history-row"><span>${d}</span><span class="quiz-history-title">${s.title}</span><span class="quiz-history-score">${s.score}/${s.total} (${p}%)</span></div>`;
+          return `<div class="quiz-history-row"><span>${d}</span><span class="quiz-history-title">${escapeHTML(s.title)}</span><span class="quiz-history-score">${s.score}/${s.total} (${p}%)</span></div>`;
         }).join('');
     } else {
       quizScoreHistory.innerHTML = '';

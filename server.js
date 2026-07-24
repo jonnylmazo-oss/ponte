@@ -13,11 +13,10 @@ const PORT = process.env.PORT || 3000;
 
 const FLASHCARDS_PATH = process.env.FLASHCARDS_PATH || path.join(__dirname, 'data', 'flashcards.json');
 
+// Hosting TBD — migration in progress. Add the production origin here once chosen.
 const ALLOWED_ORIGINS = [
   'http://localhost:8080',
   'http://127.0.0.1:8080',
-  'http://198.199.88.229',
-  'https://ponte.market',
 ];
 
 app.use(cors({
@@ -82,15 +81,17 @@ app.post('/api/login', (req, res) => {
 });
 
 function buildPrompt(topic, difficulty, strict = false) {
+  const safeTopic      = sanitizeUserText(topic, 200);
+  const safeDifficulty = sanitizeUserText(difficulty, 20);
   const strictNote = strict
     ? ' CRITICAL: use only straight ASCII double-quote characters (") for all JSON strings — no curly quotes, no smart quotes, no special Unicode punctuation anywhere in the output.'
     : '';
-  return `You are an Italian language learning content generator. Write a short ${difficulty} Italian article about "${topic}" in a colloquial, natural register — not textbook Italian. Return ONLY valid JSON with this exact structure:
+  return `You are an Italian language learning content generator. Write a short ${safeDifficulty} Italian article about "${safeTopic}" in a colloquial, natural register — not textbook Italian. Return ONLY valid JSON with this exact structure:
 {
   "id": 0,
   "title": "...",
-  "difficulty": "${difficulty}",
-  "topic": "${topic}",
+  "difficulty": "${safeDifficulty}",
+  "topic": "${safeTopic}",
   "italian": "(80-120 words, natural colloquial Italian)",
   "english": "(natural English translation, not literal)",
   "spanish": "(natural Spanish translation)",
@@ -120,6 +121,21 @@ function extractAndSanitize(raw) {
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```\s*$/, '');
   return sanitizeJSON(stripped);
+}
+
+// Sanitize free-text user input before embedding it in a Claude prompt.
+// Naive quote-escaping does not stop prompt injection — a user can still close
+// the framing and inject instructions. Instead we strip control characters and
+// code fences, collapse the payload to a single logical block, and cap length.
+// The caller must also wrap the result in an explicit delimiter and instruct the
+// model to treat the delimited content as data, never as instructions.
+function sanitizeUserText(str, maxLen = 600) {
+  return String(str == null ? '' : str)
+    .slice(0, maxLen)
+    .replace(/[\x00-\x1F\x7F]/g, ' ') // control chars (incl. newlines/tabs)
+    .replace(/```/g, "'''")                  // neutralize code-fence breakouts
+    .replace(/\s+/g, ' ')                    // collapse whitespace
+    .trim();
 }
 
 // If the JSON is truncated (response cut off before closing brace), attempt to
@@ -231,7 +247,7 @@ app.get('/api/generate-article-stream', requireAuthQuery, async (req, res) => {
 
   try {
     const stream = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  1200,
       temperature: 0.8,
       stream:      true,
@@ -264,7 +280,7 @@ app.get('/api/generate-article-stream', requireAuthQuery, async (req, res) => {
       console.log('Retrying with strict JSON prompt...');
       try {
         const retry = await client.messages.create({
-          model:       'claude-sonnet-4-20250514',
+          model:       'claude-sonnet-4-6',
           max_tokens:  1200,
           temperature: 0.4,
           messages:    [{ role: 'user', content: buildPrompt(topic, difficulty, true) }],
@@ -296,7 +312,7 @@ app.post('/api/generate-article-full', requireAuth, async (req, res) => {
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  1200,
       temperature: 0.8,
       messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
@@ -322,11 +338,14 @@ app.post('/api/translate', async (req, res) => {
     return res.status(400).json({ error: 'text is required' });
   }
 
-  const prompt = `The user is learning Italian and selected this text: "${text}"
-Full Italian context (the article being read): "${(context || text).slice(0, 600)}"
+  const safeText    = sanitizeUserText(text, 300);
+  const safeContext = sanitizeUserText(context || text, 600);
+
+  const prompt = `The user is learning Italian and selected this text: "${safeText}"
+Full Italian context (the article being read): "${safeContext}"
 Return JSON only — no markdown, no code fences:
 {
-  "italian": "${text}",
+  "italian": "${safeText}",
   "english": "English translation",
   "spanish": "Spanish equivalent or translation",
   "note": "One sentence for a Spanish speaker: is this a safe cognate, false friend, or does it diverge from Spanish usage?",
@@ -352,7 +371,7 @@ nounNumber/nounOtherForm: only for nouns — state whether the saved form is sin
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  500,
       temperature: 0.2,
       messages:    [{ role: 'user', content: prompt }],
@@ -384,8 +403,12 @@ app.post('/api/grammar-examples', async (req, res) => {
     return res.status(400).json({ error: 'concept is required' });
   }
 
-  const prompt = `Generate 3 short Italian example sentences demonstrating "${concept}" (Stage ${stage || ''} Italian grammar for Spanish speakers).
-Current example already shown: "${(currentExample || '').slice(0, 200)}"
+  const safeConcept        = sanitizeUserText(concept, 200);
+  const safeStage          = sanitizeUserText(stage, 20);
+  const safeCurrentExample = sanitizeUserText(currentExample, 200);
+
+  const prompt = `Generate 3 short Italian example sentences demonstrating "${safeConcept}" (Stage ${safeStage} Italian grammar for Spanish speakers).
+Current example already shown: "${safeCurrentExample}"
 Each new sentence must use a different verb and context from the current example.
 Return JSON only — no markdown, no code fences:
 { "examples": [ { "italian": "...", "english": "..." }, { "italian": "...", "english": "..." }, { "italian": "...", "english": "..." } ] }
@@ -393,7 +416,7 @@ Keep sentences short (8-12 words). Natural colloquial Italian, not textbook.`;
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  400,
       temperature: 0.7,
       messages:    [{ role: 'user', content: prompt }],
@@ -522,7 +545,7 @@ Return JSON only — no markdown, no code fences:
 }`;
 
       const message = await client.messages.create({
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  100,
         temperature: 0.1,
         messages:    [{ role: 'user', content: prompt }],
@@ -567,6 +590,7 @@ app.post('/api/translate-to-italian', async (req, res) => {
   }
 
   const englishInput = text.trim();
+  const safeEnglishInput = sanitizeUserText(englishInput, 200);
 
   // Prompt is structured so Claude cannot confuse roles:
   // - The English word lives outside the JSON schema (its own labeled line).
@@ -576,7 +600,7 @@ app.post('/api/translate-to-italian', async (req, res) => {
   //   that the value must be replaced, not echoed verbatim.
   const prompt = `You are translating an English word to Italian for a Spanish speaker who is learning Italian.
 
-English word to translate: ${englishInput}
+English word to translate: ${safeEnglishInput}
 
 Return JSON only — no markdown, no code fences. Replace every <placeholder> with the correct value:
 {
@@ -601,7 +625,7 @@ nounNumber/nounOtherForm: only for nouns — state whether the translated Italia
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  400,
       temperature: 0.2,
       messages:    [{ role: 'user', content: prompt }],
@@ -642,23 +666,27 @@ app.post('/api/distractors', async (req, res) => {
     'cognate':      'This is a cognate with Spanish. Generate distractors from the same word family or similar Italian words.',
   };
 
+  const safeWord     = sanitizeUserText(word, 100);
+  const safeSentence = sanitizeUserText(sentence, 200);
+  const safeCategory = sanitizeUserText(category || 'new', 30);
+
   const prompt = `The user is an English speaker learning Italian who also knows Spanish. They are doing a cloze exercise.
-Correct answer: "${word.trim()}"
-Sentence: "${(sentence || '').slice(0, 200)}"
-Category: ${category || 'new'}
+Correct answer: "${safeWord}"
+Sentence: "${safeSentence}"
+Category: ${safeCategory}
 ${catHints[category] || 'Generate plausible Italian word distractors.'}
 
 Generate exactly 3 plausible wrong answer options for multiple choice. They must be:
 1. Real Italian words (not random strings)
 2. Targeting Spanish-speaker confusion — wrong tense of the same verb, a Spanish cognate, similar-sounding Italian word, or common transfer error
-3. Each different from "${word.trim()}" and from each other
+3. Each different from "${safeWord}" and from each other
 
 Return JSON only — no markdown, no code fences:
 { "distractors": ["word1", "word2", "word3"] }`;
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  120,
       temperature: 0.7,
       messages:    [{ role: 'user', content: prompt }],
@@ -683,7 +711,9 @@ app.post('/api/check-usage', async (req, res) => {
     return res.status(400).json({ error: 'sentence is required' });
   }
 
-  const prompt = `The user is an English speaker learning Italian who also speaks Spanish. They wrote this Italian sentence: "${sentence.trim().replace(/"/g, '\\"')}"
+  const safeSentence = sanitizeUserText(sentence, 600);
+
+  const prompt = `The user is an English speaker learning Italian who also speaks Spanish. They wrote this Italian sentence: "${safeSentence}"
 
 Check for:
 1. Grammar errors
@@ -709,7 +739,7 @@ If the sentence is correct, errors should be an empty array.`;
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  600,
       temperature: 0.2,
       messages:    [{ role: 'user', content: prompt }],
@@ -732,7 +762,9 @@ app.post('/api/conversation', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'scenario is required' });
   }
 
-  const systemPrompt = `You are a native Italian speaker in this scenario: "${scenario.trim()}".
+  const safeScenario = sanitizeUserText(scenario, 200);
+
+  const systemPrompt = `You are a native Italian speaker in this scenario: "${safeScenario}".
 Speak only in Italian. Keep your responses conversational and natural — 2–4 sentences max.
 After your Italian response, add a new line with exactly "---" followed by a brief English note (1–2 lines) covering any errors in the user's Italian (grammar, Spanish transfer, word choice). Start each error with ⚠️. Add a vocabulary tip starting with 💡 if relevant.
 If the user's Italian had no errors, just write "✓ Ottimo!" after the ---.
@@ -756,7 +788,7 @@ Stay warm, in-character, and encouraging throughout.`;
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  400,
       temperature: 0.8,
       system:      systemPrompt,
@@ -776,14 +808,18 @@ app.post('/api/check-sentence', async (req, res) => {
   const { english, userItalian, articleItalian } = req.body;
   if (!english || !userItalian) return res.status(400).json({ error: 'english and userItalian required' });
 
+  const safeEnglish        = sanitizeUserText(english, 400);
+  const safeUserItalian    = sanitizeUserText(userItalian, 400);
+  const safeArticleItalian = sanitizeUserText(articleItalian, 400);
+
   const prompt = `The user is learning Italian. They were shown this English sentence:
-"${english}"
+"${safeEnglish}"
 
 They wrote this Italian:
-"${userItalian}"
+"${safeUserItalian}"
 
 The ideal Italian from the article is:
-"${articleItalian || ''}"
+"${safeArticleItalian}"
 
 Evaluate their answer. Return valid JSON only (no markdown):
 {
@@ -798,7 +834,7 @@ Be generous — accept valid alternate phrasings. Focus on meaningful errors, no
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  600,
       temperature: 0.2,
       messages: [{ role: 'user', content: prompt }],
@@ -822,12 +858,17 @@ app.post('/api/detect-patterns', async (req, res) => {
   const { italian, english, category, note } = req.body;
   if (!italian) return res.status(400).json({ error: 'italian required' });
 
+  const safeItalian  = sanitizeUserText(italian, 300);
+  const safeEnglish  = sanitizeUserText(english, 300);
+  const safeCategory = sanitizeUserText(category, 30);
+  const safeNote     = sanitizeUserText(note, 300);
+
   const prompt = `Given this Italian flashcard, identify which grammar/vocabulary error patterns it relates to.
 
-Italian: "${italian}"
-English: "${english || ''}"
-Category: "${category || ''}"
-Note: "${note || ''}"
+Italian: "${safeItalian}"
+English: "${safeEnglish}"
+Category: "${safeCategory}"
+Note: "${safeNote}"
 
 Return ONLY a JSON array of pattern keys from this list (return empty array [] if none apply):
 - "false-friend" — word looks similar to a Spanish word but means something different
@@ -843,7 +884,7 @@ Return only the JSON array, no explanation.`;
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  100,
       temperature: 0.1,
       messages: [{ role: 'user', content: prompt }],
@@ -864,16 +905,17 @@ app.post('/api/generate-practice', requireAuth, async (req, res) => {
   const { topic, difficulty } = req.body;
   if (!topic || !topic.trim()) return res.status(400).json({ error: 'topic required' });
   const diff = difficulty || 'B1';
+  const safeTopic = sanitizeUserText(topic, 200);
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       temperature: 0.8,
       messages: [{
         role: 'user',
         content: `Generate 8 Italian translation exercises for a Spanish speaker learning Italian at ${diff} level.
-Topic: "${topic}".
+Topic: "${safeTopic}".
 Write natural, conversational Italian — not textbook phrasing. Vary sentence structures.
 Return JSON only, no markdown:
 {
@@ -914,14 +956,14 @@ app.post('/api/reading-quiz', async (req, res) => {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       temperature: 0.5,
       messages: [{
         role: 'user',
         content: `You are a comprehension quiz generator for an Italian reading app. Given an Italian article and its English translation, generate 5 comprehension questions that test whether the reader understood the content.
 
-Article title: "${title || 'Italian article'}"
+Article title: "${sanitizeUserText(title || 'Italian article', 200)}"
 
 Italian text:
 ${italian}
@@ -974,8 +1016,10 @@ app.post('/api/generate-dialogue', requireAuth, async (req, res) => {
   const diff = (['B1', 'B2'].includes((difficulty || '').toUpperCase()))
     ? difficulty.toUpperCase() : 'B1';
 
+  const safeScenario = sanitizeUserText(scenario, 200);
+
   const prompt = `Generate a realistic scripted dialogue in Italian for a language learner.
-Scenario: ${scenario.trim()}
+Scenario: ${safeScenario}
 Difficulty: ${diff}
 
 Two characters: a native Italian speaker and the learner. Return JSON only — no markdown, no code fences:
@@ -1012,7 +1056,7 @@ Rules:
 
   try {
     const message = await client.messages.create({
-      model:       'claude-sonnet-4-20250514',
+      model:       'claude-sonnet-4-6',
       max_tokens:  1400,
       temperature: 0.8,
       messages:    [{ role: 'user', content: prompt }],
