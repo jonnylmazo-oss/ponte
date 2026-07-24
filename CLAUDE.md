@@ -35,8 +35,10 @@ mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
 style.css          Kindle sepia design system
 server.js          Legacy Express API (local dev reference only — prod uses /api)
-api/               Vercel serverless functions — one file per endpoint (login,
-                   flashcards [Upstash Redis], translate, generate-*, check-*, etc.)
+api/               9 Vercel serverless functions (Hobby 12-fn cap): 5 standalone
+                   (translate, flashcards [Upstash Redis], generate-article-stream,
+                   conversation, generate-dialogue) + 4 *-combined dispatch-by-?action=
+                   (translate-, practice-, feedback-, auth-combined)
 lib/
   ponte.js         Shared helpers for /api (Anthropic client, auth guards,
                    buildPrompt, sanitizeUserText, parseArticleJSON, …)
@@ -65,23 +67,27 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 
 ## API endpoints
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/api/generate-article-stream` | SSE article generation |
-| POST | `/api/generate-article-full` | Full article JSON (fallback) |
-| POST | `/api/translate` | IT→EN word + metadata |
-| POST | `/api/translate-to-italian` | EN→IT translation |
-| POST | `/api/grammar-examples` | 3 extra grammar card examples |
-| POST | `/api/generate-practice` | 8 practice sentences |
-| POST | `/api/check-sentence` | Score free-recall sentence |
-| POST | `/api/generate-dialogue` | Scripted dialogue JSON |
-| POST | `/api/conversation` | Free conversation reply + feedback |
-| POST | `/api/reading-quiz` | 5 comprehension questions |
-| POST | `/api/detect-patterns` | Grammar error pattern detection |
-| POST | `/api/check-usage` | Italian sentence usage check |
-| GET | `/api/flashcards` | Load deck (auth required) |
-| POST | `/api/flashcards` | Save deck (auth required) |
-| POST | `/api/login` | Password → Bearer token |
+Deployed as **9 Vercel serverless functions** (Hobby plan caps at 12). Five endpoints keep their own file; the rest are merged into four `*-combined` functions that dispatch on a `?action=` query param. Frontend calls the combined path+action directly (`API_BASE` is `''` in prod).
+
+| Function file | Method | Path (as called) | Purpose |
+|---------------|--------|------------------|---------|
+| `generate-article-stream.js` | GET | `/api/generate-article-stream` | SSE article generation |
+| `translate.js` | POST | `/api/translate` | IT→EN word + metadata |
+| `conversation.js` | POST | `/api/conversation` | Free conversation reply + feedback |
+| `generate-dialogue.js` | POST | `/api/generate-dialogue` | Scripted dialogue JSON |
+| `flashcards.js` | GET/POST | `/api/flashcards` | Load/save deck (auth required) |
+| `translate-combined.js` | POST | `/api/translate-combined?action=translate-to-italian` | EN→IT translation |
+| " | POST | `/api/translate-combined?action=grammar-examples` | 3 extra grammar card examples |
+| `practice-combined.js` | POST | `/api/practice-combined?action=generate-practice` | 8 practice sentences (auth) |
+| " | POST | `/api/practice-combined?action=check-sentence` | Score free-recall sentence |
+| " | POST | `/api/practice-combined?action=distractors` | Cloze distractor options |
+| `feedback-combined.js` | POST | `/api/feedback-combined?action=check-usage` | Italian sentence usage check |
+| " | POST | `/api/feedback-combined?action=detect-patterns` | Grammar error pattern detection |
+| " | POST | `/api/feedback-combined?action=reading-quiz` | 5 comprehension questions |
+| `auth-combined.js` | POST | `/api/auth-combined?action=login` | Password → Bearer token |
+| " | POST | `/api/auth-combined?action=backfill-flashcards` | Backfill baseForm (auth) |
+
+Note: the old non-streaming `/api/generate-article-full` fallback was removed (no frontend caller; the reader uses the SSE stream). Shared logic lives in `lib/ponte.js`.
 
 ## Security
 

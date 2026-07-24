@@ -230,7 +230,7 @@
 
   // ── Generate practice from API ────────────────────────────────────────────
   async function generatePractice(topic, difficulty) {
-    const resp = await fetch(API_BASE + '/api/generate-practice', {
+    const resp = await fetch(API_BASE + '/api/practice-combined?action=generate-practice', {
       method:  'POST',
       headers: pracAuthHeaders(),
       body:    JSON.stringify({ topic, difficulty }),
@@ -314,7 +314,7 @@
     pracStartBtn.textContent = 'Generating…';
 
     try {
-      console.log('[Practice] Calling /api/generate-practice…');
+      console.log('[Practice] Calling /api/practice-combined?action=generate-practice…');
       drillItems = await generatePractice(currentTopic, currentDifficulty);
       console.log('[Practice] API returned', drillItems.length, 'items');
     } catch (e) {
@@ -363,7 +363,7 @@
   }
 
   function recordPracticeError(item) {
-    fetch(API_BASE + '/api/detect-patterns', {
+    fetch(API_BASE + '/api/feedback-combined?action=detect-patterns', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
@@ -868,7 +868,7 @@
     } else {
       // Free Recall: API check
       try {
-        const resp = await fetch(API_BASE + '/api/check-sentence', {
+        const resp = await fetch(API_BASE + '/api/practice-combined?action=check-sentence', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ english: item.english, userItalian, articleItalian: item.italian }),

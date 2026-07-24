@@ -51,7 +51,7 @@
     if (errorEl) errorEl.hidden = true;
 
     try {
-      const resp = await fetch(API_BASE + '/api/login', {
+      const resp = await fetch(API_BASE + '/api/auth-combined?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -1424,7 +1424,7 @@
 
   // ── Detect and persist grammar patterns for a newly saved card ───────────
   function detectAndSavePatterns(cardId, italian, english, category, note) {
-    fetch(API_BASE + '/api/detect-patterns', {
+    fetch(API_BASE + '/api/feedback-combined?action=detect-patterns', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ italian, english, category, note }),
@@ -1462,7 +1462,7 @@
     quizCurrent   = 0;
     quizCorrect   = 0;
     quizAnswered  = false;
-    fetch('/api/reading-quiz', {
+    fetch('/api/feedback-combined?action=reading-quiz', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

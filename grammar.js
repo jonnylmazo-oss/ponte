@@ -284,7 +284,7 @@
 
         const container = document.getElementById('gr-extra-' + cardId);
         try {
-          const res = await fetch(API_BASE + '/api/grammar-examples', {
+          const res = await fetch(API_BASE + '/api/translate-combined?action=grammar-examples', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({

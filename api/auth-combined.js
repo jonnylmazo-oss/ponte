@@ -1,18 +1,29 @@
 'use strict';
 
-// POST /api/backfill-flashcards — fill missing baseForm/baseFormEN on saved cards.
-// Reads the deck from Upstash Redis, calls Claude for cards missing baseForm,
-// writes the deck back to Redis. Rate-limited to 500ms between calls.
+// Combined endpoint — POST /api/auth-combined?action=...
+// (merged to stay under Vercel Hobby's 12-serverless-function limit)
+//   ?action=login              → password → Bearer token
+//   ?action=backfill-flashcards → fill missing baseForm/baseFormEN on saved cards (auth required)
 const { Redis } = require('@upstash/redis');
-const { client, requireAuth, parseArticleJSON } = require('../lib/ponte.js');
+const { PONTE_PASSWORD, makeToken, client, requireAuth, parseArticleJSON } = require('../lib/ponte.js');
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+// ── login — Body: { password }
+async function login(req, res) {
+  const { password } = req.body || {};
+  if (!PONTE_PASSWORD) return res.json({ token: 'no-auth' });
+  if (!password || password !== PONTE_PASSWORD) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+  res.json({ token: makeToken(password) });
+}
+
+// ── backfill-flashcards — reads deck from Redis, fills baseForm, writes back (auth required)
+async function backfillFlashcards(req, res) {
   if (!requireAuth(req, res)) return;
 
   let cards;
@@ -71,4 +82,13 @@ Return JSON only — no markdown, no code fences:
   }
 
   res.json({ updated, skipped: cards.length - toUpdate.length, errors });
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  switch ((req.query && req.query.action) || '') {
+    case 'login':               return login(req, res);
+    case 'backfill-flashcards': return backfillFlashcards(req, res);
+    default: return res.status(400).json({ error: 'Unknown or missing ?action= (expected login | backfill-flashcards)' });
+  }
 };

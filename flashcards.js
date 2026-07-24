@@ -1429,7 +1429,7 @@
     wlStatus.textContent = 'Translating…';
     wlCurrentEntry = null;
 
-    const endpoint = wlDirection === 'en' ? '/api/translate-to-italian' : '/api/translate';
+    const endpoint = wlDirection === 'en' ? '/api/translate-combined?action=translate-to-italian' : '/api/translate';
     const body = wlDirection === 'en'
       ? JSON.stringify({ text: word })
       : JSON.stringify({ text: word, context: '' });

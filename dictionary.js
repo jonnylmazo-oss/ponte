@@ -146,7 +146,7 @@
     dictResult.hidden  = true;
 
     try {
-      const endpoint = isIT ? '/api/translate' : '/api/translate-to-italian';
+      const endpoint = isIT ? '/api/translate' : '/api/translate-combined?action=translate-to-italian';
       const res   = await fetch(API_BASE + endpoint, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,7 +294,7 @@
     dictCheckBtn.disabled   = true;
 
     try {
-      const res  = await fetch(API_BASE + '/api/check-usage', {
+      const res  = await fetch(API_BASE + '/api/feedback-combined?action=check-usage', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ sentence }),
