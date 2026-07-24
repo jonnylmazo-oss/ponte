@@ -15,9 +15,9 @@ Ponte is a vanilla HTML/CSS/JS Italian reading app for English speakers who know
 | Config | env vars (Vercel dashboard / local `.env`) — see `.env.example` |
 | Model | `claude-sonnet-4-6` |
 
-**Deploy:** `git push` (Vercel auto-deploys the connected `jonnylmazo-oss/ponte` repo), or `vercel --prod` from the CLI. Node version pinned to 20.x via `package.json` `engines`. Env vars set manually in the Vercel dashboard: `ANTHROPIC_API_KEY`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`. The Upstash vars (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) are auto-provisioned by the Vercel↔Upstash integration. `server.js` + `backfill.js` are excluded from the deployment via `.vercelignore` (source-only, not imported by any function); `lib/ponte.js` is NOT excluded — functions import it, so Node File Trace must be able to bundle it.
+**Deploy:** `git push` (Vercel auto-deploys the connected `jonnylmazo-oss/ponte` repo), or `vercel --prod` from the CLI. Node version pinned to 20.x via `package.json` `engines`. Env vars set manually in the Vercel dashboard: `ANTHROPIC_API_KEY`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`. The Upstash/KV vars (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) are auto-provisioned by the Vercel↔Upstash integration — the code reads those exact names. `server.js` + `backfill.js` are excluded from the deployment via `.vercelignore` (source-only, not imported by any function); `lib/ponte.js` is NOT excluded — functions import it, so Node File Trace must be able to bundle it.
 
-**Local dev:** `npm start` (legacy Express backend :3000) + `python3 -m http.server 8080` (frontend :8080). Note: local flashcard persistence uses the legacy file-based `server.js`; the Upstash Redis path only runs in the deployed functions (or via `vercel dev` with the `UPSTASH_REDIS_REST_*` env vars set).
+**Local dev:** `npm start` (legacy Express backend :3000) + `python3 -m http.server 8080` (frontend :8080). Note: local flashcard persistence uses the legacy file-based `server.js`; the Upstash Redis path only runs in the deployed functions (or via `vercel dev` with the `KV_REST_API_URL` / `KV_REST_API_TOKEN` env vars set).
 
 ## File map
 

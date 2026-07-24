@@ -8,8 +8,8 @@ const { Redis } = require('@upstash/redis');
 const { PONTE_PASSWORD, makeToken, client, requireAuth, parseArticleJSON } = require('../lib/ponte.js');
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
 });
 
 // ── login — Body: { password }
