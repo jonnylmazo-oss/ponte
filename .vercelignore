@@ -1,0 +1,6 @@
+# Keep source-only files out of the deployment (they'd otherwise be served as
+# public static assets at the repo root). Only list files that NO serverless
+# function imports — Node File Trace can only bundle files that are uploaded, so
+# anything required by /api (e.g. lib/ponte.js) must NOT be excluded here.
+server.js
+backfill.js

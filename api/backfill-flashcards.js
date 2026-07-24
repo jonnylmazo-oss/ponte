@@ -1,10 +1,15 @@
 'use strict';
 
 // POST /api/backfill-flashcards — fill missing baseForm/baseFormEN on saved cards.
-// Reads the deck from Vercel KV, calls Claude for cards missing baseForm, writes
-// the deck back to KV. Rate-limited to 500ms between calls.
-const { kv } = require('@vercel/kv');
+// Reads the deck from Upstash Redis, calls Claude for cards missing baseForm,
+// writes the deck back to Redis. Rate-limited to 500ms between calls.
+const { Redis } = require('@upstash/redis');
 const { client, requireAuth, parseArticleJSON } = require('../lib/ponte.js');
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -12,7 +17,7 @@ module.exports = async function handler(req, res) {
 
   let cards;
   try {
-    cards = await kv.get('flashcards');
+    cards = await redis.get('flashcards');
     if (!Array.isArray(cards)) return res.json({ updated: 0, skipped: 0, errors: [] });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to read flashcards: ' + err.message });
@@ -60,7 +65,7 @@ Return JSON only — no markdown, no code fences:
 
   // Write back
   try {
-    await kv.set('flashcards', cards);
+    await redis.set('flashcards', cards);
   } catch (err) {
     return res.status(500).json({ error: 'Failed to write flashcards: ' + err.message });
   }

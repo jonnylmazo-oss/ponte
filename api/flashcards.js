@@ -1,12 +1,17 @@
 'use strict';
 
-// GET/POST /api/flashcards — deck persistence via Vercel KV (was a JSON file on disk)
+// GET/POST /api/flashcards — deck persistence via Upstash Redis (was a JSON file on disk)
 //   Key 'flashcards'      → the deck array
 //   Key 'flashcards_bak'  → last-known-good backup, written before each overwrite
 // Guards preserved from the legacy Express handler: in-memory write lock,
 // empty-overwrite block, and >10% anti-shrink guard (bypassable with override:true).
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 const { requireAuth } = require('../lib/ponte.js');
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
@@ -16,7 +21,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const cards = (await kv.get('flashcards')) ?? [];
+      const cards = (await redis.get('flashcards')) ?? [];
       return res.json(cards);
     } catch (err) {
       console.error('Error reading flashcards:', err.message);
@@ -43,7 +48,7 @@ module.exports = async function handler(req, res) {
     let existing = null;
     let currentCount = 0;
     try {
-      existing = await kv.get('flashcards');
+      existing = await redis.get('flashcards');
       if (Array.isArray(existing)) currentCount = existing.length;
     } catch (_) { /* ignore read errors */ }
 
@@ -69,7 +74,7 @@ module.exports = async function handler(req, res) {
     // Backup BEFORE acquiring the lock so concurrent writes don't clobber the backup
     try {
       if (existing != null) {
-        await kv.set('flashcards_bak', existing);
+        await redis.set('flashcards_bak', existing);
       }
     } catch (err) {
       console.error('[flashcards] backup failed:', err.message);
@@ -78,7 +83,7 @@ module.exports = async function handler(req, res) {
 
     flashcardWriteLock = true;
     try {
-      await kv.set('flashcards', cards);
+      await redis.set('flashcards', cards);
       return res.json({ ok: true, count: cards.length });
     } catch (err) {
       console.error('Error writing flashcards:', err.message);

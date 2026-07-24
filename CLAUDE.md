@@ -11,13 +11,13 @@ Ponte is a vanilla HTML/CSS/JS Italian reading app for English speakers who know
 | Backend (prod) | Vercel serverless functions in `/api/*.js`; shared helpers in `lib/ponte.js` |
 | Backend (local dev) | Legacy `server.js` (Express, port 3000) — kept for reference, not deployed |
 | Frontend | Static files served from repo root by Vercel |
-| Data | **Vercel KV** — key `flashcards` (deck), `flashcards_bak` (backup) |
+| Data | **Upstash Redis** (`@upstash/redis`) — key `flashcards` (deck), `flashcards_bak` (backup) |
 | Config | env vars (Vercel dashboard / local `.env`) — see `.env.example` |
 | Model | `claude-sonnet-4-6` |
 
-**Deploy:** `git push` (Vercel auto-deploys the connected `jonnylmazo-oss/ponte` repo), or `vercel --prod` from the CLI. Node version pinned to 20.x via `package.json` `engines`. Env vars (`ANTHROPIC_API_KEY`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`) set in the Vercel dashboard; KV vars are auto-provisioned when the KV store is linked.
+**Deploy:** `git push` (Vercel auto-deploys the connected `jonnylmazo-oss/ponte` repo), or `vercel --prod` from the CLI. Node version pinned to 20.x via `package.json` `engines`. Env vars set manually in the Vercel dashboard: `ANTHROPIC_API_KEY`, `PONTE_PASSWORD`, `PONTE_SESSION_SECRET`. The Upstash vars (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) are auto-provisioned by the Vercel↔Upstash integration. `server.js` + `backfill.js` are excluded from the deployment via `.vercelignore` (source-only, not imported by any function); `lib/ponte.js` is NOT excluded — functions import it, so Node File Trace must be able to bundle it.
 
-**Local dev:** `npm start` (legacy Express backend :3000) + `python3 -m http.server 8080` (frontend :8080). Note: local flashcard persistence uses the legacy file-based `server.js`; the Vercel KV path only runs in the deployed functions (or via `vercel dev` with KV env vars).
+**Local dev:** `npm start` (legacy Express backend :3000) + `python3 -m http.server 8080` (frontend :8080). Note: local flashcard persistence uses the legacy file-based `server.js`; the Upstash Redis path only runs in the deployed functions (or via `vercel dev` with the `UPSTASH_REDIS_REST_*` env vars set).
 
 ## File map
 
@@ -36,7 +36,7 @@ progress.js        Progress Dashboard IIFE
 style.css          Kindle sepia design system
 server.js          Legacy Express API (local dev reference only — prod uses /api)
 api/               Vercel serverless functions — one file per endpoint (login,
-                   flashcards [KV], translate, generate-*, check-*, etc.)
+                   flashcards [Upstash Redis], translate, generate-*, check-*, etc.)
 lib/
   ponte.js         Shared helpers for /api (Anthropic client, auth guards,
                    buildPrompt, sanitizeUserText, parseArticleJSON, …)
