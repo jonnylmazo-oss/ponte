@@ -5,6 +5,7 @@
 //   ?action=check-usage     → Italian sentence usage/grammar feedback
 //   ?action=detect-patterns → map a flashcard to grammar error pattern keys
 //   ?action=reading-quiz    → 5 comprehension questions for an article
+//   ?action=deep-dive       → full word exploration (all senses → examples → etymology)
 const { client, sanitizeUserText, sanitizeJSON } = require('../lib/ponte.js');
 
 // ── check-usage — Body: { sentence }
@@ -161,12 +162,64 @@ For tf: "correct" is 0 for True, 1 for False.`,
   }
 }
 
+// ── deep-dive — Body: { word } — all senses, then per-sense examples, then etymology
+async function deepDive(req, res) {
+  const { word } = req.body || {};
+  if (!word || !word.trim()) return res.status(400).json({ error: 'word is required' });
+
+  const safeWord = sanitizeUserText(word, 80);
+
+  const prompt = `Provide a deep dive on the Italian word '${safeWord}' for a Spanish-speaking B1/B2 learner.
+
+Return JSON only — no markdown, no code fences:
+{
+  "word": "the italian word",
+  "senses": [
+    {
+      "definition": "English definition of this sense",
+      "wordType": "noun|verb|adjective|adverb|phrase",
+      "category": "same|similar|false-friend|new",
+      "spanishNote": "brief note on the Spanish relationship for THIS sense, only if category is similar or false-friend, otherwise null",
+      "examples": [ { "italian": "sentence", "english": "translation" } ]
+    }
+  ],
+  "etymology": "brief shared-root note if genuinely interesting, or null"
+}
+
+Rules:
+- List ALL common senses, ordered by frequency of use (most common first).
+- Most words have 1 sense; only split into multiple when meanings are genuinely distinct (like intimo: 1. intimate/close (emotional) vs 2. underwear/intimate apparel).
+- 2-3 examples per sense; each sentence must clearly target that specific sense — not a generic sentence that could fit any meaning.
+- category and spanishNote reflect the SPECIFIC sense, not the word in general — a word can be 'same' in one sense and 'false-friend' in another.
+- Category meanings: 'same' = visually near-identical to Spanish AND fully equivalent meaning; 'similar' = resembles Spanish, core meaning transfers but Italian adds/narrows a sense; 'false-friend' = resembles Spanish but the Spanish instinct gives a WRONG meaning; 'new' = no meaningful Spanish connection.
+- etymology: only include a real shared Latin/Greek root worth noting (e.g. "coltello shares its root with English 'cutlery' and Spanish 'cuchillo' — all from Latin cultellus"); return null when the connection is obvious or nonexistent.`;
+
+  try {
+    const message = await client.messages.create({
+      model:       'claude-sonnet-4-6',
+      max_tokens:  1500,
+      temperature: 0.4,
+      messages:    [{ role: 'user', content: prompt }],
+    });
+
+    const raw    = message.content[0].text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
+    const result = JSON.parse(sanitizeJSON(raw));
+    if (!Array.isArray(result.senses)) result.senses = [];
+    if (!result.word) result.word = word.trim();
+    res.json(result);
+  } catch (err) {
+    console.error('Deep-dive error:', err.message);
+    res.status(500).json({ error: 'Failed to generate deep dive' });
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   switch ((req.query && req.query.action) || '') {
     case 'check-usage':     return checkUsage(req, res);
     case 'detect-patterns': return detectPatterns(req, res);
     case 'reading-quiz':    return readingQuiz(req, res);
-    default: return res.status(400).json({ error: 'Unknown or missing ?action= (expected check-usage | detect-patterns | reading-quiz)' });
+    case 'deep-dive':       return deepDive(req, res);
+    default: return res.status(400).json({ error: 'Unknown or missing ?action= (expected check-usage | detect-patterns | reading-quiz | deep-dive)' });
   }
 };

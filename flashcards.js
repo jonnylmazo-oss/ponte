@@ -290,6 +290,15 @@
   const fcFlipCard        = $('fc-flip-card');
   const fcFlipFrontMeta   = $('fc-flip-front-meta');
   const fcFlipFrontBadges = $('fc-flip-front-badges');
+
+  // Deep dive from the drill flip-card back → opens the Deep-dive screen (issue #62)
+  const fcDeepDiveBtn = $('fc-deep-dive-btn');
+  if (fcDeepDiveBtn) {
+    fcDeepDiveBtn.addEventListener('click', () => {
+      const card = drillQueue[0];
+      if (card && card.italian && window.ponteDeepDive) window.ponteDeepDive(card.italian);
+    });
+  }
   const fcFlipExample     = $('fc-flip-example');
   const fcFlipExampleIt   = $('fc-flip-example-it');
   const fcFlipExampleEn   = $('fc-flip-example-en');

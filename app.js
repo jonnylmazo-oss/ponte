@@ -910,7 +910,7 @@
 
   const LEARN_TABS    = ['false-friends', 'grammar'];
   const PRACTICE_TABS = ['practice', 'conversation'];
-  const MORE_TABS     = ['dictionary', 'shadowing', 'progress'];
+  const MORE_TABS     = ['dictionary', 'shadowing', 'progress', 'deep-dive'];
 
   const LS_LAST_LEARN    = 'ponte_last_learn';
   const LS_LAST_PRACTICE = 'ponte_last_practice';

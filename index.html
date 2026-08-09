@@ -150,6 +150,11 @@
               <span class="nav-icon">📊</span>
               <span class="nav-label">Progress</span>
             </button>
+            <button class="nav-item nav-sub-item" data-tab="deep-dive"
+              onclick="window.switchTab('deep-dive')">
+              <span class="nav-icon">🔍</span>
+              <span class="nav-label">Deep dive</span>
+            </button>
           </div></div>
         </div>
 
@@ -923,6 +928,7 @@
                       <span class="fc-flip-example-en" id="fc-flip-example-en"></span>
                     </div>
                     <p class="fc-flip-note" id="fc-flip-note"></p>
+                    <button class="fc-deep-dive-btn" id="fc-deep-dive-btn">🔍 Deep dive</button>
                   </div>
                   <div class="drill-card-buttons">
                     <button class="fc-again-btn" id="fc-again-btn">Again</button>
@@ -962,6 +968,27 @@
 
       <!-- Tab: Progress -->
       <div class="tab-panel" id="tab-progress"></div>
+
+      <!-- Tab: Deep dive -->
+      <div class="tab-panel" id="tab-deep-dive">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+        <div class="dd-screen">
+          <h1 class="dd-title">🔍 Deep dive</h1>
+          <p class="dd-subtitle">Explore any Italian word — all meanings first, then example sentences for each.</p>
+          <div class="dd-search-row">
+            <input type="text" class="dd-search-input" id="dd-search-input" placeholder="Enter an Italian word…" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <button class="dd-search-btn" id="dd-search-btn">Search</button>
+          </div>
+          <div class="dd-empty" id="dd-empty">
+            <p>Type an Italian word above, or tap “🔍 Deep dive” on any flashcard.</p>
+          </div>
+          <div class="dd-loading" id="dd-loading" hidden>
+            <div class="dd-spinner"></div>
+            <p>Exploring the word…</p>
+          </div>
+          <div class="dd-results" id="dd-results" hidden></div>
+        </div>
+      </div>
 
     </div><!-- .main-area -->
   </div><!-- .app-wrapper -->
@@ -1027,6 +1054,12 @@
       ontouchend="window.switchTab&&window.switchTab('progress');return false;">
       <span class="more-panel-icon">📊</span>
       <span class="more-panel-label">Progress</span>
+    </button>
+    <button class="more-panel-item" data-tab="deep-dive"
+      onclick="window.switchTab&&window.switchTab('deep-dive')"
+      ontouchend="window.switchTab&&window.switchTab('deep-dive');return false;">
+      <span class="more-panel-icon">🔍</span>
+      <span class="more-panel-label">Deep dive</span>
     </button>
   </div>
 
@@ -1164,6 +1197,7 @@
   <script src="conversation.js"></script>
   <script src="mission.js"></script>
   <script src="progress.js"></script>
+  <script src="deep-dive.js"></script>
 
   <!-- Service worker registration + install banner logic -->
   <script>

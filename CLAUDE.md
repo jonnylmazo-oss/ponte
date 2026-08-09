@@ -52,7 +52,7 @@ data/
   grammar.js       45 grammar cards + 30 pattern drills
 ```
 
-Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js`
+Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js`
 
 ## Features
 
@@ -64,6 +64,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Cards** — SM-2 spaced repetition; bidirectional drill (IT→EN / EN→IT, picked in setup screen, mid-session toggle in topbar); drill subset picker (Due today default + All / word types / Weak words, with live (N) counts respecting active library filters); fullscreen mode; word lookup modal (IT↔EN); cross-device sync; library filter+sort bar (Performance / Word Type / Category / Source / Sort + Clear all)
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
+- **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
 
 ## API endpoints
 
@@ -84,6 +85,7 @@ Deployed as **9 Vercel serverless functions** (Hobby plan caps at 12). Five endp
 | `feedback-combined.js` | POST | `/api/feedback-combined?action=check-usage` | Italian sentence usage check |
 | " | POST | `/api/feedback-combined?action=detect-patterns` | Grammar error pattern detection |
 | " | POST | `/api/feedback-combined?action=reading-quiz` | 5 comprehension questions |
+| " | POST | `/api/feedback-combined?action=deep-dive` | Word deep-dive: all senses → per-sense examples → etymology |
 | `auth-combined.js` | POST | `/api/auth-combined?action=login` | Password → Bearer token |
 | " | POST | `/api/auth-combined?action=backfill-flashcards` | Backfill baseForm (auth) |
 
@@ -161,7 +163,7 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v81`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v82`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates
