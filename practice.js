@@ -56,17 +56,17 @@
   };
 
   const CATEGORY_COLORS = {
-    'cognate':      '#2E6B3E',
+    'same':         '#2E6B3E',
+    'similar':      '#0E7490',
     'false-friend': '#B83232',
-    'divergence':   '#B85C00',
     'new':          '#888888',
   };
 
   const CATEGORY_LABELS = {
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
 
   const TYPE_COLORS = {

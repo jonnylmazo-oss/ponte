@@ -15,16 +15,16 @@
   ) ? 'http://localhost:3000' : '';
 
   const CATEGORY_LABELS = {
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
 
   const CATEGORY_COLORS = {
-    'cognate':      '#4A90D9',
-    'false-friend': '#F5C842',
-    'divergence':   '#F5894A',
+    'same':         '#2E6B3E',
+    'similar':      '#0E7490',
+    'false-friend': '#B83232',
     'new':          '#888888',
   };
 
@@ -105,7 +105,7 @@
     const patterns = [];
     const note = (card.note || '').toLowerCase();
     if (card.category === 'false-friend')           patterns.push('false-friend');
-    if (card.category === 'divergence')             patterns.push('divergence');
+    if (card.category === 'similar')                patterns.push('divergence');
     if (note.includes('essere'))                    patterns.push('verb-essere');
     if (note.includes('passato prossimo'))          patterns.push('passato-prossimo');
     if (note.includes('clitic') || note.includes('pronoun')) patterns.push('clitic-placement');
@@ -352,7 +352,7 @@
   // New filter system: 4 single-select filters + sort + search.
   let activePerf     = 'all'; // all|new|struggling|learning|strong|mastered|due
   let activeWordType = 'all'; // all|noun|verb|adjective|adverb|phrase|verb-irregular
-  let activeCategory = 'all'; // all|cognate|false-friend|divergence|new
+  let activeCategory = 'all'; // all|same|similar|false-friend|new
   let activeSource   = 'all'; // all|starter|reader|practice|scripted|conversation|manual
   let activeSort     = 'due'; // due|accuracy-asc|accuracy-desc|recent|oldest|most-drilled|alpha
   let searchQuery    = '';
@@ -497,10 +497,10 @@
   };
   const CAT_LABELS_SHORT = {
     'all':          'All',
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
   const SRC_LABELS = {
     'all':          'All',
@@ -1389,16 +1389,16 @@
   }
 
   const BADGE_COLORS = {
-    'cognate':      '#2E6B3E',
+    'same':         '#2E6B3E',
+    'similar':      '#0E7490',
     'false-friend': '#B83232',
-    'divergence':   '#B85C00',
     'new':          '#888888',
   };
   const BADGE_LABELS = {
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
 
   let wlCurrentEntry = null; // last successful translate result

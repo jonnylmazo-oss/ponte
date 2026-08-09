@@ -149,18 +149,19 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 }
 ```
 
-Category values: `cognate` | `false-friend` | `divergence` | `new`
+Category values (taxonomy): `same` | `similar` | `false-friend` | `new`
+UI labels: same → "Same word", similar → "Same/Similar", false-friend → "False Friend", new → "No Spanish link". Never use the word "cognate" in taxonomy UI (the separate "Safe Cognates" curated tab is unrelated and keeps its name). The grammar-error-pattern keys (`divergence`, `false-friend`, …) are a **separate** namespace — not renamed.
 
 ## Theme (Kindle sepia)
 
 CSS variables: `--bg: #F8F1E3`, `--bg-card: #FBF5E9`, `--bg-italian: #F0E6D0`, `--border: #D9C9A8`, `--text: #3B2D1F`, `--text-mid: #6B5744`, `--text-dim: #9B8470`, accent `#0055AA`
-Category colors: cognate `#2E6B3E`, false-friend `#B83232`, divergence `#B85C00`
+Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend `#B83232` (red), new `#888888` (grey). CSS vars `--same`, `--similar`, `--false-friend`.
 
 ## Design rules
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v77`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v80`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates

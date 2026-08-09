@@ -31,8 +31,8 @@ Return JSON only — no markdown, no code fences. Replace every <placeholder> wi
 {
   "italian": "<the Italian translation of the English word above — this MUST be a real Italian word and MUST NOT echo the English input>",
   "spanish": "<Spanish equivalent of the same word>",
-  "note": "<one sentence for a Spanish speaker: is the Italian word a safe cognate, false friend, or does it diverge from Spanish usage?>",
-  "category": "<exactly one of: cognate, false-friend, divergence, new>",
+  "note": "<one sentence for a Spanish speaker: is the Italian word the same as Spanish, similar with an added/narrower sense, a false friend, or unrelated to Spanish?>",
+  "category": "<exactly one of: same, similar, false-friend, new>",
   "tense": "<if the Italian translation is a conjugated verb form, e.g. 'passato prossimo, 1st person singular' — otherwise null>",
   "root": "<if the Italian translation is a conjugated verb, the infinitive form e.g. 'svegliarsi' — otherwise null>",
   "pronunciation": "<stress-marked syllable pronunciation of the Italian word, e.g. 'TAR-di' — always include>",
@@ -41,11 +41,11 @@ Return JSON only — no markdown, no code fences. Replace every <placeholder> wi
   "nounOtherForm": "<if wordType is noun: the opposite number form (e.g. amico → amici; amici → amico) — otherwise null>"
 }
 
-Category rules — choose exactly one:
-'cognate' — ONLY if the Italian word looks visually similar to the Spanish equivalent (shares ≥60% of letters in similar positions) AND means the same thing. Examples: turista/turista, direzione/dirección, musica/música. Do NOT use cognate just because meanings overlap — the words must also look similar.
-'false-friend' — the Italian word looks similar to a Spanish word BUT means something different. Examples: burro (Italian=butter, Spanish=donkey), largo (Italian=wide, Spanish=long).
-'divergence' — the Italian word exists in Spanish and looks similar, but is used differently, in different contexts, or with different grammar. Examples: già vs ya (broader use in Italian), ancora vs ancora (different meaning in Spanish).
-'new' — the Italian word looks nothing like its Spanish equivalent, or has no Spanish equivalent. Examples: sotto (under) vs bajo, scegliere (to choose) vs elegir.
+Category rules — the category must be exactly one of: 'same', 'similar', 'false-friend', 'new'.
+'same' — the Italian word is visually near-identical to Spanish AND the meaning is fully equivalent with no added or missing senses.
+'similar' — the Italian word resembles Spanish and the core meaning transfers, but Italian carries an additional sense, narrower usage, or different register than the Spanish equivalent. The Spanish meaning is a subset or overlap, not a wrong answer.
+'false-friend' — the Italian word resembles Spanish but produces a WRONG meaning if the Spanish instinct is applied. This is not about added nuance — it's about the Spanish meaning being actively incorrect in Italian.
+'new' — the Italian word has no meaningful visual or semantic connection to Spanish.
 nounNumber/nounOtherForm: only for nouns — state whether the translated Italian form is singular or plural, and provide the other form.`;
 
   try {

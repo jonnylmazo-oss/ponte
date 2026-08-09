@@ -14,17 +14,17 @@
   const FC_KEY = 'ponte_flashcards';
 
   const CATEGORY_COLORS = {
-    'cognate':      '#4A90D9',
-    'false-friend': '#F5C842',
-    'divergence':   '#F5894A',
+    'same':         '#2E6B3E',
+    'similar':      '#0E7490',
+    'false-friend': '#B83232',
     'new':          '#888888',
   };
 
   const CATEGORY_LABELS = {
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
 
   const ERROR_TYPE_LABELS = {

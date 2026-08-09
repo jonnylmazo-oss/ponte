@@ -117,9 +117,9 @@ async function distractors(req, res) {
 
   const catHints = {
     'false-friend': 'This is a false friend with Spanish. Generate distractors that look like the Spanish equivalent or reflect common Spanish-to-Italian transfer errors.',
-    'divergence':   'This word diverges from Spanish usage. Generate distractors reflecting Spanish usage patterns an Italian learner might confuse.',
+    'similar':      'This word maps to Spanish but with an added or narrower sense. Generate distractors reflecting Spanish usage patterns an Italian learner might confuse.',
     'new':          'This has no Spanish equivalent. Generate distractors that are visually or semantically similar Italian words.',
-    'cognate':      'This is a cognate with Spanish. Generate distractors from the same word family or similar Italian words.',
+    'same':         'This word is the same as in Spanish. Generate distractors from the same word family or similar Italian words.',
   };
 
   const safeWord     = sanitizeUserText(word, 100);

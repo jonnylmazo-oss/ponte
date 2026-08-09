@@ -229,17 +229,17 @@
 
   // ── Categories ─────────────────────────────────────────────────────────
   const CATEGORY_LABELS = {
-    'cognate':      'Same in Spanish',
+    'same':         'Same word',
+    'similar':      'Same/Similar',
     'false-friend': 'False Friend',
-    'divergence':   'Used differently',
-    'new':          'New word',
+    'new':          'No Spanish link',
   };
 
   const CATEGORY_COLORS = {
-    'cognate':      'rgba(74, 144, 217, 0.45)',
-    'false-friend': 'rgba(245, 200, 66, 0.45)',
-    'divergence':   'rgba(245, 137, 74, 0.45)',
-    'new':          'rgba(136, 136, 136, 0.25)',
+    'same':         'rgba(46, 107, 62, 0.45)',
+    'similar':      'rgba(14, 116, 144, 0.45)',
+    'false-friend': 'rgba(184, 50, 50, 0.45)',
+    'new':          'rgba(136, 136, 136, 0.30)',
   };
 
   // ── Wordmap builder ────────────────────────────────────────────────────

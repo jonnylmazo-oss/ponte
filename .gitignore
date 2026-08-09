@@ -3,3 +3,10 @@ node_modules/
 .env
 .vercel
 .env*
+
+# One-time local data scripts + artifacts (run locally, never deployed)
+generate-deck.js
+push-deck.js
+migrate-taxonomy.js
+generated-deck.json
+gen.log

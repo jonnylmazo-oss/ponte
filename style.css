@@ -23,9 +23,9 @@
   --text-mid:        #6B5744;
   --text-translation:#6B5744;
 
-  --cognate:         #2E6B3E;
+  --same:            #2E6B3E;
   --false-friend:    #B83232;
-  --divergence:      #B85C00;
+  --similar:         #0E7490;
 
   --card-bg:         #FBF5E9;
   --card-border:     #D9C9A8;
@@ -489,7 +489,7 @@ header {
   color: #3B2D1F;
   flex-shrink: 0;
 }
-.logo span { color: var(--cognate); }
+.logo span { color: var(--same); }
 
 /* Logo inside reader header — only shown on mobile (sidebar hidden) */
 .logo-mobile {
@@ -822,12 +822,12 @@ header {
   flex-shrink: 0;
 }
 
-.legend-item.cognate      { color: var(--cognate);      }
-.legend-item.cognate::before      { background: var(--cognate);      }
+.legend-item.same      { color: var(--same);      }
+.legend-item.same::before      { background: var(--same);      }
 .legend-item.false-friend { color: var(--false-friend); }
 .legend-item.false-friend::before { background: var(--false-friend); }
-.legend-item.divergence   { color: var(--divergence);   }
-.legend-item.divergence::before   { background: var(--divergence);   }
+.legend-item.similar   { color: var(--similar);   }
+.legend-item.similar::before   { background: var(--similar);   }
 
 
 /* ─── Word spans ─────────────────────────────────────────────── */
@@ -848,9 +848,9 @@ header {
   background: rgba(0, 0, 0, 0.07);
 }
 
-.word-cognate      { color: var(--cognate);      }
+.word-same      { color: var(--same);      }
 .word-false-friend { color: var(--false-friend); }
-.word-divergence   { color: var(--divergence);   }
+.word-similar   { color: var(--similar);   }
 
 
 /* ─── Tooltip ────────────────────────────────────────────────── */
@@ -924,16 +924,16 @@ header {
   margin-top: 3px;
 }
 
-.tooltip-badge.cognate {
-  color: var(--cognate);
+.tooltip-badge.same {
+  color: var(--same);
   background: rgba(46, 107, 62, 0.1);
 }
 .tooltip-badge.false-friend {
   color: var(--false-friend);
   background: rgba(184, 50, 50, 0.1);
 }
-.tooltip-badge.divergence {
-  color: var(--divergence);
+.tooltip-badge.similar {
+  color: var(--similar);
   background: rgba(184, 92, 0, 0.1);
 }
 .tooltip-badge.new {
@@ -1145,7 +1145,7 @@ header {
   }
 
   .bottom-nav-item.active {
-    color: var(--cognate);
+    color: var(--same);
   }
 
   .bottom-nav-icon {

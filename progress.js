@@ -113,7 +113,7 @@
     const accuracy   = totalAll > 0 ? Math.round((totalRight / totalAll) * 100) : null;
 
     // ── Category breakdown ────────────────────────────────────────────────
-    const catCounts = { cognate: 0, 'false-friend': 0, divergence: 0, new: 0 };
+    const catCounts = { same: 0, similar: 0, 'false-friend': 0, new: 0 };
     cards.forEach((c) => {
       const cat = c.category || 'new';
       if (catCounts[cat] !== undefined) catCounts[cat]++;
@@ -166,16 +166,16 @@
     // ── Build HTML ────────────────────────────────────────────────────────
 
     const catColors = {
-      'cognate':      '#2E6B3E',
+      'same':         '#2E6B3E',
+      'similar':      '#0E7490',
       'false-friend': '#B83232',
-      'divergence':   '#B85C00',
       'new':          '#888888',
     };
     const catLabels = {
-      'cognate':      'Same in Spanish',
+      'same':         'Same word',
+      'similar':      'Same/Similar',
       'false-friend': 'False Friend',
-      'divergence':   'Used differently',
-      'new':          'New word',
+      'new':          'No Spanish link',
     };
 
     function pct(n, of) { return of === 0 ? 0 : Math.round((n / of) * 100); }
@@ -205,7 +205,7 @@
       </section>`;
 
     // Card breakdown section
-    const catBarsHTML = ['cognate', 'false-friend', 'divergence', 'new'].map((cat) => {
+    const catBarsHTML = ['same', 'similar', 'false-friend', 'new'].map((cat) => {
       const n   = catCounts[cat];
       const pctW = pct(n, total);
       return `
