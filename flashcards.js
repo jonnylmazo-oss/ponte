@@ -748,6 +748,7 @@
             <div class="fc-card-en">${escapeHTML(card.english)}</div>
             <div class="fc-card-foot">
               <span class="fc-cat-badge" style="border-color:${color};color:${color}">${escapeHTML(label)}</span>
+              ${card.wordType && WORD_TYPE_DISPLAY[card.wordType] ? `<span class="fc-wordtype-badge">${escapeHTML(WORD_TYPE_DISPLAY[card.wordType])}</span>` : ''}
               ${irregularBadge(card)}
               ${dueLabel}
               ${accuracyBadge}
