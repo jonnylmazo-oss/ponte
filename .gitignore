@@ -10,3 +10,4 @@ push-deck.js
 migrate-taxonomy.js
 generated-deck.json
 gen.log
+audio-backfill/

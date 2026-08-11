@@ -4,3 +4,15 @@
 # anything required by /api (e.g. lib/ponte.js) must NOT be excluded here.
 server.js
 backfill.js
+
+# One-time local data scripts + their artifacts. These are also in .gitignore
+# (except backfill-audio-script.js), so the git auto-deploy never sees them —
+# but because this .vercelignore exists, the Vercel CLI stops falling back to
+# .gitignore, so `vercel --prod` from a workstation WOULD upload and publicly
+# serve them. Listed here to close that path.
+generate-deck.js
+push-deck.js
+migrate-taxonomy.js
+backfill-audio-script.js
+generated-deck.json
+audio-backfill/
