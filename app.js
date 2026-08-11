@@ -75,6 +75,10 @@
   function setLoginNoOps() {
     window.manualSyncFlashcards = () => Promise.resolve();
     window.ponteSpeak            = () => {};
+    window.ponteSpeech           = {
+      speak: () => null, cancel: () => {}, voiceFor: () => null,
+      generation: () => 0, supported: false,
+    };
     window.switchTab             = () => {};
     window.toggleNavGroup        = () => {};
     window.toggleTranslation     = () => {};
@@ -119,33 +123,73 @@
   ];
 
   // ── Speech synthesis ───────────────────────────────────────────────────
+  // One serial channel: every speak() cancels whatever is currently being
+  // spoken, so only one utterance is ever live. `generation` increments on
+  // every speak() and cancel(), which lets a caller chaining utterances via
+  // onend (audio-player.js) detect that something else grabbed the channel
+  // mid-sequence and yield to it instead of fighting over it.
   const speech = (() => {
-    if (!('speechSynthesis' in window)) return { speak: () => null, supported: false };
+    if (!('speechSynthesis' in window)) {
+      return {
+        speak: () => null, cancel: () => {}, voiceFor: () => null,
+        generation: () => 0, supported: false,
+      };
+    }
 
     let voices = [];
+    let generation = 0;
+
     function loadVoices() { voices = speechSynthesis.getVoices(); }
     loadVoices();
     speechSynthesis.addEventListener('voiceschanged', loadVoices);
 
-    function speak(text) {
+    // Some platforms report underscored tags ("en_US"), so normalize first.
+    function normalize(tag) { return String(tag || '').replace('_', '-').toLowerCase(); }
+
+    // Exact locale match, then any voice sharing the base language.
+    function voiceFor(lang) {
+      const want = normalize(lang);
+      const base = want.split('-')[0];
+      return voices.find((v) => normalize(v.lang) === want) ||
+             voices.find((v) => normalize(v.lang).split('-')[0] === base) ||
+             null;
+    }
+
+    // Italian stays at the original 0.85 — slow enough to follow as a learner.
+    // English is the gloss/translation, so it runs a little faster.
+    const DEFAULT_RATE = { it: 0.85, en: 0.95 };
+
+    // speak(text) keeps its original Italian-only behaviour for existing
+    // callers; speak(text, { lang, rate }) opts into another language.
+    function speak(text, opts) {
       if (!text) return null;
       speechSynthesis.cancel();
-      const utt = new SpeechSynthesisUtterance(text);
-      utt.lang  = 'it-IT';
-      utt.rate  = 0.85;
+      generation++;
+      const o    = opts || {};
+      const lang = o.lang || 'it-IT';
+      const base = normalize(lang).split('-')[0];
+      const utt  = new SpeechSynthesisUtterance(text);
+      utt.lang  = lang;
+      utt.rate  = o.rate || DEFAULT_RATE[base] || 0.9;
       utt.pitch = 1.0;
-      const voice = voices.find((v) => v.lang === 'it-IT') ||
-                    voices.find((v) => v.lang.startsWith('it'));
+      const voice = voiceFor(lang);
       if (voice) utt.voice = voice;
       speechSynthesis.speak(utt);
       return utt;
     }
 
-    return { speak, supported: true };
+    function cancel() {
+      generation++; // invalidates any in-flight chained sequence
+      speechSynthesis.cancel();
+    }
+
+    return { speak, cancel, voiceFor, generation: () => generation, supported: true };
   })();
 
   // Expose for flashcards.js (same-page IIFE, loaded after app.js)
   window.ponteSpeak = speech.speak;
+  // Full module for audio-player.js, which needs cancel() and generation().
+  window.ponteSpeech = speech;
 
   // ── State ──────────────────────────────────────────────────────────────
   const state = {

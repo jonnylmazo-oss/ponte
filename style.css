@@ -7768,3 +7768,222 @@ body.drill-fullscreen .ff-flip-card {
   border: 1px solid var(--border); border-radius: 8px;
   background: var(--bg-card); color: var(--text-mid); cursor: pointer;
 }
+
+/* ── Audio session player ────────────────────────────────────────────────── */
+
+.fc-audio-btn {
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.fc-audio-btn:hover {
+  background: var(--bg-italian);
+  color: var(--text);
+}
+
+.ap-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+}
+
+.ap-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 460px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 301;
+  overflow: hidden;
+}
+
+.ap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ap-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ap-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.ap-close:hover { color: var(--text); }
+
+.ap-stage { padding: 20px 18px 22px; }
+
+.ap-lede {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-mid);
+}
+
+.ap-play-btn {
+  display: block;
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  background: #0055AA;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ap-play-btn:hover { background: #004489; }
+.ap-play-btn:disabled { opacity: 0.55; cursor: default; }
+
+.ap-status {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-mid);
+  text-align: center;
+}
+
+.ap-progress {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.ap-word {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.ap-gloss {
+  font-size: 0.95rem;
+  color: var(--text-mid);
+  margin-top: 2px;
+}
+
+.ap-seg-label {
+  margin-top: 18px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ap-now {
+  margin-top: 5px;
+  min-height: 3.4em;
+  padding: 12px 14px;
+  background: var(--bg-italian);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 1.02rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* English segments read as the translation, not the target language. */
+.ap-now-en {
+  background: var(--bg);
+  color: var(--text-mid);
+  font-style: italic;
+}
+
+.ap-note {
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-mid);
+  background: var(--bg);
+  border-left: 3px solid var(--similar, #0E7490);
+  border-radius: 0 6px 6px 0;
+}
+
+.ap-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ap-ctrl {
+  flex: 1;
+  padding: 11px 10px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  font-weight: 500;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.ap-ctrl:hover { background: var(--bg-italian); }
+
+.ap-ctrl-quiet {
+  flex: 0 0 auto;
+  padding: 11px 14px;
+  color: var(--text-dim);
+}
+
+.ap-stage-done { text-align: center; }
+
+.ap-done-icon {
+  width: 46px;
+  height: 46px;
+  margin: 4px auto 12px;
+  border-radius: 50%;
+  background: var(--same, #2E6B3E);
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 46px;
+}
+
+.ap-done-title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ap-done-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+}
+
+@media (max-width: 480px) {
+  .ap-panel { width: 94vw; }
+  .ap-controls { flex-wrap: wrap; }
+  .ap-ctrl { min-width: 44%; }
+}

@@ -826,6 +826,9 @@
             <div class="fc-toolbar-actions">
               <button class="fc-sync-btn" id="fc-sync-btn" title="Pull latest cards from server">Sync</button>
               <button class="fc-add-word-btn" id="fc-add-word-btn" title="Look up and add a word">+ Add word</button>
+              <button class="fc-audio-btn" id="fc-audio-btn" title="Listen through a session"
+                onclick="window.ponteAudioOpen(); return false;"
+                ontouchend="window.ponteAudioOpen(); return false;">🎧 Audio</button>
               <button class="fc-drill-toggle" id="fc-drill-toggle">Drill mode</button>
               <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
             </div>
@@ -1141,6 +1144,65 @@
   </div>
 
 
+  <!-- ── Audio session player (Cards tab → 🎧 Audio) ────────────────────── -->
+  <div class="ap-backdrop" id="ap-backdrop" hidden
+    onclick="window.ponteAudioClose(); return false;"></div>
+  <div class="ap-panel" id="ap-panel" hidden role="dialog" aria-modal="true" aria-label="Audio session">
+    <div class="ap-header">
+      <h3 class="ap-title">Audio session</h3>
+      <button class="ap-close" id="ap-close" aria-label="Close"
+        onclick="window.ponteAudioClose(); return false;"
+        ontouchend="window.ponteAudioClose(); return false;">✕</button>
+    </div>
+
+    <!-- Idle -->
+    <div class="ap-stage" id="ap-stage-idle">
+      <p class="ap-lede">Hands-free listening through your due cards. Each card plays the
+        word, its meaning, the example sentence, then the sentence phrase by phrase.</p>
+      <button class="ap-play-btn" id="ap-play-btn"
+        onclick="window.ponteAudioStart(); return false;"
+        ontouchend="window.ponteAudioStart(); return false;">▶ Play session</button>
+      <p class="ap-status" id="ap-status" hidden></p>
+    </div>
+
+    <!-- Playing -->
+    <div class="ap-stage" id="ap-stage-play" hidden>
+      <div class="ap-progress" id="ap-progress"></div>
+      <div class="ap-word" id="ap-word"></div>
+      <div class="ap-gloss" id="ap-gloss"></div>
+      <div class="ap-seg-label" id="ap-seg-label"></div>
+      <div class="ap-now" id="ap-now"></div>
+      <p class="ap-note" id="ap-note" hidden></p>
+      <div class="ap-controls">
+        <button class="ap-ctrl" id="ap-pause-btn"
+          onclick="window.ponteAudioPause(); return false;"
+          ontouchend="window.ponteAudioPause(); return false;">⏸ Pause</button>
+        <button class="ap-ctrl" id="ap-skip-btn"
+          onclick="window.ponteAudioSkip(); return false;"
+          ontouchend="window.ponteAudioSkip(); return false;">⏭ Next card</button>
+        <button class="ap-ctrl ap-ctrl-quiet" id="ap-stop-btn"
+          onclick="window.ponteAudioStop(); return false;"
+          ontouchend="window.ponteAudioStop(); return false;">■ Stop</button>
+      </div>
+    </div>
+
+    <!-- Complete -->
+    <div class="ap-stage ap-stage-done" id="ap-stage-done" hidden>
+      <div class="ap-done-icon">✓</div>
+      <h4 class="ap-done-title">Session complete</h4>
+      <p class="ap-done-sub" id="ap-done-sub"></p>
+      <div class="ap-controls">
+        <button class="ap-ctrl" id="ap-again-btn"
+          onclick="window.ponteAudioStart(); return false;"
+          ontouchend="window.ponteAudioStart(); return false;">Play another session</button>
+        <button class="ap-ctrl ap-ctrl-quiet" id="ap-done-close"
+          onclick="window.ponteAudioClose(); return false;"
+          ontouchend="window.ponteAudioClose(); return false;">Done</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- ── Quiz Modal ─────────────────────────────────────────────────────── -->
   <div class="quiz-overlay" id="quiz-overlay" hidden>
     <div class="quiz-modal" id="quiz-modal">
@@ -1198,6 +1260,7 @@
   <script src="mission.js"></script>
   <script src="progress.js"></script>
   <script src="deep-dive.js"></script>
+  <script src="audio-player.js"></script>
 
   <!-- Service worker registration + install banner logic -->
   <script>
