@@ -1072,6 +1072,104 @@
     enterDrillFullscreen();
   }
 
+  // ── Audio playback queue ──────────────────────────────────────────────────
+  // Sibling to startDrill()'s queue construction above: same source pool, same
+  // priority primitives (getFiltered → isDueToday → sortDueByPatterns), but it
+  // returns a playback list instead of driving the flip-card UI.
+  //
+  // Audio scripts live in a separate Redis key (flashcard_audio) and are
+  // fetched lazily on first use — the deck sync and the 60s background poll in
+  // app.js must not carry ~85KB of chunk data on every request.
+
+  const AUDIO_SESSION_CAP  = 25; // cards per session (5 cycles of 4 + 1)
+  const AUDIO_DUE_PER_REST = 4;  // 4 due/struggling cards per 1 resting card
+
+  let audioScriptCache = null;
+
+  async function fetchAudioScripts(refresh) {
+    if (audioScriptCache && !refresh) return audioScriptCache;
+    const resp = await fetch(API_BASE + '/api/flashcards?key=audio', {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Audio scripts unavailable (' + resp.status + ')');
+    const data = await resp.json();
+    // Defensive: the legacy local Express backend (server.js) ignores ?key=
+    // and returns the deck array, so anything that is not a plain object is
+    // treated as "no audio available" rather than crashing the queue build.
+    audioScriptCache = (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    return audioScriptCache;
+  }
+
+  // Cards to interleave for variety: reviewed at least once and not currently
+  // due — words answered well enough to have been pushed to a future date.
+  //
+  // isMasteredCard() (interval > 21) is a preference ordering here, NOT a
+  // filter. No card in the deck currently exceeds interval 21 (the maximum is
+  // 6), so filtering on it would leave this pool empty and silently reduce the
+  // session to a due-only loop. Ordering by it instead means genuinely
+  // mastered cards float to the front on their own as intervals grow.
+  function restingAudioPool(cards) {
+    const eligible = cards.filter((c) => (c.reviewCount || 0) > 0 && !isDue(c));
+    const mastered = shuffle(eligible.filter(isMasteredCard));
+    const settling = shuffle(eligible.filter((c) => !isMasteredCard(c)));
+    return [...mastered, ...settling];
+  }
+
+  // Emit duePerRest due cards, then one resting card, until the cap is hit.
+  // When either pool runs dry the other fills the remainder, so a session is
+  // always cap-length if enough cards exist in total.
+  function interleaveAudio(due, rest, duePerRest, cap) {
+    const out = [];
+    let d = 0, r = 0;
+    while (out.length < cap && (d < due.length || r < rest.length)) {
+      let placed = 0;
+      while (placed < duePerRest && d < due.length && out.length < cap) {
+        out.push(due[d++]);
+        placed++;
+      }
+      if (out.length >= cap) break;
+      if (r < rest.length)        out.push(rest[r++]);
+      else if (d >= due.length)   break; // both pools exhausted
+    }
+    return out;
+  }
+
+  // Returns [{ card, audioScript }], audioScript being the chunks array.
+  // Options: { cap, duePerRest, allCards, refresh }.
+  async function buildAudioQueue(options) {
+    const opts       = options || {};
+    const cap        = opts.cap        || AUDIO_SESSION_CAP;
+    const duePerRest = opts.duePerRest || AUDIO_DUE_PER_REST;
+
+    const scripts = await fetchAudioScripts(opts.refresh);
+
+    // Respect the active library filters by default, exactly as startDrill()
+    // does; pass allCards:true to ignore them.
+    const source = opts.allCards ? loadCards() : getFiltered();
+
+    // Join by String(id) — the deck mixes numeric ids (Date.now()) with string
+    // ids from the generated starter deck ("1785339714808-0"). Only cards with
+    // a script survive, which drops the cards that have no example sentence
+    // without this function needing to know anything about them.
+    const withAudio = source.filter((c) => {
+      const entry = scripts[String(c.id)];
+      return !!entry && Array.isArray(entry.chunks) && entry.chunks.length > 0;
+    });
+
+    // isDueToday excludes never-reviewed cards, matching the drill's "Due
+    // today" subset. sortDueByPatterns front-loads cards matching the top-3
+    // grammar error patterns, then sorts by ascending accuracy (worst first).
+    const due  = sortDueByPatterns(withAudio.filter(isDueToday));
+    const rest = restingAudioPool(withAudio);
+
+    return interleaveAudio(due, rest, duePerRest, cap).map((card) => ({
+      card,
+      audioScript: scripts[String(card.id)].chunks,
+    }));
+  }
+
+  window.ponteBuildAudioQueue = buildAudioQueue;
+
   fcDrillAnyway && fcDrillAnyway.addEventListener('click', () => {
     if (fcNoDue)  fcNoDue.hidden  = true;
     if (fcNoWeak) fcNoWeak.hidden = true;

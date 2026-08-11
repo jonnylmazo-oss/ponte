@@ -13,6 +13,12 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN,
 });
 
+// Phrase-level audio scripts, written by the local backfill-audio-script.js.
+// Deliberately a separate key from 'flashcards': the deck is blind-overwritten
+// on every client save, so anything stored on the cards themselves can be
+// wiped by a stale browser tab.
+const AUDIO_KEY = 'flashcard_audio';
+
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
 
@@ -20,6 +26,22 @@ module.exports = async function handler(req, res) {
   if (!requireAuth(req, res)) return;
 
   if (req.method === 'GET') {
+    // ?key=audio → the flashcard_audio map ({ [cardId]: { chunks } }).
+    // Opt-in via query param rather than bundled into the default response:
+    // three callers in app.js (syncFlashcardsFromServer, manualSyncFlashcards,
+    // startFlashcardPoll) assert Array.isArray on the deck response, so
+    // changing its shape would break all of them — and the 60s poll would
+    // otherwise carry ~85KB of chunk data on every tick.
+    if (req.query && req.query.key === 'audio') {
+      try {
+        const audio = (await redis.get(AUDIO_KEY)) ?? {};
+        return res.json(audio);
+      } catch (err) {
+        console.error('Error reading flashcard_audio:', err.message);
+        return res.json({});
+      }
+    }
+
     try {
       const cards = (await redis.get('flashcards')) ?? [];
       return res.json(cards);
