@@ -7987,3 +7987,105 @@ body.drill-fullscreen .ff-flip-card {
   .ap-controls { flex-wrap: wrap; }
   .ap-ctrl { min-width: 44%; }
 }
+
+/* ── Audio player: settings ──────────────────────────────────────────────── */
+
+.ap-settings {
+  margin-bottom: 18px;
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.ap-setting + .ap-setting { margin-top: 14px; }
+
+.ap-setting-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ap-setting-val {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-left: 6px;
+}
+
+.ap-rate-slider {
+  width: 100%;
+  accent-color: #0055AA;
+  min-height: 30px;
+}
+
+.ap-presets { display: flex; gap: 6px; }
+
+.ap-preset {
+  flex: 1;
+  padding: 9px 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.ap-preset:hover { background: var(--bg-italian); }
+
+.ap-preset.active {
+  background: #0055AA;
+  border-color: #0055AA;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* In-session speed stepper */
+.ap-speed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.ap-speed-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-right: auto;
+}
+
+.ap-speed-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 1.15rem;
+  font-family: inherit;
+  line-height: 1;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ap-speed-btn:hover { background: var(--bg-italian); }
+
+.ap-speed-val {
+  min-width: 3.6em;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

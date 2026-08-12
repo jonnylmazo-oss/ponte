@@ -132,6 +132,8 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 | `ponte_last_more` | Last active sub-tab within the More nav group |
 | `ponte_last_practice` | Last active sub-tab within the Practice nav group |
 | `ponte_translation` | Reader translation column open/closed toggle (`'1'`/`'0'`) |
+| `ponte_audio_rate` | Audio session Italian speech rate (0.55–1.05, default 0.78); English derives as +0.15 |
+| `ponte_audio_session` | Audio session length (`'15'`/`'25'`/`'40'`/`'all'`, default `'25'`) |
 
 ## Flashcard card structure
 

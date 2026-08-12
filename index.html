@@ -1159,6 +1159,34 @@
     <div class="ap-stage" id="ap-stage-idle">
       <p class="ap-lede">Hands-free listening through your due cards. Each card plays the
         word, its meaning, the example sentence, then the sentence phrase by phrase.</p>
+      <div class="ap-settings">
+        <div class="ap-setting">
+          <label class="ap-setting-label" for="ap-rate">
+            Speed <span class="ap-setting-val" id="ap-rate-val">0.78×</span>
+          </label>
+          <input type="range" class="ap-rate-slider" id="ap-rate"
+            min="0.55" max="1.05" step="0.05" value="0.78"
+            aria-label="Playback speed"
+            oninput="window.ponteAudioSetRate(this.value);" />
+        </div>
+        <div class="ap-setting">
+          <span class="ap-setting-label">Session length</span>
+          <div class="ap-presets">
+            <button class="ap-preset" data-len="15" aria-pressed="false"
+              onclick="window.ponteAudioSetLength('15'); return false;"
+              ontouchend="window.ponteAudioSetLength('15'); return false;">15</button>
+            <button class="ap-preset" data-len="25" aria-pressed="true"
+              onclick="window.ponteAudioSetLength('25'); return false;"
+              ontouchend="window.ponteAudioSetLength('25'); return false;">25</button>
+            <button class="ap-preset" data-len="40" aria-pressed="false"
+              onclick="window.ponteAudioSetLength('40'); return false;"
+              ontouchend="window.ponteAudioSetLength('40'); return false;">40</button>
+            <button class="ap-preset" data-len="all" aria-pressed="false"
+              onclick="window.ponteAudioSetLength('all'); return false;"
+              ontouchend="window.ponteAudioSetLength('all'); return false;">All due</button>
+          </div>
+        </div>
+      </div>
       <button class="ap-play-btn" id="ap-play-btn"
         onclick="window.ponteAudioStart(); return false;"
         ontouchend="window.ponteAudioStart(); return false;">▶ Play session</button>
@@ -1173,6 +1201,16 @@
       <div class="ap-seg-label" id="ap-seg-label"></div>
       <div class="ap-now" id="ap-now"></div>
       <p class="ap-note" id="ap-note" hidden></p>
+      <div class="ap-speed-row">
+        <span class="ap-speed-label">Speed</span>
+        <button class="ap-speed-btn" id="ap-speed-down" aria-label="Slower"
+          onclick="window.ponteAudioNudgeRate(-1); return false;"
+          ontouchend="window.ponteAudioNudgeRate(-1); return false;">−</button>
+        <span class="ap-speed-val" id="ap-speed-val">0.78×</span>
+        <button class="ap-speed-btn" id="ap-speed-up" aria-label="Faster"
+          onclick="window.ponteAudioNudgeRate(1); return false;"
+          ontouchend="window.ponteAudioNudgeRate(1); return false;">+</button>
+      </div>
       <div class="ap-controls">
         <button class="ap-ctrl" id="ap-pause-btn"
           onclick="window.ponteAudioPause(); return false;"

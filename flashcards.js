@@ -1136,6 +1136,7 @@
 
   // Returns [{ card, audioScript }], audioScript being the chunks array.
   // Options: { cap, duePerRest, allCards, refresh }.
+  // cap accepts a number, or the string 'all-due' to play every due card.
   async function buildAudioQueue(options) {
     const opts       = options || {};
     const cap        = opts.cap        || AUDIO_SESSION_CAP;
@@ -1162,7 +1163,13 @@
     const due  = sortDueByPatterns(withAudio.filter(isDueToday));
     const rest = restingAudioPool(withAudio);
 
-    return interleaveAudio(due, rest, duePerRest, cap).map((card) => ({
+    // 'all-due' means every due card, still interleaved at the normal ratio —
+    // NOT an uncapped queue, which would also drain the whole resting pool.
+    const effectiveCap = cap === 'all-due'
+      ? due.length + Math.ceil(due.length / duePerRest)
+      : cap;
+
+    return interleaveAudio(due, rest, duePerRest, effectiveCap).map((card) => ({
       card,
       audioScript: scripts[String(card.id)].chunks,
     }));
