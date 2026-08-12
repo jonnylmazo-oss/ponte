@@ -143,19 +143,15 @@
       .slice(0, 3)
       .map(([key]) => key);
 
-    function accuracy(card) {
-      const t = (card.timesCorrect || 0) + (card.timesWrong || 0);
-      return t === 0 ? 0.5 : (card.timesCorrect || 0) / t;
-    }
-
     function matchesTop(card) {
       if (ranked.length === 0) return false;
       const cardPatterns = detectErrorPatterns(card);
       return cardPatterns.some((p) => ranked.includes(p));
     }
 
-    const priority = due.filter(matchesTop).sort((a, b) => accuracy(a) - accuracy(b));
-    const rest     = due.filter((c) => !matchesTop(c)).sort((a, b) => accuracy(a) - accuracy(b));
+    // accuracyRank(), not a local accuracy() — see cardAccuracy for why.
+    const priority = due.filter(matchesTop).sort((a, b) => accuracyRank(a) - accuracyRank(b));
+    const rest     = due.filter((c) => !matchesTop(c)).sort((a, b) => accuracyRank(a) - accuracyRank(b));
     return [...priority, ...rest];
   }
 
@@ -373,6 +369,10 @@
   let currentDrillAll      = true;
   let sessionCorrect      = 0;
   let sessionAgain        = 0;
+  // The counter denominator grows when a missed card is re-inserted, which
+  // reads as a bug without explanation. Shown once per session, on the first
+  // re-queue, then left up for the rest of the session.
+  let requeueNoticeShown  = false;
   let sessionDrilledCards = new Map(); // id → { italian, interval }
   // Drill direction is persisted as 'it-en' or 'en-it' under ponte_drill_direction.
   // Falls back to the legacy ponte_drill_reverse boolean flag if the new key is unset.
@@ -530,11 +530,36 @@
     'alpha':          'Alphabetical (Italian)',
   };
 
-  // Accuracy as a 0–1 fraction; null if never drilled.
+  // ── Accuracy: one source of truth ────────────────────────────────────────
+  // Accuracy as a 0–1 fraction; null when the card has never been answered.
+  // This is the ONLY accuracy function. There used to be two more — a local
+  // accuracy() in sortDueByPatterns and audioAccuracy() in the audio weighting
+  // — both of which returned a literal 0.5 for zero-answer cards. That made
+  // them indistinguishable from genuine 50% performers, which is #81: with a
+  // due pool of nothing but zero-answer cards every key tied, and the stable
+  // worst-first sort silently returned deck order.
   function cardAccuracy(card) {
     const total = (card.timesCorrect || 0) + (card.timesWrong || 0);
     if (total === 0) return null;
     return (card.timesCorrect || 0) / total;
+  }
+
+  // Rank for worst-first ordering. Cards with no answers yet are not known
+  // failures, but they are the ones we most need data on, so they sort
+  // immediately after "struggling" (< 0.5) and ahead of everything else.
+  // Never substitute a bare 0.5 here — see cardAccuracy above.
+  const ACCURACY_UNKNOWN_RANK = 0.5 - Number.EPSILON;
+
+  function accuracyRank(card) {
+    const a = cardAccuracy(card);
+    return a === null ? ACCURACY_UNKNOWN_RANK : a;
+  }
+
+  // Weak = answered at least once, and getting it wrong at least half the time.
+  // The answered-at-least-once guard is what keeps zero-answer cards out.
+  function isWeakCard(card) {
+    const a = cardAccuracy(card);
+    return a !== null && a <= 0.5;
   }
 
   function isIrregularVerb(card) {
@@ -568,7 +593,10 @@
     if (activePerf === 'all') return true;
     const acc = cardAccuracy(card);
     switch (activePerf) {
-      case 'new':        return (card.reviewCount || 0) === 0;
+      // "New (never drilled)" means never *answered*. Testing reviewCount
+      // instead left any card with a review but no answers matching no filter
+      // at all — invisible in the library (#81).
+      case 'new':        return acc === null;
       case 'struggling': return acc !== null && acc < 0.5;
       case 'learning':   return acc !== null && acc >= 0.5 && acc < 0.8;
       case 'strong':     return acc !== null && acc >= 0.8;
@@ -861,12 +889,26 @@
 
   // ── Reset Scores ──────────────────────────────────────────────────────────
   fcResetScores && fcResetScores.addEventListener('click', () => {
-    if (!confirm('Reset all drill scores? This will clear timesCorrect, timesWrong, and lastDrilled for every card.')) return;
+    if (!confirm(
+      'Reset all drill scores?\n\n' +
+      'This clears every card\'s correct/wrong counts AND its review schedule. ' +
+      'All cards return to the new-card pool and become due immediately.\n\n' +
+      'This cannot be undone.'
+    )) return;
+    // Full revert to the new-card shape. Clearing only the score fields left
+    // reviewCount/interval/dueDate behind, so cards stayed "due" with no
+    // performance history and a flat accuracy (#81).
     const cards = loadCards().map((c) => ({
       ...c,
       timesCorrect: 0,
       timesWrong:   0,
+      lastSeen:     null,
       lastDrilled:  null,
+      interval:     0,
+      easeFactor:   2.5,
+      dueDate:      null,
+      reviewCount:  0,
+      lastReviewed: null,
     }));
     saveCards(cards);
     renderLibrary();
@@ -933,6 +975,23 @@
     if (drillFsSession)  drillFsSession.textContent  = text;
   }
 
+  function showRequeueNotice() {
+    if (requeueNoticeShown) return;
+    requeueNoticeShown = true;
+    const inline = $('fc-requeue-note');
+    const fs     = $('drill-fs-note');
+    if (inline) inline.hidden = false;
+    if (fs)     fs.hidden     = false;
+  }
+
+  function hideRequeueNotice() {
+    requeueNoticeShown = false;
+    const inline = $('fc-requeue-note');
+    const fs     = $('drill-fs-note');
+    if (inline) inline.hidden = true;
+    if (fs)     fs.hidden     = true;
+  }
+
   function showNoDueScreen(notDue) {
     if (!fcNoDue) return;
     const titleEl = fcNoDue.querySelector('.fc-no-due-title');
@@ -978,11 +1037,7 @@
       adjective: base.filter((c) => (c.wordType || 'other') === 'adjective').length,
       adverb:    base.filter((c) => (c.wordType || 'other') === 'adverb').length,
       phrase:    base.filter((c) => (c.wordType || 'other') === 'phrase').length,
-      weak:      base.filter((c) => {
-        if (!(c.reviewCount > 0)) return false;
-        const total = (c.timesCorrect || 0) + (c.timesWrong || 0);
-        return total > 0 && (c.timesCorrect || 0) / total <= 0.5;
-      }).length,
+      weak:      base.filter(isWeakCard).length,
     };
     document.querySelectorAll('.fc-drill-type-count').forEach((el) => {
       const key = el.dataset.countFor;
@@ -1018,11 +1073,7 @@
       }
       dueOnly = true;
     } else if (wordType === 'weak') {
-      filtered = filtered.filter((c) => {
-        if (!(c.reviewCount > 0)) return false;
-        const total = (c.timesCorrect || 0) + (c.timesWrong || 0);
-        return total > 0 && (c.timesCorrect || 0) / total <= 0.5;
-      });
+      filtered = filtered.filter(isWeakCard);
       if (!filtered.length) {
         showNoWeakScreen();
         return;
@@ -1057,6 +1108,7 @@
     sessionCorrect      = 0;
     sessionAgain        = 0;
     sessionDrilledCards = new Map();
+    hideRequeueNotice();
     localStorage.removeItem(drillPosKey()); // fresh session — clear current direction's saved state
     updateSessionStats();
 
@@ -1137,13 +1189,6 @@
   const AUDIO_OVERDUE_DAYS  = 14;   // days overdue at which the boost maxes out
   const AUDIO_OVERDUE_MAX   = 0.5;  // +50% weight when fully overdue
 
-  // Matches sortDueByPatterns' local helper: unanswered cards read as 0.5
-  // rather than 0, so a card with no history is not treated as a total failure.
-  function audioAccuracy(card) {
-    const total = (card.timesCorrect || 0) + (card.timesWrong || 0);
-    return total === 0 ? 0.5 : (card.timesCorrect || 0) / total;
-  }
-
   function daysOverdue(card) {
     if (!card.dueDate) return 0;
     const ms = Date.now() - new Date(card.dueDate).getTime();
@@ -1159,7 +1204,10 @@
   }
 
   function audioWeight(card, ranked) {
-    const base = (1 - audioAccuracy(card)) + AUDIO_WEIGHT_FLOOR;
+    // accuracyRank() puts unknown-accuracy cards just below 0.5, so they draw a
+    // mid weight — we have no evidence either way. The tier ordering below is
+    // what keeps them distinct from genuine 50% performers.
+    const base = (1 - accuracyRank(card)) + AUDIO_WEIGHT_FLOOR;
     const pattern = (ranked.length &&
       detectErrorPatterns(card).some((p) => ranked.indexOf(p) !== -1))
       ? AUDIO_PATTERN_BOOST : 1;
@@ -1190,9 +1238,14 @@
     return out;
   }
 
+  // 0 struggling → 1 unknown → 2 learning → 3 strong. Unknown gets its own tier
+  // rather than collapsing into learning, so a card we have no data on is never
+  // sequenced as though it were a known 50% performer.
   function audioTier(card) {
-    const a = audioAccuracy(card);
-    return a < 0.5 ? 0 : (a < 0.8 ? 1 : 2);
+    const a = cardAccuracy(card);
+    if (a === null) return 1;
+    if (a < 0.5)    return 0;
+    return a < 0.8 ? 2 : 3;
   }
 
   // How many due cards interleaveAudio will actually consume for a given cap,
@@ -1208,9 +1261,10 @@
 
   function selectDueForAudio(due, quota) {
     const picked = weightedSample(due, quota, topErrorPatterns());
-    const tiers  = [[], [], []];
+    // Four buckets, matching audioTier: struggling, unknown, learning, strong.
+    const tiers  = [[], [], [], []];
     picked.forEach((c) => tiers[audioTier(c)].push(c));
-    return shuffle(tiers[0]).concat(shuffle(tiers[1]), shuffle(tiers[2]));
+    return shuffle(tiers[0]).concat(shuffle(tiers[1]), shuffle(tiers[2]), shuffle(tiers[3]));
   }
 
   // Emit duePerRest due cards, then one resting card, until the cap is hit.
@@ -1519,6 +1573,7 @@
       : 2 + Math.floor(Math.random() * (drillQueue.length - 1));
     drillQueue.splice(pos, 0, card);
     drillTotal++;
+    showRequeueNotice();
     showDrillCard();
   });
 

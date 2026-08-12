@@ -8097,3 +8097,17 @@ body.drill-fullscreen .ff-flip-card {
   cursor: default;
   background: var(--bg-card);
 }
+
+/* Explains why the drill counter's denominator grows mid-session */
+.fc-requeue-note,
+.drill-fs-note {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .fc-requeue-note { display: block; margin-left: 0; margin-top: 3px; }
+  .drill-fs-note   { display: none; }
+}
