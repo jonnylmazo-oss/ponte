@@ -1115,6 +1115,104 @@
     return [...mastered, ...settling];
   }
 
+  // ── Weighted, non-deterministic due selection (audio only) ────────────────
+  // startDrill() keeps using sortDueByPatterns(): a strict worst-first sort is
+  // right there, because drilling writes accuracy back and the order shifts as
+  // you go. Audio never writes card stats, so the same sort produced a
+  // byte-identical queue every single session.
+  //
+  // It is worse than that today: every due card sits at accuracy 0.50, because
+  // Reset Scores clears timesCorrect/timesWrong but leaves reviewCount, and
+  // isDueToday gates on reviewCount. With all keys equal a stable sort returns
+  // its input, so the "worst-first" ordering is a literal no-op and the queue
+  // is just deck order.
+  //
+  // So: selection is weighted random without replacement, and the selected
+  // cards are then ordered by accuracy tier with a shuffle inside each tier.
+  // Randomness lives in *which* cards get picked and their order within a
+  // tier; worst-first survives as the tier ordering.
+
+  const AUDIO_WEIGHT_FLOOR  = 0.25; // caps worst:best selection odds at ~5:1
+  const AUDIO_PATTERN_BOOST = 1.6;
+  const AUDIO_OVERDUE_DAYS  = 14;   // days overdue at which the boost maxes out
+  const AUDIO_OVERDUE_MAX   = 0.5;  // +50% weight when fully overdue
+
+  // Matches sortDueByPatterns' local helper: unanswered cards read as 0.5
+  // rather than 0, so a card with no history is not treated as a total failure.
+  function audioAccuracy(card) {
+    const total = (card.timesCorrect || 0) + (card.timesWrong || 0);
+    return total === 0 ? 0.5 : (card.timesCorrect || 0) / total;
+  }
+
+  function daysOverdue(card) {
+    if (!card.dueDate) return 0;
+    const ms = Date.now() - new Date(card.dueDate).getTime();
+    return ms <= 0 ? 0 : ms / 86400000;
+  }
+
+  function topErrorPatterns() {
+    return Object.keys(loadErrorPatterns())
+      .map((key) => [key, loadErrorPatterns()[key]])
+      .sort((a, b) => (b[1].count || 0) - (a[1].count || 0))
+      .slice(0, 3)
+      .map((entry) => entry[0]);
+  }
+
+  function audioWeight(card, ranked) {
+    const base = (1 - audioAccuracy(card)) + AUDIO_WEIGHT_FLOOR;
+    const pattern = (ranked.length &&
+      detectErrorPatterns(card).some((p) => ranked.indexOf(p) !== -1))
+      ? AUDIO_PATTERN_BOOST : 1;
+    // Accuracy is flat across the due pool right now, so how overdue a card is
+    // is the only signal that differentiates at all — without this the
+    // selection degenerates to a uniform shuffle.
+    const overdue = 1 + Math.min(1, daysOverdue(card) / AUDIO_OVERDUE_DAYS) * AUDIO_OVERDUE_MAX;
+    return base * pattern * overdue;
+  }
+
+  function weightedSample(pool, n, ranked) {
+    const items   = pool.slice();
+    const weights = items.map((c) => audioWeight(c, ranked));
+    const out = [];
+    while (out.length < n && items.length) {
+      let total = 0;
+      for (let i = 0; i < weights.length; i++) total += weights[i];
+      let x = Math.random() * total;
+      let idx = items.length - 1;
+      for (let i = 0; i < items.length; i++) {
+        x -= weights[i];
+        if (x <= 0) { idx = i; break; }
+      }
+      out.push(items[idx]);
+      items.splice(idx, 1);
+      weights.splice(idx, 1);
+    }
+    return out;
+  }
+
+  function audioTier(card) {
+    const a = audioAccuracy(card);
+    return a < 0.5 ? 0 : (a < 0.8 ? 1 : 2);
+  }
+
+  // How many due cards interleaveAudio will actually consume for a given cap,
+  // so the weighted draw is sized to the session rather than the whole pool.
+  // Tiering must run on the *selected* cards, not the full pool — tiering the
+  // pool first and slicing would make every session pure worst-tier.
+  function dueQuotaFor(cap, duePerRest) {
+    const cycle  = duePerRest + 1;
+    const cycles = Math.floor(cap / cycle);
+    const rem    = cap % cycle;
+    return cycles * duePerRest + Math.min(rem, duePerRest);
+  }
+
+  function selectDueForAudio(due, quota) {
+    const picked = weightedSample(due, quota, topErrorPatterns());
+    const tiers  = [[], [], []];
+    picked.forEach((c) => tiers[audioTier(c)].push(c));
+    return shuffle(tiers[0]).concat(shuffle(tiers[1]), shuffle(tiers[2]));
+  }
+
   // Emit duePerRest due cards, then one resting card, until the cap is hit.
   // When either pool runs dry the other fills the remainder, so a session is
   // always cap-length if enough cards exist in total.
@@ -1158,16 +1256,17 @@
     });
 
     // isDueToday excludes never-reviewed cards, matching the drill's "Due
-    // today" subset. sortDueByPatterns front-loads cards matching the top-3
-    // grammar error patterns, then sorts by ascending accuracy (worst first).
-    const due  = sortDueByPatterns(withAudio.filter(isDueToday));
-    const rest = restingAudioPool(withAudio);
+    // today" subset.
+    const duePool = withAudio.filter(isDueToday);
+    const rest    = restingAudioPool(withAudio);
 
     // 'all-due' means every due card, still interleaved at the normal ratio —
     // NOT an uncapped queue, which would also drain the whole resting pool.
     const effectiveCap = cap === 'all-due'
-      ? due.length + Math.ceil(due.length / duePerRest)
+      ? duePool.length + Math.ceil(duePool.length / duePerRest)
       : cap;
+
+    const due = selectDueForAudio(duePool, dueQuotaFor(effectiveCap, duePerRest));
 
     return interleaveAudio(due, rest, duePerRest, effectiveCap).map((card) => ({
       card,

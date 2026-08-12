@@ -8089,3 +8089,11 @@ body.drill-fullscreen .ff-flip-card {
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+
+.ap-controls + .ap-controls { margin-top: 8px; }
+
+.ap-ctrl:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--bg-card);
+}

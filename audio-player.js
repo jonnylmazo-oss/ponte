@@ -214,6 +214,11 @@
     if (apProgress) apProgress.textContent = `Card ${qIndex + 1} of ${queue.length}`;
     if (apWord)  apWord.textContent  = c.italian || '';
     if (apGloss) apGloss.textContent = c.english || '';
+    // Disabled rather than wrapping to the end: on the first card there is no
+    // previous, and a disabled control says so more clearly than a tap that
+    // silently does nothing.
+    const prevBtn = $('ap-prev-btn');
+    if (prevBtn) prevBtn.disabled = qIndex <= 0;
   }
 
   function renderSegment(seg) {
@@ -473,6 +478,33 @@
       halt();
       renderControls();
     }
+    return false;
+  };
+
+  // Replay the current card's whole script from the top — tone included,
+  // because loadCard() resets toneDone. Queue position is unchanged.
+  window.ponteAudioRestartCard = function () {
+    if (!running) return false;
+    halt();
+    claimChannel();
+    setNote('');
+    paused = false;
+    renderControls();
+    loadCard();
+    playSegment();
+    return false;
+  };
+
+  window.ponteAudioPrevCard = function () {
+    if (!running || qIndex <= 0) return false;
+    halt();
+    claimChannel();
+    setNote('');
+    paused = false;
+    renderControls();
+    qIndex--;
+    loadCard();
+    playSegment();
     return false;
   };
 

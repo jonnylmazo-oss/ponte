@@ -1212,12 +1212,20 @@
           ontouchend="window.ponteAudioNudgeRate(1); return false;">+</button>
       </div>
       <div class="ap-controls">
+        <button class="ap-ctrl" id="ap-prev-btn" disabled
+          onclick="window.ponteAudioPrevCard(); return false;"
+          ontouchend="window.ponteAudioPrevCard(); return false;">⏮ Prev</button>
         <button class="ap-ctrl" id="ap-pause-btn"
           onclick="window.ponteAudioPause(); return false;"
           ontouchend="window.ponteAudioPause(); return false;">⏸ Pause</button>
         <button class="ap-ctrl" id="ap-skip-btn"
           onclick="window.ponteAudioSkip(); return false;"
-          ontouchend="window.ponteAudioSkip(); return false;">⏭ Next card</button>
+          ontouchend="window.ponteAudioSkip(); return false;">⏭ Next</button>
+      </div>
+      <div class="ap-controls">
+        <button class="ap-ctrl" id="ap-restart-btn"
+          onclick="window.ponteAudioRestartCard(); return false;"
+          ontouchend="window.ponteAudioRestartCard(); return false;">↻ Restart card</button>
         <button class="ap-ctrl ap-ctrl-quiet" id="ap-stop-btn"
           onclick="window.ponteAudioStop(); return false;"
           ontouchend="window.ponteAudioStop(); return false;">■ Stop</button>
