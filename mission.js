@@ -90,11 +90,22 @@
   }
 
   // ── Mission 4: count words saved this week from deck ─────────────────────
+  // Dedupe by italian.toLowerCase() (#58): a delete-then-resave of the same
+  // word, or saving the same word via two different flows (tooltip + word-
+  // lookup modal), each gets a fresh savedAt — without this, one effective
+  // word could count twice toward "save 10 new words this week".
   function wordsThisWeek() {
     try {
       const cards = JSON.parse(localStorage.getItem(FC_KEY) || '[]');
       const since = getMondayISO();
-      return cards.filter(c => c.savedAt && c.savedAt >= since).length;
+      const seen = new Set();
+      return cards.filter((c) => {
+        if (!c.savedAt || c.savedAt < since) return false;
+        const key = (c.italian || '').toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).length;
     } catch (e) { return 0; }
   }
 
