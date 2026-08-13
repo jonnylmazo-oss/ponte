@@ -195,6 +195,11 @@
                 ontouchend="window.toggleRecent && window.toggleRecent(); return false;">Recent ▾</button>
               <div class="recent-panel" id="recent-panel" hidden>
                 <input class="recent-search" id="recent-search" type="text" placeholder="Search articles…" autocomplete="off">
+                <div class="recent-diff-filter" id="recent-diff-filter" role="group" aria-label="Filter by difficulty">
+                  <button type="button" class="recent-diff-btn active" data-diff="all">All</button>
+                  <button type="button" class="recent-diff-btn" data-diff="B1">B1</button>
+                  <button type="button" class="recent-diff-btn" data-diff="B2">B2</button>
+                </div>
                 <div class="recent-list" id="recent-list"></div>
                 <div class="recent-footer">
                   <button class="recent-clear-btn" id="recent-clear-btn"

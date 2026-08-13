@@ -292,9 +292,11 @@
   const quizDoneBtn      = $('quiz-done-btn');
 
   const recentWrap   = $('recent-wrap');
-  const recentPanel  = $('recent-panel');
-  const recentSearch = $('recent-search');
-  const recentList   = $('recent-list');
+  const recentPanel     = $('recent-panel');
+  const recentSearch    = $('recent-search');
+  const recentList      = $('recent-list');
+  const recentDiffFilter = $('recent-diff-filter');
+  let recentDiff = 'all'; // #3: B1/B2/all filter, reset on each panel open
 
   // Track the word/entry currently shown in the tooltip so save button can access it
   let currentTooltipWord  = '';
@@ -598,11 +600,13 @@
     if (!recentList) return;
     const all = getRecentArticles();
     const q = (filter || '').toLowerCase().trim();
-    const list = q
+    let list = q
       ? all.filter(a => (a.title || '').toLowerCase().includes(q) || (a.topic || '').toLowerCase().includes(q))
       : all;
+    if (recentDiff !== 'all') list = list.filter(a => a.difficulty === recentDiff);
     if (list.length === 0) {
-      recentList.innerHTML = '<div class="recent-empty">' + (q ? 'No articles match' : 'No saved articles') + '</div>';
+      recentList.innerHTML = '<div class="recent-empty">' +
+        (q || recentDiff !== 'all' ? 'No articles match' : 'No saved articles') + '</div>';
       return;
     }
     recentList.innerHTML = list.map(a => {
@@ -624,6 +628,11 @@
     recentPanel.hidden = false;
     document.getElementById('recent-btn').classList.add('open');
     if (recentSearch) { recentSearch.value = ''; recentSearch.focus(); }
+    recentDiff = 'all';
+    if (recentDiffFilter) {
+      recentDiffFilter.querySelectorAll('.recent-diff-btn').forEach((b) =>
+        b.classList.toggle('active', b.dataset.diff === 'all'));
+    }
     renderRecentRows('');
   }
 
@@ -663,6 +672,17 @@
 
   if (recentSearch) {
     recentSearch.addEventListener('input', () => renderRecentRows(recentSearch.value));
+  }
+
+  if (recentDiffFilter) {
+    recentDiffFilter.addEventListener('click', (e) => {
+      const btn = e.target.closest('.recent-diff-btn');
+      if (!btn) return;
+      recentDiff = btn.dataset.diff;
+      recentDiffFilter.querySelectorAll('.recent-diff-btn').forEach((b) =>
+        b.classList.toggle('active', b === btn));
+      renderRecentRows(recentSearch ? recentSearch.value : '');
+    });
   }
 
   document.addEventListener('click', (e) => {
