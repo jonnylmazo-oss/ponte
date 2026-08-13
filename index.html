@@ -795,68 +795,63 @@
             <input type="text" id="fc-search" class="fc-search"
               placeholder="Search cards…" autocomplete="off" />
             <div class="fc-filter-dropdowns">
-              <!-- Performance dropdown -->
+              <!-- #13: consolidated from 5 always-visible dropdown buttons (Performance/
+                   Type/Category/Source/Sort) into one Filters button + one panel. Each
+                   group below is byte-identical to its old radio list (same name/value
+                   attributes) — the delegated change handler in flashcards.js is keyed
+                   by radio name, not DOM position, so filtering behavior is unchanged. -->
               <div class="fc-dropdown-wrap">
-                <button class="fc-dropdown-btn" id="fc-perf-btn">Performance: All ▾</button>
-                <div class="fc-dropdown-panel" id="fc-perf-panel" hidden>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="all" checked> All performance</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="new"> New (never drilled)</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="struggling"> Struggling (&lt;50%)</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="learning"> Learning (50–79%)</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="strong"> Strong (≥80%)</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="mastered"> Mastered</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="due"> Due today</label>
-                </div>
-              </div>
-              <!-- Word Type dropdown -->
-              <div class="fc-dropdown-wrap">
-                <button class="fc-dropdown-btn" id="fc-type-btn">Type: All ▾</button>
-                <div class="fc-dropdown-panel" id="fc-type-panel" hidden>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="all" checked> All types</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="noun"> Noun</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="verb"> Verb</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="adjective"> Adjective</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="adverb"> Adverb</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="phrase"> Phrase</label>
-                  <div class="fc-dropdown-divider"></div>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="verb-irregular"> Irregular verbs only</label>
-                </div>
-              </div>
-              <!-- Category dropdown -->
-              <div class="fc-dropdown-wrap">
-                <button class="fc-dropdown-btn" id="fc-cat-btn">Category: All ▾</button>
-                <div class="fc-dropdown-panel" id="fc-cat-panel" hidden>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="all" checked> All categories</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="same"> Same word</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="similar"> Same/Similar</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="false-friend"> False Friend</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="new"> No Spanish link</label>
-                </div>
-              </div>
-              <!-- Source dropdown -->
-              <div class="fc-dropdown-wrap">
-                <button class="fc-dropdown-btn" id="fc-src-btn">Source: All ▾</button>
-                <div class="fc-dropdown-panel" id="fc-src-panel" hidden>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="all" checked> All sources</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="starter"> Starter deck</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="reader"> Reader</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="practice"> Practice</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="scripted"> Scripted dialogue</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="conversation"> Conversation</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="manual"> Manually added</label>
-                </div>
-              </div>
-              <!-- Sort dropdown -->
-              <div class="fc-dropdown-wrap">
-                <button class="fc-dropdown-btn" id="fc-sort-btn">Sort: Due date ▾</button>
-                <div class="fc-dropdown-panel" id="fc-sort-panel" hidden>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="due" checked> Due date</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="accuracy-asc"> Worst accuracy first</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="accuracy-desc"> Best accuracy first</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="recent"> Most recently added</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="oldest"> Oldest first</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="most-drilled"> Most drilled</label>
-                  <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="alpha"> Alphabetical (Italian)</label>
+                <button class="fc-dropdown-btn" id="fc-filters-btn">Filters<span class="fc-filter-badge" id="fc-filter-badge" hidden>0</span> ▾</button>
+                <div class="fc-dropdown-panel fc-filters-panel" id="fc-filters-panel" hidden>
+                  <div class="fc-filter-section">
+                    <div class="fc-filter-section-label">Performance</div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="all" checked> All performance</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="new"> New (never drilled)</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="struggling"> Struggling (&lt;50%)</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="learning"> Learning (50–79%)</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="strong"> Strong (≥80%)</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="mastered"> Mastered</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-perf" value="due"> Due today</label>
+                  </div>
+                  <div class="fc-filter-section">
+                    <div class="fc-filter-section-label">Word Type</div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="all" checked> All types</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="noun"> Noun</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="verb"> Verb</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="adjective"> Adjective</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="adverb"> Adverb</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="phrase"> Phrase</label>
+                    <div class="fc-dropdown-divider"></div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-type" value="verb-irregular"> Irregular verbs only</label>
+                  </div>
+                  <div class="fc-filter-section">
+                    <div class="fc-filter-section-label">Category</div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="all" checked> All categories</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="same"> Same word</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="similar"> Same/Similar</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="false-friend"> False Friend</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-cat" value="new"> No Spanish link</label>
+                  </div>
+                  <div class="fc-filter-section">
+                    <div class="fc-filter-section-label">Source</div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="all" checked> All sources</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="starter"> Starter deck</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="reader"> Reader</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="practice"> Practice</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="scripted"> Scripted dialogue</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="conversation"> Conversation</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-src" value="manual"> Manually added</label>
+                  </div>
+                  <div class="fc-filter-section fc-filter-section-last">
+                    <div class="fc-filter-section-label">Sort</div>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="due" checked> Due date</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="accuracy-asc"> Worst accuracy first</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="accuracy-desc"> Best accuracy first</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="recent"> Most recently added</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="oldest"> Oldest first</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="most-drilled"> Most drilled</label>
+                    <label class="fc-dropdown-item"><input type="radio" name="fc-sort" value="alpha"> Alphabetical (Italian)</label>
+                  </div>
                 </div>
               </div>
               <button class="fc-clear-filters-btn" id="fc-clear-filters" hidden>Clear all</button>

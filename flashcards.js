@@ -489,52 +489,6 @@
     enterDrillFullscreen();
   }
 
-  // ── Filter helpers ────────────────────────────────────────────────────────
-
-  const PERF_LABELS = {
-    'all':        'All',
-    'new':        'New',
-    'struggling': 'Struggling',
-    'learning':   'Learning',
-    'strong':     'Strong',
-    'mastered':   'Mastered',
-    'due':        'Due today',
-  };
-  const TYPE_LABELS = {
-    'all':            'All',
-    'noun':           'Noun',
-    'verb':           'Verb',
-    'adjective':      'Adjective',
-    'adverb':         'Adverb',
-    'phrase':         'Phrase',
-    'verb-irregular': 'Irregular verbs',
-  };
-  const CAT_LABELS_SHORT = {
-    'all':          'All',
-    'same':         'Same word',
-    'similar':      'Same/Similar',
-    'false-friend': 'False Friend',
-    'new':          'No Spanish link',
-  };
-  const SRC_LABELS = {
-    'all':          'All',
-    'starter':      'Starter deck',
-    'reader':       'Reader',
-    'practice':     'Practice',
-    'scripted':     'Scripted dialogue',
-    'conversation': 'Conversation',
-    'manual':       'Manually added',
-  };
-  const SORT_LABELS = {
-    'due':            'Due date',
-    'accuracy-asc':   'Worst accuracy first',
-    'accuracy-desc':  'Best accuracy first',
-    'recent':         'Most recently added',
-    'oldest':         'Oldest first',
-    'most-drilled':   'Most drilled',
-    'alpha':          'Alphabetical (Italian)',
-  };
-
   // ── Accuracy: one source of truth ────────────────────────────────────────
   // Accuracy as a 0–1 fraction; null when the card has never been answered.
   // This is the ONLY accuracy function. There used to be two more — a local
@@ -705,21 +659,24 @@
 
   // ── Dropdown UI helpers ───────────────────────────────────────────────────
 
+  // #13: was 5 separate buttons, each with its own "Prefix: value ▾" label.
+  // Consolidated into one Filters button — its current-selection text lives
+  // per-section inside the panel now (the checked radio itself), so this
+  // only needs to update the badge count and the button's active styling.
+  // Only updates the badge <span> and the button's class, never
+  // btn.textContent — that would wipe out the badge element itself.
   function updateFilterButtons() {
-    const setBtn = (id, prefix, value, labels, isFilter) => {
-      const btn = $(id);
-      if (!btn) return;
-      btn.textContent = `${prefix}: ${labels[value] || 'All'} ▾`;
-      btn.classList.toggle('fc-dropdown-btn--active', isFilter && value !== 'all');
-    };
-    setBtn('fc-perf-btn', 'Performance', activePerf,     PERF_LABELS,      true);
-    setBtn('fc-type-btn', 'Type',        activeWordType, TYPE_LABELS,      true);
-    setBtn('fc-cat-btn',  'Category',    activeCategory, CAT_LABELS_SHORT, true);
-    setBtn('fc-src-btn',  'Source',      activeSource,   SRC_LABELS,       true);
-    setBtn('fc-sort-btn', 'Sort',        activeSort,     SORT_LABELS,      false);
+    const btn   = $('fc-filters-btn');
+    const badge = $('fc-filter-badge');
+    const count = activeFilterCount();
+    if (badge) {
+      badge.textContent = String(count);
+      badge.hidden = count === 0;
+    }
+    if (btn) btn.classList.toggle('fc-dropdown-btn--active', count > 0);
 
     const clearBtn = $('fc-clear-filters');
-    if (clearBtn) clearBtn.hidden = activeFilterCount() === 0;
+    if (clearBtn) clearBtn.hidden = count === 0;
   }
 
   function clearAllFilters() {
@@ -855,7 +812,11 @@
     if (!r || r.type !== 'radio' || !RADIO_HANDLERS[r.name]) return;
     RADIO_HANDLERS[r.name](r.value);
     updateFilterButtons();
-    closeDropdowns();
+    // #13: used to closeDropdowns() here — correct when each filter had its
+    // own single-purpose dropdown, but now all 5 live in one Filters panel,
+    // so closing on the first selection would force reopening it 5 times to
+    // set every dimension. Panel now only closes via the button toggle or a
+    // click outside it.
     renderLibrary();
   });
 

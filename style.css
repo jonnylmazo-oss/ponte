@@ -2821,6 +2821,49 @@ header {
   flex-shrink: 0;
 }
 
+/* #13: consolidated Filters panel — 5 sections stacked (Performance/Type/
+   Category/Source/Sort), taller than any single old dropdown, so unlike the
+   base .fc-dropdown-panel this one caps its height and scrolls. */
+.fc-filters-panel {
+  min-width: 260px;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  gap: 0;
+}
+
+.fc-filter-section {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.fc-filter-section-last { padding-bottom: 0; margin-bottom: 0; border-bottom: none; }
+
+.fc-filter-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 2px 8px 6px;
+}
+
+.fc-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: 8px;
+  background: #0055AA;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+}
+
 /* Clear-all filters button — same pill style, danger accent */
 .fc-clear-filters-btn {
   background: transparent;
@@ -3868,7 +3911,13 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  /* #13: was flex-shrink: 0 with no wrap — its 5 buttons (Sync / +Add word /
+     Audio / Drill mode / Reset Scores) formed a rigid ~458px strip that
+     didn't fit narrower viewports. Nothing clipped that overflow, so it
+     widened the whole page horizontally and pushed Reset Scores off-screen.
+     .fc-filter-dropdowns right next to it already wraps correctly — this
+     matches that working pattern instead of fighting it with flex-shrink:0. */
 }
 
 .fc-reset-scores-btn {
