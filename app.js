@@ -77,7 +77,7 @@
     window.ponteSpeak            = () => {};
     window.ponteSpeech           = {
       speak: () => null, cancel: () => {}, voiceFor: () => null,
-      generation: () => 0, supported: false,
+      announceClaim: () => {}, generation: () => 0, supported: false,
     };
     window.switchTab             = () => {};
     window.toggleNavGroup        = () => {};
@@ -161,10 +161,20 @@
 
     // speak(text) keeps its original Italian-only behaviour for existing
     // callers; speak(text, { lang, rate }) opts into another language.
+    // Announced so other audio sources (audio-player.js, which uses an <audio>
+    // element and therefore a completely separate pipeline) can yield. The
+    // generation counter alone only works for callers inside Web Speech.
+    function announceClaim(source) {
+      try {
+        window.dispatchEvent(new CustomEvent('ponte:speech-claimed', { detail: { source: source } }));
+      } catch (_) { /* CustomEvent unsupported — preemption degrades, playback does not */ }
+    }
+
     function speak(text, opts) {
       if (!text) return null;
       speechSynthesis.cancel();
       generation++;
+      announceClaim('speech');
       const o    = opts || {};
       const lang = o.lang || 'it-IT';
       const base = normalize(lang).split('-')[0];
@@ -181,9 +191,10 @@
     function cancel() {
       generation++; // invalidates any in-flight chained sequence
       speechSynthesis.cancel();
+      announceClaim('speech');
     }
 
-    return { speak, cancel, voiceFor, generation: () => generation, supported: true };
+    return { speak, cancel, voiceFor, announceClaim, generation: () => generation, supported: true };
   })();
 
   // Expose for flashcards.js (same-page IIFE, loaded after app.js)

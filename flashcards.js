@@ -1286,7 +1286,36 @@
     return out;
   }
 
-  // Returns [{ card, audioScript }], audioScript being the chunks array.
+  // SHA-1 of the UTF-8 text, first 16 hex chars — must match exactly what
+  // backfill-audio-elevenlabs.js used as the blob key, or no URL resolves.
+  // SubtleCrypto needs a secure context; localhost and https both qualify.
+  async function sha1Hex16(text) {
+    if (!(window.crypto && window.crypto.subtle)) return null;
+    const bytes  = new TextEncoder().encode(text);
+    const digest = await window.crypto.subtle.digest('SHA-1', bytes);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  }
+
+  // Resolve every text a card might speak to its pre-rendered audio, so the
+  // player can look up by text and never needs to hash anything mid-playback.
+  async function audioUrlsForCard(card, entry) {
+    const map = {};
+    const byHash = (entry && entry.audio) || null;
+    if (!byHash) return map;
+    const texts = [card.italian, card.english, card.example];
+    (entry.chunks || []).forEach((ch) => { texts.push(ch.it, ch.en); });
+    for (const raw of texts) {
+      const text = raw && String(raw).trim();
+      if (!text || map[text]) continue;
+      const h = await sha1Hex16(text);
+      if (h && byHash[h]) map[text] = byHash[h];
+    }
+    return map;
+  }
+
+  // Returns [{ card, audioScript, audioUrls }], audioScript being the chunks
+  // array and audioUrls a text -> { url, ms } map for pre-rendered speech.
   // Options: { cap, duePerRest, allCards, refresh }.
   // cap accepts a number, or the string 'all-due' to play every due card.
   async function buildAudioQueue(options) {
@@ -1322,9 +1351,16 @@
 
     const due = selectDueForAudio(duePool, dueQuotaFor(effectiveCap, duePerRest));
 
-    return interleaveAudio(due, rest, duePerRest, effectiveCap).map((card) => ({
-      card,
-      audioScript: scripts[String(card.id)].chunks,
+    const ordered = interleaveAudio(due, rest, duePerRest, effectiveCap);
+
+    // Hash resolution is async; do it once per session rather than per segment.
+    // Failure here is non-fatal — the player falls back to Web Speech.
+    return Promise.all(ordered.map(async (card) => {
+      const entry = scripts[String(card.id)];
+      let audioUrls = {};
+      try { audioUrls = await audioUrlsForCard(card, entry); }
+      catch (_) { audioUrls = {}; }
+      return { card, audioScript: entry.chunks, audioUrls };
     }));
   }
 

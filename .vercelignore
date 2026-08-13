@@ -14,5 +14,6 @@ generate-deck.js
 push-deck.js
 migrate-taxonomy.js
 backfill-audio-script.js
+backfill-audio-elevenlabs.js
 generated-deck.json
 audio-backfill/

@@ -45,9 +45,18 @@
   const LS_SESSION = 'ponte_audio_session';
 
   const RATE_MIN = 0.55;
-  const RATE_MAX = 1.05;
+  const RATE_MAX = 1.25;
   const RATE_STEP = 0.05;
-  const RATE_DEFAULT = 0.78;   // slower than the old hardcoded 0.85
+  // Retuned for the ElevenLabs voice. 0.78 was chosen to make the robotic Web
+  // Speech voice intelligible; a natural voice at that rate sounds sluggish and
+  // drunk. 0.95 is just under native pace — still deliberate enough for a
+  // learner, without the artefacts.
+  const RATE_DEFAULT = 0.95;
+  // The slider is one number but the two engines interpret it differently:
+  // playbackRate 1.0 is "as recorded", Web Speech 1.0 is that engine's own
+  // normal. This factor keeps the fallback path sounding like the 0.78 it was
+  // tuned at when the slider sits at the new 0.95 default.
+  const WEB_SPEECH_RATE_FACTOR = 0.82;
 
   const SESSION_LENGTHS = ['15', '25', '40', 'all'];
   const SESSION_DEFAULT = '25';
@@ -98,6 +107,58 @@
 
   function speechAPI() { return window.ponteSpeech || null; }
 
+  // ── Pre-rendered audio ────────────────────────────────────────────────────
+  // ONE element for the whole session, created lazily inside the Play gesture
+  // and reused by swapping .src. iOS blocks play() on an element that was not
+  // created during a user gesture, so a per-segment element would work on
+  // desktop and silently fail on the phone.
+  let audioEl = null;
+
+  function getAudioEl() {
+    if (audioEl) return audioEl;
+    try { audioEl = new Audio(); audioEl.preload = 'auto'; }
+    catch (_) { audioEl = null; }
+    return audioEl;
+  }
+
+  function stopAudioEl() {
+    if (!audioEl) return;
+    audioEl.onended = null;
+    audioEl.onerror = null;
+    try { audioEl.pause(); } catch (_) {}
+  }
+
+  // Set while we are the ones claiming the channel, so our own announcement
+  // does not read as someone else preempting us.
+  let claimingSelf = false;
+
+  // Anything we do that emits a claim must run inside this, or our own
+  // announcement bounces back through the listener and preempts us.
+  function selfClaimed(fn) {
+    claimingSelf = true;
+    try { return fn(); } finally { claimingSelf = false; }
+  }
+
+  function claim() {
+    selfClaimed(() => {
+      try {
+        const api = speechAPI();
+        if (api && api.announceClaim) api.announceClaim('audio-player');
+        else window.dispatchEvent(new CustomEvent('ponte:speech-claimed', { detail: { source: 'audio-player' } }));
+      } catch (_) {}
+    });
+  }
+
+  // A flip-card, tooltip or the reader started speaking — yield rather than
+  // talk over them. Works across both engines, unlike the generation counter.
+  window.addEventListener('ponte:speech-claimed', (e) => {
+    if (claimingSelf) return;
+    const src = e && e.detail && e.detail.source;
+    if (src === 'audio-player') return;
+    if (!running || paused) return;
+    preempted();
+  });
+
   // ── Settings ─────────────────────────────────────────────────────────────
   function clampRate(v) {
     return Math.min(RATE_MAX, Math.max(RATE_MIN, Math.round(v / RATE_STEP) * RATE_STEP));
@@ -119,9 +180,16 @@
   // One user-facing speed. Italian takes it directly — it is the language
   // being learned. English is the gloss, so it tracks a little faster and
   // never drops below 0.75, keeping it close to its original 0.95.
+  // English is the gloss, so it runs slightly faster — but +0.15 on top of a
+  // natural voice was too brisk, so the offset is trimmed to +0.10.
   function rateFor(lang) {
-    if (lang === EN) return Math.min(1.0, Math.max(0.75, rate + 0.15));
+    if (lang === EN) return Math.min(1.15, Math.max(0.75, rate + 0.10));
     return rate;
+  }
+
+  // Web Speech needs the value rescaled; blob audio uses it as playbackRate.
+  function webSpeechRateFor(lang) {
+    return Math.max(0.1, rateFor(lang) * WEB_SPEECH_RATE_FACTOR);
   }
 
   // ── Tone ─────────────────────────────────────────────────────────────────
@@ -260,8 +328,11 @@
   function halt() {
     clearGap();
     runToken++;
-    const api = speechAPI();
-    if (api && api.cancel) api.cancel();
+    stopAudioEl();
+    selfClaimed(() => {
+      const api = speechAPI();
+      if (api && api.cancel) api.cancel();
+    });
   }
 
   function loadCard() {
@@ -276,10 +347,10 @@
     if (sIndex >= segments.length) { nextCard(); return; }
 
     const api = speechAPI();
-    if (!api || !api.supported) { advance(); return; }
 
-    // Someone else spoke while we were between phrases.
-    if (ownedGen >= 0 && api.generation() !== ownedGen) { preempted(); return; }
+    // Someone else spoke while we were between phrases. Only meaningful for
+    // the Web Speech path; the claim event covers the pre-rendered one.
+    if (api && api.supported && ownedGen >= 0 && api.generation() !== ownedGen) { preempted(); return; }
 
     // Card-boundary cue, once per card, ahead of the first phrase. Scheduling
     // the first utterance through gapTimer means the pending tone inherits the
@@ -300,11 +371,47 @@
     const seg = segments[sIndex];
     renderSegment(seg);
 
+    // Prefer the pre-rendered ElevenLabs render; fall back to Web Speech for
+    // any text that has no blob yet (cards saved since the last backfill).
+    const entry = queue[qIndex] || {};
+    const pre   = entry.audioUrls && entry.audioUrls[seg.text];
+    if (pre && pre.url) { playPreRendered(seg, pre.url); return; }
+    playSynthesized(seg, api);
+  }
+
+  function playPreRendered(seg, url) {
+    const el = getAudioEl();
+    if (!el) { playSynthesized(seg, speechAPI()); return; }
+
     const myRun = runToken;
-    const utt   = api.speak(seg.text, { lang: seg.lang, rate: rateFor(seg.lang) });
+    claim();
+    stopAudioEl();
+    el.src = url;
+    // Assign after .src — some browsers reset playbackRate when the source
+    // changes. This is the slider value used directly: 1.0 is as-recorded.
+    el.playbackRate = rateFor(seg.lang);
+
+    const bail = () => {
+      if (myRun !== runToken) return;
+      // A dead or unreachable URL must degrade, not end the session.
+      playSynthesized(seg, speechAPI());
+    };
+    el.onended = () => { if (myRun === runToken) advance(); };
+    el.onerror = bail;
+
+    const p = el.play();
+    if (p && typeof p.catch === 'function') p.catch(bail);
+  }
+
+  function playSynthesized(seg, api) {
+    if (!api || !api.supported) { advance(); return; }
+
+    const myRun = runToken;
+    // Rescaled: the slider is calibrated for playbackRate, not Web Speech.
+    const utt = selfClaimed(() =>
+      api.speak(seg.text, { lang: seg.lang, rate: webSpeechRateFor(seg.lang) }));
     if (!utt) { advance(); return; }
 
-    // Captured AFTER speak(), which increments it.
     ownedGen = api.generation();
     const myGen = ownedGen;
 
@@ -353,6 +460,7 @@
   // Stop our chain but do NOT cancel — that would cut off their audio.
   function preempted() {
     clearGap();
+    stopAudioEl();
     paused = true;
     renderControls();
     setNote('Paused — audio was played elsewhere. Press Resume to pick up from this phrase.');
