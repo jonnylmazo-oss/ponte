@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
   try {
     const stream = await client.messages.create({
       model:       'claude-sonnet-4-6',
-      max_tokens:  1200,
+      max_tokens:  1500, // was 1200; +300 headroom for the culturalNote field (#34)
       temperature: 0.8,
       stream:      true,
       messages:    [{ role: 'user', content: buildPrompt(topic, difficulty) }],
@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
       try {
         const retry = await client.messages.create({
           model:       'claude-sonnet-4-6',
-          max_tokens:  1200,
+          max_tokens:  1500, // was 1200; +300 headroom for the culturalNote field (#34)
           temperature: 0.4,
           messages:    [{ role: 'user', content: buildPrompt(topic, difficulty, true) }],
         });

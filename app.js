@@ -233,6 +233,9 @@
   const translationLabel  = $('translation-label');
   const translationText   = $('translation-text');
   const italianText       = $('italian-text');
+  const culturalNote      = $('cultural-note');
+  const culturalNoteBody  = $('cultural-note-body');
+  const culturalNoteToggle = $('cultural-note-toggle');
   const toggleBtns        = document.querySelectorAll('.toggle-btn');
   const readerEl          = $('reader');
   const translToggleBtn   = $('transl-toggle');
@@ -367,6 +370,7 @@
     articleTopic.textContent      = article.topic;
     italianText.innerHTML         = tokenizeItalian(article.italian);
     updateTranslation();
+    renderCulturalNote(article.culturalNote);
     hideTooltip();
     applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
@@ -383,6 +387,31 @@
     translationLabel.textContent = isEN ? 'English' : 'Español';
     translationText.textContent  = isEN ? state.article.english : state.article.spanish;
   }
+
+  // #34: not every article has one — the static fallback article and
+  // Beginner Stories predate this field, and generation can always fail to
+  // produce it — so hide the whole section rather than show an empty toggle.
+  // Always starts collapsed on a new article, same convention as the
+  // translation column (never restored from any prior state).
+  function renderCulturalNote(note) {
+    if (!culturalNote) return;
+    const text = note && String(note).trim();
+    if (!text) {
+      culturalNote.hidden = true;
+      return;
+    }
+    culturalNoteBody.textContent = text;
+    culturalNote.hidden = false;
+    culturalNoteBody.hidden = true;
+    if (culturalNoteToggle) culturalNoteToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  window.toggleCulturalNote = function () {
+    if (!culturalNoteBody || !culturalNoteToggle) return;
+    const open = culturalNoteBody.hidden;
+    culturalNoteBody.hidden = !open;
+    culturalNoteToggle.setAttribute('aria-expanded', String(open));
+  };
 
   // ── Loading UI ─────────────────────────────────────────────────────────
   function setLoading(on) {

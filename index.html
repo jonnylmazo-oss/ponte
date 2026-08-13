@@ -262,6 +262,15 @@
               </div>
             </div>
             <div class="column-body" id="italian-text"></div>
+            <div class="cultural-note" id="cultural-note" hidden>
+              <button class="cultural-note-toggle" id="cultural-note-toggle" aria-expanded="false"
+                onclick="window.toggleCulturalNote && window.toggleCulturalNote()"
+                ontouchend="window.toggleCulturalNote && window.toggleCulturalNote(); return false;">
+                <span>🏛️ Cultural context</span>
+                <span class="cultural-note-chevron" aria-hidden="true">▾</span>
+              </button>
+              <div class="cultural-note-body" id="cultural-note-body" hidden></div>
+            </div>
           </div>
         </main>
       </div><!-- #tab-reader -->

@@ -819,6 +819,51 @@ header {
   touch-action: pan-y;          /* allow vertical scroll without blocking horizontal text selection */
 }
 
+/* ─── Cultural context (#34) ───────────────────────────────────── */
+/* Collapsed by default — a supplementary aside, not core reading content;
+   hidden entirely (via [hidden] on .cultural-note) for articles that
+   predate this field or never got one (fallback article, Beginner Stories). */
+
+.cultural-note {
+  margin-top: 28px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+
+.cultural-note-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  text-align: left;
+}
+.cultural-note-toggle:hover { color: var(--text); }
+
+.cultural-note-chevron {
+  transition: transform 0.15s;
+  color: var(--text-dim);
+}
+.cultural-note-toggle[aria-expanded="true"] .cultural-note-chevron {
+  transform: rotate(180deg);
+}
+
+.cultural-note-body {
+  padding: 2px 4px 14px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+
 
 /* ─── Legend ────────────────────────────────────────────────── */
 
