@@ -811,12 +811,19 @@
     stopArticleSpeech();
     const btn = tooltipSpeakBtn;
     btn.classList.add('speaking');
-    const utt = speech.speak(currentTooltipWord);
-    if (utt) {
-      utt.onend  = () => btn.classList.remove('speaking');
-      utt.onerror = () => btn.classList.remove('speaking');
+    // A reader word is frequently a saved card, so prefer its pre-rendered
+    // audio. ponteSpeakCard resolves that itself and falls back to Web Speech.
+    if (window.ponteSpeakCard) {
+      window.ponteSpeakCard(currentTooltipWord);
+      setTimeout(() => btn.classList.remove('speaking'), 900);
     } else {
-      btn.classList.remove('speaking');
+      const utt = speech.speak(currentTooltipWord);
+      if (utt) {
+        utt.onend  = () => btn.classList.remove('speaking');
+        utt.onerror = () => btn.classList.remove('speaking');
+      } else {
+        btn.classList.remove('speaking');
+      }
     }
   });
 

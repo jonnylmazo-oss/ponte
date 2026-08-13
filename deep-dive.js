@@ -168,7 +168,8 @@
   ddResults.addEventListener('click', (e) => {
     // Speak button
     const spk = e.target.closest('.dd-speak-btn');
-    if (spk) { if (window.ponteSpeak) window.ponteSpeak(spk.dataset.word); return; }
+    // Prefer the card's pre-rendered audio when this word is in the deck.
+    if (spk) { (window.ponteSpeakCard || window.ponteSpeak)(spk.dataset.word); return; }
 
     // Save button
     if (!e.target.closest('#dd-save-btn')) return;

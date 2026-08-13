@@ -806,7 +806,7 @@
   fcGrid.addEventListener('click', (e) => {
     const speakBtn = e.target.closest('.fc-card-speak-btn');
     if (speakBtn) {
-      if (window.ponteSpeak) window.ponteSpeak(speakBtn.dataset.word);
+      window.ponteSpeakCard(speakBtn.dataset.word);
       return;
     }
     const btn = e.target.closest('.fc-delete-btn');
@@ -1314,6 +1314,71 @@
     return map;
   }
 
+  // ── One-off card speech (flip-card, Deep-dive, Translate, tooltip) ───────
+  // Everything outside the session player used to go straight to Web Speech,
+  // so a card with a pre-rendered ElevenLabs render still spoke in the robotic
+  // voice. This resolves the same SHA-1 -> blob mapping and falls back only
+  // when no render exists.
+
+  let audioIndex = null;   // hash -> { url, ms }, flattened across every card
+
+  async function getAudioIndex() {
+    if (audioIndex) return audioIndex;
+    const scripts = await fetchAudioScripts();
+    const idx = {};
+    Object.keys(scripts).forEach((id) => {
+      const a = scripts[id] && scripts[id].audio;
+      if (a) Object.keys(a).forEach((h) => { idx[h] = a[h]; });
+    });
+    audioIndex = idx;
+    return idx;
+  }
+
+  // Its own element, separate from the session player's: a one-off tap and a
+  // running session are different lifecycles, and sharing would have each
+  // stomping the other's src.
+  let oneOffEl = null;
+
+  function playOneOff(url) {
+    if (!oneOffEl) {
+      try { oneOffEl = new Audio(); oneOffEl.preload = 'auto'; }
+      catch (_) { return false; }
+    }
+    try {
+      // Announce before playing so a running audio session yields, exactly as
+      // it does for Web Speech. Any source other than 'audio-player' counts.
+      const api = window.ponteSpeech;
+      if (api && api.cancel) api.cancel();          // silence Web Speech too
+      else if (api && api.announceClaim) api.announceClaim('card');
+      oneOffEl.pause();
+      oneOffEl.src = url;
+      oneOffEl.playbackRate = loadRate();
+      const p = oneOffEl.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+      return true;
+    } catch (_) { return false; }
+  }
+
+  // Speed setting is shared with the session player so one slider governs both.
+  function loadRate() {
+    const v = parseFloat(localStorage.getItem('ponte_audio_rate'));
+    return Number.isFinite(v) ? Math.min(1.25, Math.max(0.55, v)) : 0.95;
+  }
+
+  // Public: speak a card's Italian, preferring the pre-rendered render.
+  // Async, but callers can fire and forget — fallback is handled internally.
+  window.ponteSpeakCard = async function (text) {
+    const t = text == null ? '' : String(text).trim();
+    if (!t) return;
+    try {
+      const idx = await getAudioIndex();
+      const h   = await sha1Hex16(t);
+      const hit = h && idx[h];
+      if (hit && hit.url && playOneOff(hit.url)) return;
+    } catch (_) { /* fall through to Web Speech */ }
+    if (window.ponteSpeak) window.ponteSpeak(t);
+  };
+
   // Returns [{ card, audioScript, audioUrls }], audioScript being the chunks
   // array and audioUrls a text -> { url, ms } map for pre-rendered speech.
   // Options: { cap, duePerRest, allCards, refresh }.
@@ -1541,19 +1606,19 @@
     fcFlipInner.classList.add('flipped');
     fcFlipBtn.disabled = true;
     if (drillQueue.length && window.ponteSpeak) {
-      setTimeout(() => window.ponteSpeak(drillQueue[0].italian), 350);
+      setTimeout(() => window.ponteSpeakCard(drillQueue[0].italian), 350);
     }
   });
 
   fcFrontSpeakBtn && fcFrontSpeakBtn.addEventListener('click', () => {
     if (drillQueue.length && window.ponteSpeak) {
-      window.ponteSpeak(drillQueue[0].italian);
+      window.ponteSpeakCard(drillQueue[0].italian);
     }
   });
 
   fcSpeakBtn && fcSpeakBtn.addEventListener('click', () => {
     if (drillQueue.length && window.ponteSpeak) {
-      window.ponteSpeak(drillQueue[0].italian);
+      window.ponteSpeakCard(drillQueue[0].italian);
     }
   });
 

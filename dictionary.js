@@ -267,7 +267,8 @@
 
   // ── Audio ──────────────────────────────────────────────────────────────────
   dictSpeakBtn.addEventListener('click', () => {
-    if (currentEntry && window.ponteSpeak) window.ponteSpeak(currentEntry.italian);
+    // Prefer the card's pre-rendered audio when this word is already saved.
+    if (currentEntry) (window.ponteSpeakCard || window.ponteSpeak)(currentEntry.italian);
   });
 
   // ── Search triggers ────────────────────────────────────────────────────────
