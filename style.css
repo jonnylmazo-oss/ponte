@@ -1974,6 +1974,7 @@ header {
   font-size: 14px;
   font-weight: 600;
   padding: 9px 28px;
+  min-height: 44px;
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -2955,6 +2956,7 @@ header {
   font-size: 12px;
   font-weight: 500;
   padding: 7px 12px;
+  min-height: 44px;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s, opacity 0.12s;
@@ -2972,6 +2974,7 @@ header {
   font-size: 13px;
   font-weight: 600;
   padding: 7px 14px;
+  min-height: 44px;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s;
@@ -2988,6 +2991,7 @@ header {
   font-size: 13px;
   font-weight: 500;
   padding: 7px 14px;
+  min-height: 44px;
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -3325,6 +3329,7 @@ header {
   font-size: 14px;
   font-weight: 500;
   padding: 8px 24px;
+  min-height: 44px;
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -3720,6 +3725,8 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
 /* ─── Speaker buttons ────────────────────────────────────────── */
 
 .speak-btn {
+  /* min-width/height 44px (#55, Apple HIG / WCAG 2.5.5): inline-flex + centered
+     so the hit area grows without the 🔊 glyph itself getting any bigger. */
   background: none;
   border: none;
   cursor: pointer;
@@ -3732,6 +3739,11 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   transition: color 0.15s, opacity 0.15s;
   vertical-align: middle;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .speak-btn:hover {
   color: #0055AA;
@@ -4758,8 +4770,8 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
   border-radius: var(--radius);
   color: var(--text-mid);
   font-size: 18px;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6902,6 +6914,11 @@ body.drill-fullscreen .ff-flip-card {
   flex-shrink: 0;
   border-radius: 4px;
   transition: color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .quiz-close-btn:hover { color: var(--text); }
 
@@ -7210,6 +7227,11 @@ body.drill-fullscreen .ff-flip-card {
   cursor: pointer;
   padding: 4px 6px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .wl-close:hover { color: var(--text); }
 
