@@ -8045,6 +8045,13 @@ body.drill-fullscreen .ff-flip-card {
   .ap-panel { width: 94vw; }
   .ap-controls { flex-wrap: wrap; }
   .ap-ctrl { min-width: 44%; }
+  /* Prev/Pause/Next wrap 2-then-1 by DOM order, which put the navigation
+     pair (Prev+Next) on separate rows with Pause between them. Reorder
+     visually only (tab order is untouched) so Prev+Next share row 1 as the
+     navigation pair, Pause wraps alone to row 2 below. */
+  #ap-prev-btn  { order: 1; }
+  #ap-skip-btn  { order: 2; }
+  #ap-pause-btn { order: 3; }
 }
 
 /* ── Audio player: settings ──────────────────────────────────────────────── */
