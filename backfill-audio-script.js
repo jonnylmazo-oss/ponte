@@ -369,6 +369,21 @@ function saveCache(cache) {
 }
 
 // ── Redis write (the ONLY functions that touch redisWrite) ──────────────────
+// The local cache only ever knows about `chunks` — it has no idea
+// backfill-audio-elevenlabs.js also stores `audio`/`voice`/`model`/`at` on
+// these same ids. A flat `{ ...remote, ...cache }` spread replaces each id's
+// WHOLE entry with cache's bare `{ chunks }`, silently discarding those
+// fields on every id the cache has ever touched — which is exactly what
+// wiped ElevenLabs audio off all 482 rendered cards on 2026-08-13. Merge per
+// id instead, so cache's fields extend remote's rather than replacing them.
+function mergeAudioMap(remote, cache) {
+  const merged = { ...remote };
+  for (const [id, entry] of Object.entries(cache)) {
+    merged[id] = { ...remote[id], ...entry };
+  }
+  return merged;
+}
+
 async function readAudioMap(redisRead) {
   const existing = await redisRead.get(AUDIO_KEY);
   if (existing == null) return {};
@@ -471,7 +486,7 @@ async function modeRepair(redisRead, redisWrite) {
     process.exit(1);
   }
   const existing = await readAudioMap(redisRead);
-  const merged = { ...existing, ...cache };
+  const merged = mergeAudioMap(existing, cache);
   const count = await writeAudioMap(redisWrite, merged, Math.max(ids.length, Object.keys(existing).length));
   console.log(`Repaired: re-applied ${ids.length} cached entr(ies); ${AUDIO_KEY} now holds ${count}. No API calls made.`);
 }
@@ -615,7 +630,7 @@ async function main() {
 
     // Re-read + merge so a concurrent writer to this key is preserved.
     const remote = await readAudioMap(redisRead);
-    const merged = { ...remote, ...cache };
+    const merged = mergeAudioMap(remote, cache);
     const expectedMin = Math.max(Object.keys(remote).length, Object.keys(cache).length);
     const total = await writeAudioMap(redisWrite, merged, expectedMin);
 
