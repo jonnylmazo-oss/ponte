@@ -48,6 +48,19 @@
       onclick="document.getElementById('install-banner').style.display='none'; localStorage.setItem('ponte_install_dismissed', '1');">✕</button>
   </div>
 
+  <!-- Update-available banner (#64): skipWaiting()+clients.claim() in sw.js mean a
+       new service worker takes over an ALREADY-OPEN tab automatically, but the
+       HTML/JS already running in that tab is not swapped out by that alone — only
+       a reload picks up the new files. This surfaces that moment instead of
+       leaving the tab silently stuck on stale code until manually closed/reopened. -->
+  <div class="install-banner update-banner" id="update-banner" hidden>
+    <span class="install-banner-text">
+      <strong>New version available</strong> — tap to refresh
+    </span>
+    <button class="install-banner-dismiss" id="update-refresh-btn" aria-label="Refresh"
+      onclick="window.location.reload();">↻</button>
+  </div>
+
   <div class="app-wrapper" id="app-wrapper">
 
     <!-- ─── Sidebar ───────────────────────────────────────────────── -->
@@ -1327,8 +1340,21 @@
     // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        // Captured before register() — true only on a RETURNING visit where a
+        // service worker was already controlling this tab. Needed to tell a
+        // real "new version took over while you were here" event apart from
+        // the ordinary first-ever install (which also fires controllerchange
+        // via skipWaiting(), but there is nothing stale to refresh from then).
+        const hadController = !!navigator.serviceWorker.controller;
+
         navigator.serviceWorker.register('/sw.js').catch((err) => {
           console.warn('SW registration failed:', err);
+        });
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!hadController) return; // first-ever install — nothing stale to refresh from
+          const banner = document.getElementById('update-banner');
+          if (banner) banner.hidden = false;
         });
       });
     }
