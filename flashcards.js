@@ -1904,7 +1904,9 @@
       }
       const card = {
         id:           Date.now(),
-        italian:      italian,
+        italian:      window.ponteNormalizeItalian(italian, {
+          wordType: entry.wordType, example: entry.example, isProperNoun: entry.isProperNoun,
+        }),
         english:      entry.english  || '',
         spanish:      entry.spanish  || '',
         category:     entry.category || 'new',

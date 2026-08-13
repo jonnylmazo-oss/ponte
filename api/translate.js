@@ -28,6 +28,7 @@ Return JSON only — no markdown, no code fences:
   "tense": "if a conjugated verb, e.g. 'passato prossimo, 1st person singular' — otherwise null",
   "root": "if a conjugated verb, the infinitive form e.g. 'svegliarsi' — otherwise null",
   "pronunciation": "stress-marked syllable pronunciation e.g. 'TAR-di' or 'ka-FFÈ' — always include",
+  "isProperNoun": "true only if this is a proper noun — a place, person, brand or other name that stays capitalised mid-sentence in Italian. Note Italian does NOT capitalise days, months, languages or nationalities, so those are false.",
   "wordType": "noun or verb or adjective or adverb or phrase or other",
   "baseForm": "the dictionary/infinitive form of this word — for verbs use infinitive (e.g. 'svegliarsi'), for nouns use singular nominative (e.g. 'caffè'), for adjectives use masculine singular (e.g. 'bello'). If the word is already in base form, repeat it here.",
   "baseFormEN": "English meaning of the base form (e.g. 'to wake up', 'coffee', 'beautiful')",

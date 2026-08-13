@@ -1448,7 +1448,11 @@
 
     const card = {
       id:            Date.now(),
-      italian:       currentTooltipWord,
+      italian:       window.ponteNormalizeItalian(currentTooltipWord, {
+        wordType: currentTooltipEntry.wordType,
+        example: currentTooltipEntry.example,
+        isProperNoun: currentTooltipEntry.isProperNoun,
+      }),
       english:       currentTooltipEntry.english    || '',
       spanish:       currentTooltipEntry.spanish    || '',
       category:      currentTooltipEntry.category   || 'new',

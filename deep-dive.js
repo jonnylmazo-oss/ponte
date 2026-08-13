@@ -184,7 +184,11 @@
     } else {
       cards.push({
         id:            Date.now(),
-        italian,
+        italian:       window.ponteNormalizeItalian(italian, {
+          wordType: s0.wordType,
+          example: (s0.examples && s0.examples[0] && s0.examples[0].italian) || '',
+          isProperNoun: s0.isProperNoun,
+        }),
         english:       s0.definition  || '',
         spanish:       '',
         category:      s0.category     || 'new',

@@ -398,7 +398,7 @@
     if (cards.some(c => c.italian.toLowerCase() === italian.toLowerCase())) return false;
     cards.push({
       id:            Date.now(),
-      italian,
+      italian:       window.ponteNormalizeItalian(italian, { wordType: item.wordType, example: item.example, isProperNoun: item.isProperNoun }),
       english:       item.english || '',
       spanish:       '',
       category:      'new',
@@ -598,7 +598,7 @@
       if (!exists) {
         cards.push({
           id:            Date.now() + added,
-          italian:       word,
+          italian:       window.ponteNormalizeItalian(word, { wordType: item.wordType, example: item.example, isProperNoun: item.isProperNoun }),
           english:       wordEN,
           spanish:       '',
           category:      item.category || 'new',

@@ -36,6 +36,7 @@ Return JSON only — no markdown, no code fences. Replace every <placeholder> wi
   "tense": "<if the Italian translation is a conjugated verb form, e.g. 'passato prossimo, 1st person singular' — otherwise null>",
   "root": "<if the Italian translation is a conjugated verb, the infinitive form e.g. 'svegliarsi' — otherwise null>",
   "pronunciation": "<stress-marked syllable pronunciation of the Italian word, e.g. 'TAR-di' — always include>",
+  "isProperNoun": "true only if this is a proper noun — a place, person, brand or other name that stays capitalised mid-sentence in Italian. Note Italian does NOT capitalise days, months, languages or nationalities, so those are false.",
   "wordType": "<one of: noun, verb, adjective, adverb, phrase, other>",
   "nounNumber": "<if wordType is noun: 'singular' or 'plural' — otherwise null>",
   "nounOtherForm": "<if wordType is noun: the opposite number form (e.g. amico → amici; amici → amico) — otherwise null>"

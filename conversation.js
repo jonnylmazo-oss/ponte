@@ -495,7 +495,7 @@
         if (!dup) {
           cards.push({
             id:            Date.now() + i,
-            italian:       r.italian,
+            italian:       window.ponteNormalizeItalian(r.italian, { wordType: r.wordType, example: r.example, isProperNoun: r.isProperNoun }),
             english:       r.english,
             spanish:       '',
             category:      'new',
@@ -826,7 +826,7 @@
       if (!dup) {
         cards.push({
           id:            Date.now() + i,
-          italian,
+          italian:       window.ponteNormalizeItalian(italian, {}),
           english:       err,
           spanish:       '',
           category:      'new',
