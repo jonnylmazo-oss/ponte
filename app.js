@@ -84,6 +84,21 @@
     window.toggleTranslation     = () => {};
   }
 
+  // #26: classic-literature topics were only reachable via Surprise me — no
+  // way to intentionally request one. Pulled into its own named pool so the
+  // new "📜 Classic Lit" button can pick from just these; SURPRISE_TOPICS
+  // below still includes them too (spread in), so surprise behavior is
+  // unchanged.
+  const CLASSIC_LIT_TOPICS = [
+    'Ulisse e il Ciclope — una scena dall\'Odissea',
+    'Ettore e Achille dall\'Iliade',
+    'una scena dalla Divina Commedia',
+    'una storia dal Decameron di Boccaccio',
+    'Romolo e Remo — la fondazione di Roma',
+    'Giulio Cesare — il dado è tratto',
+    'una favola di Esopo in italiano',
+  ];
+
   const SURPRISE_TOPICS = [
     // Everyday life
     'mercato', 'caffè al bar', 'aperitivo', 'cucina italiana',
@@ -112,14 +127,8 @@
     // Formal register
     'una richiesta formale all\'ufficio comunale',
     'scrivere un\'email professionale in italiano',
-    // Classic literature & history
-    'Ulisse e il Ciclope — una scena dall\'Odissea',
-    'Ettore e Achille dall\'Iliade',
-    'una scena dalla Divina Commedia',
-    'una storia dal Decameron di Boccaccio',
-    'Romolo e Remo — la fondazione di Roma',
-    'Giulio Cesare — il dado è tratto',
-    'una favola di Esopo in italiano',
+    // Classic literature & history — also its own dedicated pool (#26), above
+    ...CLASSIC_LIT_TOPICS,
   ];
 
   // ── Speech synthesis ───────────────────────────────────────────────────
@@ -248,6 +257,7 @@
   const difficultySelect = $('difficulty-select');
   const generateBtn      = $('generate-btn');
   const surpriseBtn      = $('surprise-btn');
+  const classicLitBtn    = $('classic-lit-btn');
   const generateError    = $('generate-error');
 
   const modeStoriesBtn   = $('mode-stories-btn');
@@ -969,6 +979,7 @@
     if (difficultySelect) difficultySelect.hidden = isStories;
     if (generateBtn)      generateBtn.hidden      = isStories;
     if (surpriseBtn)      surpriseBtn.hidden       = isStories;
+    if (classicLitBtn)    classicLitBtn.hidden    = isStories;
     clearError();
     if (save) localStorage.setItem(LS_READER_MODE, isStories ? 'stories' : 'advanced');
   }
@@ -1021,6 +1032,32 @@
 
     topicInput.value = topic;
     generateArticle(topic, difficultySelect.value, true); // forceRefresh — always fresh
+  });
+
+  // #26: classic-literature topics existed only inside Surprise me's pool —
+  // no way to intentionally request one. Same pick-and-generate pattern as
+  // Surprise me, scoped to CLASSIC_LIT_TOPICS, sharing its recent-topic
+  // dedup (avoids repeating a scene you just read, same reasoning as
+  // Surprise me — no need for a second, fragmented recency list).
+  classicLitBtn && classicLitBtn.addEventListener('click', () => {
+    const RECENT_KEY = 'ponte_recent_topics';
+    const RECENT_MAX = 10;
+    let recent = [];
+    try { recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { recent = []; }
+
+    let pool = CLASSIC_LIT_TOPICS.filter(t => !recent.includes(t));
+    if (pool.length === 0) { pool = CLASSIC_LIT_TOPICS.slice(); recent = []; }
+
+    const idx   = Math.floor(Math.random() * pool.length);
+    const topic = pool[idx];
+
+    recent.push(topic);
+    if (recent.length > RECENT_MAX) recent.shift();
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+
+    topicInput.value = topic;
+    difficultySelect.value = 'B2'; // literary register warrants the harder tier regardless of prior selection
+    generateArticle(topic, 'B2', true); // forceRefresh — always fresh
   });
 
   topicInput.addEventListener('keydown', (e) => {
