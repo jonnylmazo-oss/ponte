@@ -2879,6 +2879,30 @@ header {
   gap: 6px;
   margin-bottom: 24px;
 }
+
+.fc-drill-count-hint {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--text-dim);
+}
+
+.fc-drill-count-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  padding: 9px 12px;
+  margin-bottom: 24px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.fc-drill-count-input:focus { border-color: #0055AA; }
 .fc-drill-type-item {
   display: flex;
   align-items: center;

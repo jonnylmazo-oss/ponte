@@ -367,6 +367,11 @@
   let trickyCards          = [];
   let currentDrillWordType = 'all';
   let currentDrillAll      = true;
+  // Set when the drill-setup screen was opened from "Drill anyway" (no cards
+  // due today) rather than the normal Drill button — the Start button then
+  // needs startDrill(true) so a subset with 0 due cards doesn't loop back to
+  // the no-due screen and silently discard the user's choice.
+  let drillSetupFromAnyway = false;
   let sessionCorrect      = 0;
   let sessionAgain        = 0;
   // The counter denominator grows when a missed card is re-inserted, which
@@ -1099,6 +1104,17 @@
       queue = [...sortDueByPatterns(due), ...shuffle(notDue)];
     }
 
+    // Optional "Card count" field on the setup screen — caps an otherwise
+    // all-or-nothing category down to a chosen number. Cards later in the
+    // queue are already either lower-priority (due-sorted) or shuffled, so
+    // a plain slice keeps the most relevant/random subset either way.
+    const countInput = $('fc-drill-count-input');
+    const limitN = countInput && countInput.value ? parseInt(countInput.value, 10) : 0;
+    if (Number.isFinite(limitN) && limitN > 0 && limitN < queue.length) {
+      queue = queue.slice(0, limitN);
+    }
+    if (countInput) countInput.value = ''; // don't leak into the next session
+
     currentDrillWordType = wordType;
     currentDrillAll      = drillAll;
     drillQueue          = queue;
@@ -1431,10 +1447,24 @@
 
   window.ponteBuildAudioQueue = buildAudioQueue;
 
+  // "Drill anyway" used to jump straight into drilling every filtered card —
+  // all-or-nothing, no way to pick a category or limit how many. Opens the
+  // same setup screen the normal Drill button uses instead, so a category +
+  // optional card count can be chosen. drillSetupFromAnyway=true tells the
+  // Start button to call startDrill(true): we already know 0 cards are due,
+  // so the due/notDue split in startDrill(false) would just loop back here.
   fcDrillAnyway && fcDrillAnyway.addEventListener('click', () => {
+    const fcDrillSetup = $('fc-drill-setup');
+    if (!fcDrillSetup) { startDrill(true); return; }
     if (fcNoDue)  fcNoDue.hidden  = true;
     if (fcNoWeak) fcNoWeak.hidden = true;
-    startDrill(true);
+    drillSetupFromAnyway = true;
+    const allRadio = document.querySelector('.fc-drill-type-radio[value="all"]');
+    if (allRadio) allRadio.checked = true; // "Due today" would show 0 — default to All instead
+    updateDrillSubsetCounts();
+    fcBrowse.hidden     = true;
+    fcToolbar.hidden    = true;
+    fcDrillSetup.hidden = false;
   });
 
   function showDrillCard() {
@@ -1689,6 +1719,7 @@
     closeDropdowns();
     const fcDrillSetup = $('fc-drill-setup');
     if (!fcDrillSetup) { startDrill(false); return; }
+    drillSetupFromAnyway = false; // normal entry point — Start uses the due/notDue split
     // Default to "Due today" — correct SRS practice instead of drilling everything
     const dueRadio = document.querySelector('.fc-drill-type-radio[value="due"]');
     if (dueRadio) dueRadio.checked = true;
@@ -1701,11 +1732,13 @@
   const fcDrillStartBtn    = $('fc-drill-start-btn');
   const fcDrillSetupCancel = $('fc-drill-setup-cancel');
 
-  fcDrillStartBtn && fcDrillStartBtn.addEventListener('click', () => startDrill(false));
+  fcDrillStartBtn && fcDrillStartBtn.addEventListener('click', () => startDrill(drillSetupFromAnyway));
 
   fcDrillSetupCancel && fcDrillSetupCancel.addEventListener('click', () => {
     const fcDrillSetup = $('fc-drill-setup');
     if (fcDrillSetup) fcDrillSetup.hidden = true;
+    const countInput = $('fc-drill-count-input');
+    if (countInput) countInput.value = '';
     fcBrowse.hidden  = false;
     fcToolbar.hidden = false;
   });
