@@ -7724,6 +7724,7 @@ body.drill-fullscreen .ff-flip-card {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 4px 10px;
+  min-height: 44px; /* was unstyled at ~24px — same 44px HIG pass as #55 */
   font-size: 11px;
   color: #0055AA;
   cursor: pointer;
@@ -7733,6 +7734,23 @@ body.drill-fullscreen .ff-flip-card {
 
 .prog-weak-study:hover {
   background: var(--bg-card);
+}
+
+/* #8: weak words section */
+.prog-section-sub {
+  margin: -8px 0 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.prog-tap-en {
+  font-size: 12px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Activity chart */

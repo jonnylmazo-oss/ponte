@@ -754,7 +754,42 @@
     tooltip.classList.add('visible');
   }
 
-  function showTooltip(wordEl) {
+  // #8: weak word tracker. Counts deliberate taps (isTap=true, from the click-
+  // to-pin handler) only — hover reveals are incidental to reading, not a
+  // signal of "I don't know this word", so they're not counted.
+  const LS_WORD_TAPS   = 'ponte_word_taps';
+  const WORD_TAP_CAP   = 300; // avoid unbounded localStorage growth
+
+  function recordWordTap(word, entry) {
+    if (!word || !entry) return;
+    let taps = {};
+    try { taps = JSON.parse(localStorage.getItem(LS_WORD_TAPS) || '{}'); } catch { taps = {}; }
+    const key = word.toLowerCase();
+    const prevCount = (taps[key] && taps[key].count) || 0;
+    taps[key] = {
+      count: prevCount + 1,
+      lastTapped: new Date().toISOString(),
+      italian: word,
+      english: entry.english || '',
+      spanish: entry.spanish || '',
+      category: entry.category || 'new',
+      note: entry.note || '',
+      example: entry.example || '',
+      exampleEN: entry.exampleEN || '',
+    };
+    const keys = Object.keys(taps);
+    if (keys.length > WORD_TAP_CAP) {
+      // Drop the least-tapped, then longest-untouched — the least likely to
+      // still be a genuine weak spot.
+      keys.sort((a, b) => (taps[a].count - taps[b].count) ||
+        (new Date(taps[a].lastTapped) - new Date(taps[b].lastTapped)));
+      delete taps[keys[0]];
+    }
+    localStorage.setItem(LS_WORD_TAPS, JSON.stringify(taps));
+    window.dispatchEvent(new CustomEvent('ponte:word-tapped'));
+  }
+
+  function showTooltip(wordEl, isTap) {
     const key   = wordEl.dataset.word;
     const entry = state.activeWordmap[key];
     if (!entry) return;
@@ -765,6 +800,7 @@
     wordEl.classList.add('active');
 
     populateTooltip(key, entry);
+    if (isTap) recordWordTap(key, entry);
     revealTooltip();
 
     if (isMobile()) {
@@ -966,7 +1002,7 @@
         hideTooltip();
       } else {
         state.pinnedByClick = true;
-        showTooltip(wordEl);
+        showTooltip(wordEl, true);
       }
       return;
     }

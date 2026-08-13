@@ -12,6 +12,19 @@
   const EP_KEY           = 'ponte_error_patterns';
   const QUIZ_KEY         = 'ponte_quiz_scores';
   const ARTICLE_PREFIX   = 'ponte_article_';
+  const TAP_KEY          = 'ponte_word_taps'; // written by app.js's recordWordTap (#8)
+
+  const API_BASE = (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) ? 'http://localhost:3000' : '';
+
+  function authHeaders() {
+    const token = localStorage.getItem('ponte_auth_token');
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  }
 
   const PATTERN_LABELS = {
     'false-friend':     'False Friends',
@@ -60,6 +73,51 @@
     }
     return count;
   }
+
+  function loadTappedWords() {
+    try { return JSON.parse(localStorage.getItem(TAP_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  // Surfaced only once tapped more than once — a single tap is often just
+  // idle curiosity while reading, not a "I don't know this word" signal.
+  // Already-saved words are excluded: the point is to catch words that
+  // slipped through without ever being captured.
+  function weakWordsList(cards) {
+    const taps = loadTappedWords();
+    const saved = new Set(cards.map((c) => (c.italian || '').toLowerCase()));
+    return Object.values(taps)
+      .filter((w) => w.count >= 2 && w.italian && !saved.has(w.italian.toLowerCase()))
+      .sort((a, b) => b.count - a.count || new Date(b.lastTapped) - new Date(a.lastTapped))
+      .slice(0, 8);
+  }
+
+  // Public: called from the "+ Save" button on a tapped-word row.
+  window.ponteSaveTappedWord = function (word) {
+    if (!word) return;
+    const taps = loadTappedWords();
+    const w = taps[word.toLowerCase()];
+    if (!w) return;
+    const cards = loadCards();
+    if (cards.some((c) => (c.italian || '').toLowerCase() === word.toLowerCase())) { render(); return; }
+    const italian = window.ponteNormalizeItalian
+      ? window.ponteNormalizeItalian(w.italian, { example: w.example })
+      : w.italian;
+    cards.push({
+      id: Date.now(),
+      italian, english: w.english || '', spanish: w.spanish || '',
+      category: w.category || 'new', note: w.note || '', wordType: 'other',
+      example: w.example || '', exampleEN: w.exampleEN || '',
+      savedAt: new Date().toISOString(), sourceArticle: 'Reader (weak word tracker)',
+      timesCorrect: 0, timesWrong: 0, lastSeen: null, lastDrilled: null,
+    });
+    localStorage.setItem(FC_KEY, JSON.stringify(cards));
+    fetch(API_BASE + '/api/flashcards', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(cards),
+    }).catch(() => {});
+    window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+    render(); // re-render immediately so the saved word drops out of the list
+  };
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -162,6 +220,9 @@
       .filter((e) => e.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
+
+    // ── Weak words (#8) — Reader taps, not grammar-error patterns ──────────
+    const tappedWeak = weakWordsList(cards);
 
     // ── Build HTML ────────────────────────────────────────────────────────
 
@@ -269,6 +330,26 @@
            </div>
          </section>`;
 
+    // Weak words (#8) — Reader taps, not a flashcard yet. No empty-state
+    // shown when there's nothing to surface yet — a brand-new feature with
+    // nothing tapped twice shouldn't add a permanently-visible empty section.
+    const weakWordsHTML = tappedWeak.length === 0 ? '' : `
+      <section class="prog-section">
+        <h2 class="prog-section-title">Words you keep looking up</h2>
+        <p class="prog-section-sub">Tapped more than once in the Reader, not yet in your deck.</p>
+        <div class="prog-weak-list">
+          ${tappedWeak.map((w) => `
+            <div class="prog-weak-row">
+              <span class="prog-weak-label">${escapeHTML(w.italian)}</span>
+              <span class="prog-tap-en">${escapeHTML(w.english)}</span>
+              <span class="prog-weak-count">${w.count}×</span>
+              <button class="prog-weak-study" data-save-word="${escapeHTML(w.italian)}"
+                onclick="window.ponteSaveTappedWord(this.dataset.saveWord)"
+                ontouchend="window.ponteSaveTappedWord(this.dataset.saveWord); return false;">+ Save</button>
+            </div>`).join('')}
+        </div>
+      </section>`;
+
     // Recent activity (last 7 days)
     const activityHTML = `
       <section class="prog-section">
@@ -321,7 +402,7 @@
       ? window._ponteMissionCardHTML()
       : '';
     const topbar = `<div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>`;
-    const container = `<div class="prog-container">${missionHTML}${overviewHTML}${breakdownHTML}${weakHTML}${activityHTML}${trendHTML}</div>`;
+    const container = `<div class="prog-container">${missionHTML}${overviewHTML}${breakdownHTML}${weakHTML}${weakWordsHTML}${activityHTML}${trendHTML}</div>`;
 
     panel.innerHTML = topbar + container;
   }
