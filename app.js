@@ -250,6 +250,11 @@
   const surpriseBtn      = $('surprise-btn');
   const generateError    = $('generate-error');
 
+  const modeStoriesBtn   = $('mode-stories-btn');
+  const modeAdvancedBtn  = $('mode-advanced-btn');
+  const storySelect      = $('story-select');
+  const storyReadBtn     = $('story-read-btn');
+
   const appWrapper      = $('app-wrapper');
   const sidebarToggleBtn = $('sidebar-toggle');
 
@@ -933,6 +938,60 @@
       updateTranslation();
     });
   });
+
+  // ── Reader mode: Beginner Stories (fixed set) vs Advanced (dynamic) ────────
+  // Beginner Stories is a fixed, permanent set of 20 A1/A2 stories (see
+  // data/beginner-stories.js) — distinct from the unbounded free-text/topic
+  // generation below, which stays completely untouched. Being a fixed set is
+  // what lets these get pre-rendered ElevenLabs audio later; the dynamic path
+  // can't (same topic never produces the same Italian text twice).
+  const LS_READER_MODE = 'ponte_reader_mode';
+  const STORIES = (typeof beginnerStories !== 'undefined') ? beginnerStories : [];
+
+  function populateStorySelect() {
+    if (!storySelect || !STORIES.length) return;
+    const groups = { A1: [], A2: [] };
+    STORIES.forEach((s) => { (groups[s.difficulty] || (groups[s.difficulty] = [])).push(s); });
+    storySelect.innerHTML = Object.keys(groups).map((level) => {
+      const opts = groups[level].map((s) =>
+        `<option value="${escapeHTML(s.id)}">${escapeHTML(s.title)}</option>`).join('');
+      return `<optgroup label="${escapeHTML(level)}">${opts}</optgroup>`;
+    }).join('');
+  }
+
+  function setReaderMode(mode, save) {
+    const isStories = mode !== 'advanced';
+    if (modeStoriesBtn)  { modeStoriesBtn.classList.toggle('active', isStories);  modeStoriesBtn.setAttribute('aria-pressed', String(isStories)); }
+    if (modeAdvancedBtn) { modeAdvancedBtn.classList.toggle('active', !isStories); modeAdvancedBtn.setAttribute('aria-pressed', String(!isStories)); }
+    if (storySelect)  storySelect.hidden  = !isStories;
+    if (storyReadBtn) storyReadBtn.hidden = !isStories;
+    if (topicInput)       topicInput.hidden       = isStories;
+    if (difficultySelect) difficultySelect.hidden = isStories;
+    if (generateBtn)      generateBtn.hidden      = isStories;
+    if (surpriseBtn)      surpriseBtn.hidden       = isStories;
+    clearError();
+    if (save) localStorage.setItem(LS_READER_MODE, isStories ? 'stories' : 'advanced');
+  }
+
+  function readStory(id) {
+    const story = STORIES.find((s) => s.id === id);
+    if (!story) return;
+    localStorage.setItem('ponte_last_story', story.id);
+    renderArticle(story);
+  }
+
+  if (storySelect) {
+    populateStorySelect();
+    const lastStory = localStorage.getItem('ponte_last_story');
+    if (lastStory && STORIES.some((s) => s.id === lastStory)) storySelect.value = lastStory;
+  }
+
+  modeStoriesBtn  && modeStoriesBtn.addEventListener('click',  () => setReaderMode('stories', true));
+  modeAdvancedBtn && modeAdvancedBtn.addEventListener('click', () => setReaderMode('advanced', true));
+  storyReadBtn    && storyReadBtn.addEventListener('click', () => readStory(storySelect.value));
+  storySelect     && storySelect.addEventListener('change', () => readStory(storySelect.value));
+
+  setReaderMode(localStorage.getItem(LS_READER_MODE) || 'stories', false);
 
   // Generator
   generateBtn.addEventListener('click', () => {

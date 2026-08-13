@@ -47,6 +47,7 @@ vercel.json        Vercel config (function maxDuration; static + /api auto-route
 data/
   articles.js      fallback article ("Una mattina a Roma")
   wordmap.js       static wordmap for fallback article
+  beginner-stories.js  fixed set of 20 A1/A2 stories for Reader "Beginner Stories" mode
   false-friends.js 100 false friend entries
   safe-cognates.js 200 safe cognate entries
   grammar.js       45 grammar cards + 30 pattern drills
@@ -56,7 +57,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 
 ## Features
 
-- **Reader** — SSE article generation, color-coded words, hover/tap tooltip, dynamic text-select translation, EN column toggle, post-reading quiz, Recent ▾ history
+- **Reader** — two modes via a toggle in the generator bar: **Beginner Stories** (default) — fixed set of 20 permanent A1/A2 stories (`data/beginner-stories.js`), rendered instantly client-side, no API call; **Advanced** — the original unbounded free-text/topic SSE generation, unchanged. Both share color-coded words, hover/tap tooltip, dynamic text-select translation, EN column toggle, post-reading quiz. Recent ▾ history and article caching apply only to Advanced-mode (dynamically generated) articles
 - **False Friends** — 100 false friend cards + 200 safe cognates; search/filter/drill per sub-tab
 - **Grammar** — 4-stage learning path (45 cards), 30 pattern drills, weak areas panel fed by error tracking
 - **Practice** — fill-in-the-blank (Multiple Choice / Type It / Sentence Rebuild); saves missed words to flashcards
@@ -134,6 +135,8 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 | `ponte_translation` | Reader translation column open/closed toggle (`'1'`/`'0'`) |
 | `ponte_audio_rate` | Audio session Italian speech rate (0.55–1.05, default 0.78); English derives as +0.15 |
 | `ponte_audio_session` | Audio session length (`'15'`/`'25'`/`'40'`/`'all'`, default `'25'`) |
+| `ponte_reader_mode` | Reader mode toggle (`'stories'`/`'advanced'`, default `'stories'`) |
+| `ponte_last_story` | Last-selected Beginner Story id, restored in the picker on reload |
 
 ## Flashcard card structure
 
@@ -165,7 +168,7 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v82`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v91`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates

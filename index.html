@@ -207,18 +207,29 @@
         </header>
 
         <div class="generator-bar">
+          <div class="reader-mode-toggle" role="group" aria-label="Reader mode">
+            <button type="button" id="mode-stories-btn" class="gen-btn mode-btn"
+              aria-pressed="true">📖 Beginner Stories</button>
+            <button type="button" id="mode-advanced-btn" class="gen-btn mode-btn"
+              aria-pressed="false">✍️ Advanced</button>
+          </div>
+
+          <select id="story-select" class="topic-input story-select"></select>
+          <button id="story-read-btn" class="gen-btn primary">Read</button>
+
           <input
             type="text"
             id="topic-input"
             class="topic-input"
             placeholder="Enter a topic — calcio, mercato, Ulisse…"
+            hidden
           />
-          <select id="difficulty-select" class="difficulty-select">
+          <select id="difficulty-select" class="difficulty-select" hidden>
             <option value="B1">B1</option>
             <option value="B2">B2</option>
           </select>
-          <button id="generate-btn" class="gen-btn primary">Generate</button>
-          <button id="surprise-btn" class="gen-btn">Surprise me</button>
+          <button id="generate-btn" class="gen-btn primary" hidden>Generate</button>
+          <button id="surprise-btn" class="gen-btn" hidden>Surprise me</button>
           <span class="generate-error" id="generate-error" hidden></span>
         </div>
 
@@ -1295,6 +1306,7 @@
   <script src="utils.js"></script>
   <script src="data/articles.js"></script>
   <script src="data/wordmap.js"></script>
+  <script src="data/beginner-stories.js"></script>
   <script src="data/false-friends.js"></script>
   <script src="data/safe-cognates.js"></script>
   <script src="data/grammar.js"></script>

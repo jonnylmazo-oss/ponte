@@ -16,5 +16,8 @@ migrate-taxonomy.js
 backfill-audio-script.js
 backfill-audio-elevenlabs.js
 backfill-examples.js
+generate-beginner-stories.js
+backfill-story-audio-script.js
+backfill-story-audio-elevenlabs.js
 generated-deck.json
 audio-backfill/

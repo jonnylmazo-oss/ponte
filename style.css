@@ -681,6 +681,32 @@ header {
   padding-top: 2px;
 }
 
+.reader-mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-italian);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px;
+}
+
+.mode-btn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.mode-btn.active {
+  background: var(--bg-card);
+  border-color: var(--border-mid);
+  color: var(--text);
+}
+
+.story-select {
+  flex: 1;
+  min-width: 200px;
+  cursor: pointer;
+}
+
 
 /* ─── Skeleton loader ────────────────────────────────────────── */
 
@@ -1217,6 +1243,9 @@ header {
   .difficulty-select { width: 100%; padding: 11px 12px; font-size: 14px; }
   .gen-btn           { width: 100%; padding: 11px 12px; font-size: 15px; min-height: 44px; }
   .generate-error    { width: 100%; }
+  .reader-mode-toggle { width: 100%; }
+  .reader-mode-toggle .mode-btn { flex: 1; }
+  .story-select       { min-width: 0; width: 100%; font-size: 16px; padding: 11px 12px; }
 
   .reader {
     grid-template-columns: 1fr;
