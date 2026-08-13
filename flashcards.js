@@ -1906,19 +1906,22 @@
 
   // ── Sync button ──────────────────────────────────────────────────────────
   const fcSyncBtn = $('fc-sync-btn');
+  // #87: label lives in a child span (icon is a sibling span) so these state
+  // swaps don't clobber the 🔄 icon.
+  const fcSyncBtnLabel = $('fc-sync-btn-label');
   if (fcSyncBtn) {
     fcSyncBtn.addEventListener('click', async () => {
       if (!window.manualSyncFlashcards) return;
-      fcSyncBtn.textContent = 'Syncing…';
+      fcSyncBtnLabel.textContent = 'Syncing…';
       fcSyncBtn.disabled = true;
       try {
         await window.manualSyncFlashcards();
-        fcSyncBtn.textContent = 'Synced ✓';
+        fcSyncBtnLabel.textContent = 'Synced ✓';
       } catch (_) {
-        fcSyncBtn.textContent = 'Failed';
+        fcSyncBtnLabel.textContent = 'Failed';
       }
       setTimeout(() => {
-        fcSyncBtn.textContent = 'Sync';
+        fcSyncBtnLabel.textContent = 'Sync';
         fcSyncBtn.disabled = false;
       }, 2000);
     });

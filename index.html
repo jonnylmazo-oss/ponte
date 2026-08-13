@@ -857,14 +857,24 @@
               <button class="fc-clear-filters-btn" id="fc-clear-filters" hidden>Clear all</button>
               <span class="fc-count" id="fc-count"></span>
             </div>
+            <!-- #87: unified button system — all 5 share .fc-tb-btn (same height/
+                 padding) plus a --primary or --secondary modifier, split into two
+                 function groups (utility vs session) separated by a divider. Each
+                 button is icon + <span class="fc-tb-label"> so JS can swap just the
+                 label text (see fc-sync-btn's Syncing…/Synced ✓ states in
+                 flashcards.js) without clobbering the icon. -->
             <div class="fc-toolbar-actions">
-              <button class="fc-sync-btn" id="fc-sync-btn" title="Pull latest cards from server">Sync</button>
-              <button class="fc-add-word-btn" id="fc-add-word-btn" title="Look up and add a word">+ Add word</button>
-              <button class="fc-audio-btn" id="fc-audio-btn" title="Listen through a session"
-                onclick="window.ponteAudioOpen(); return false;"
-                ontouchend="window.ponteAudioOpen(); return false;">🎧 Audio</button>
-              <button class="fc-drill-toggle" id="fc-drill-toggle">Drill mode</button>
-              <button class="fc-reset-scores-btn" id="fc-reset-scores-btn" title="Reset all drill scores">Reset Scores</button>
+              <div class="fc-tb-group fc-tb-group-utility">
+                <button class="fc-tb-btn fc-tb-btn--secondary" id="fc-sync-btn" title="Pull latest cards from server"><span class="fc-tb-icon" aria-hidden="true">🔄</span><span class="fc-tb-label" id="fc-sync-btn-label">Sync</span></button>
+                <button class="fc-tb-btn fc-tb-btn--secondary" id="fc-add-word-btn" title="Look up and add a word"><span class="fc-tb-icon" aria-hidden="true">➕</span><span class="fc-tb-label">Add word</span></button>
+                <button class="fc-tb-btn fc-tb-btn--secondary" id="fc-audio-btn" title="Listen through a session"
+                  onclick="window.ponteAudioOpen(); return false;"
+                  ontouchend="window.ponteAudioOpen(); return false;"><span class="fc-tb-icon" aria-hidden="true">🎧</span><span class="fc-tb-label">Audio</span></button>
+              </div>
+              <div class="fc-tb-group fc-tb-group-session">
+                <button class="fc-tb-btn fc-tb-btn--primary" id="fc-drill-toggle"><span class="fc-tb-icon" aria-hidden="true">▶</span><span class="fc-tb-label">Drill mode</span></button>
+                <button class="fc-tb-btn fc-tb-btn--secondary" id="fc-reset-scores-btn" title="Reset all drill scores"><span class="fc-tb-icon" aria-hidden="true">↺</span><span class="fc-tb-label">Reset Scores</span></button>
+              </div>
             </div>
           </div>
         </div>

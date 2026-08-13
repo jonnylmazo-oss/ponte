@@ -3058,57 +3058,60 @@ header {
   white-space: nowrap;
 }
 
-.fc-sync-btn {
-  align-self: flex-start;
-  background: rgba(0, 85, 170, 0.07);
-  border: 1px solid rgba(0, 85, 170, 0.25);
-  border-radius: var(--radius);
-  color: #0055AA;
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 7px 12px;
+/* #87: unified toolbar-button system. Sync / +Add word / Audio / Drill mode /
+   Reset Scores used to be 5 independently-styled buttons (different heights,
+   paddings, and a mix of filled-green/outlined-blue/outlined-plain/filled-red
+   chrome) with only Audio carrying an icon. Now all 5 share .fc-tb-btn (same
+   height, padding, radius, icon+label layout) plus exactly one of two
+   modifiers: .fc-tb-btn--primary for the single main action (Drill mode) and
+   .fc-tb-btn--secondary for the other four, which are visually identical to
+   each other regardless of what they do (Reset Scores' destructiveness is
+   already gated by its confirm() dialog, not by red chrome). */
+.fc-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 44px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.12s, opacity 0.12s;
-}
-.fc-sync-btn:hover { background: rgba(0, 85, 170, 0.14); }
-.fc-sync-btn:disabled { opacity: 0.6; cursor: default; }
-
-.fc-add-word-btn {
-  align-self: flex-start;
-  background: rgba(46, 107, 62, 0.1);
-  border: 1px solid rgba(46, 107, 62, 0.35);
+  padding: 7px 14px;
   border-radius: var(--radius);
-  color: #2E6B3E;
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 7px 14px;
-  min-height: 44px;
-  cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s;
-}
-.fc-add-word-btn:hover { background: rgba(46, 107, 62, 0.18); }
-
-.fc-drill-toggle {
-  align-self: flex-start;
-  background: rgba(0, 85, 170, 0.1);
-  border: 1px solid rgba(0, 85, 170, 0.3);
-  border-radius: var(--radius);
-  color: #0055AA;
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 7px 14px;
-  min-height: 44px;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, opacity 0.12s;
 }
-.fc-drill-toggle:hover { background: rgba(0, 85, 170, 0.18); }
-.fc-drill-toggle:disabled { opacity: 0.35; cursor: not-allowed; }
+.fc-tb-icon { font-size: 13px; line-height: 1; }
+.fc-tb-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.fc-tb-btn--secondary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+}
+.fc-tb-btn--secondary:hover { background: var(--bg-italian); color: var(--text); border-color: var(--text-dim); }
+
+.fc-tb-btn--primary {
+  background: #0055AA;
+  border: 1px solid #0055AA;
+  color: #fff;
+  font-weight: 700;
+}
+.fc-tb-btn--primary:hover { background: #004488; border-color: #004488; }
+
+/* Function grouping: utility actions (Sync/Add word/Audio) vs session actions
+   (Drill mode/Reset Scores) — a subtle divider separates the two groups. */
+.fc-tb-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fc-tb-group-session {
+  padding-left: 10px;
+  margin-left: 2px;
+  border-left: 1px solid var(--border);
+}
 
 /* ─── Browse ─────────────────────────────────────────────────── */
 
@@ -3917,21 +3920,10 @@ body:has(.install-banner:not([hidden])) .bottom-nav {
      didn't fit narrower viewports. Nothing clipped that overflow, so it
      widened the whole page horizontally and pushed Reset Scores off-screen.
      .fc-filter-dropdowns right next to it already wraps correctly — this
-     matches that working pattern instead of fighting it with flex-shrink:0. */
+     matches that working pattern instead of fighting it with flex-shrink:0.
+     #87: children are now two .fc-tb-group wrappers, not bare buttons — see
+     the unified .fc-tb-btn system above (~line 3061) for sizing/styling. */
 }
-
-.fc-reset-scores-btn {
-  font-size: 11px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(245, 88, 74, 0.4);
-  background: rgba(245, 88, 74, 0.08);
-  color: #F5584A;
-  cursor: pointer;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-.fc-reset-scores-btn:hover { background: rgba(245, 88, 74, 0.16); }
 
 /* Session stats bar above flip card */
 .fc-session-stats {
@@ -7993,23 +7985,9 @@ body.drill-fullscreen .ff-flip-card {
 }
 
 /* ── Audio session player ────────────────────────────────────────────────── */
-
-.fc-audio-btn {
-  padding: 7px 14px;
-  font-size: 0.85rem;
-  font-family: inherit;
-  background: var(--bg-card);
-  color: var(--text-mid);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.fc-audio-btn:hover {
-  background: var(--bg-italian);
-  color: var(--text);
-}
+/* #87: #fc-audio-btn's own sizing/color now comes from the unified
+   .fc-tb-btn.fc-tb-btn--secondary system (~line 3061) — kept only its entry
+   point here since the rest of the audio player UI below is unrelated. */
 
 .ap-backdrop {
   position: fixed;
