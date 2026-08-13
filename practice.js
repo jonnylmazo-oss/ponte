@@ -31,18 +31,6 @@
     'at the hotel', 'on public transport', 'at the restaurant', 'sightseeing',
   ];
 
-  // Maps error pattern keys → grammar card title (for "See grammar card →")
-  const PATTERN_TO_GRAMMAR = {
-    'verb-essere':      'Essere vs Avere',
-    'passato-prossimo': 'Passato Prossimo',
-    'clitic-placement': 'Pronoun placement',
-    'subjunctive':      'Congiuntivo',
-    'geminates':        'Geminate consonants',
-    'verb-general':     'Verb conjugation',
-    'false-friend':     'False friends',
-    'divergence':       'Divergent usage',
-  };
-
   // Maps error pattern keys → user-friendly practice topics
   const PATTERN_TOPICS = {
     'false-friend':     'false friends and confusing Italian-Spanish pairs',
@@ -152,6 +140,7 @@
   let drillMode         = 'choice';
   let drillAnswered     = false;
   let missedItems       = [];
+  let lastErrorPatterns = []; // most recent detect-patterns result (#57 — "See grammar card →")
 
   // SR-specific state
   let srDifficulty = 'wordbank';
@@ -376,6 +365,7 @@
     .then(r => r.json())
     .then(data => {
       if (!Array.isArray(data.patterns) || !data.patterns.length) return;
+      lastErrorPatterns = data.patterns; // for "See grammar card →" — see handleActionBtn
       let patterns = {};
       try { patterns = JSON.parse(localStorage.getItem(EP_KEY) || '{}'); } catch (e) {}
       const now = new Date().toISOString();
@@ -482,6 +472,14 @@
       btn.textContent = saved ? '✓ Saved to Flashcards' : '✓ Already in deck';
       btn.disabled = true;
     } else if (action === 'grammar') {
+      // #57: jump to the specific stage/concept that was tripped up, via
+      // grammar.js's PATTERN_META (same mapping its own Weak Areas "Study →"
+      // button uses), instead of just landing on the tab's default panel.
+      // Falls back to a plain tab switch if no pattern was detected for this
+      // item yet (recordPracticeError's response hasn't resolved) or the
+      // detected pattern has no study stage.
+      lastErrorPatterns.some((key) =>
+        window._ponteGrammarStudyPattern && window._ponteGrammarStudyPattern(key));
       window.switchTab && window.switchTab('grammar');
     }
   }

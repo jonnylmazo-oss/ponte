@@ -537,6 +537,20 @@
 
   drillRestartBtn && drillRestartBtn.addEventListener('click', startDrills);
 
+  // Callable from other tabs (#57 — Practice's "See grammar card →" button).
+  // Reuses the exact same PATTERN_META + navigation the Weak Areas "Study →"
+  // button already uses, rather than practice.js maintaining its own,
+  // separate, never-fully-wired pattern→title map. Works even before the
+  // Grammar tab has ever been shown — the DOM exists (just hidden), so
+  // switchPanel/openStage can run ahead of window.switchTab('grammar').
+  window._ponteGrammarStudyPattern = function (patternKey) {
+    const meta = PATTERN_META[patternKey];
+    if (!meta || meta.studyStage == null) return false;
+    switchPanel('stages');
+    openStage(meta.studyStage);
+    return true;
+  };
+
   // ── Init ──────────────────────────────────────────────────────────────────
   if (typeof grammarCards === 'undefined' || typeof grammarDrills === 'undefined') {
     console.error('grammar.js: grammarCards or grammarDrills not found');
