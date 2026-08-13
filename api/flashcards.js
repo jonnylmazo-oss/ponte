@@ -22,6 +22,24 @@ const AUDIO_KEY = 'flashcard_audio';
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
 
+// The 4 valid taxonomy categories (see CLAUDE.md). A stale browser tab
+// holding a pre-migration deck (old vocabulary: cognate/divergence) can
+// still POST — saveCards() sends the client's entire localStorage array,
+// and neither the empty-overwrite guard nor the >10% shrink guard notices a
+// same-count deck with wrong field *values* (see #65: this is exactly how
+// the taxonomy migration got silently reverted). This guard catches that
+// class of regression at the value level, not just the count level.
+const VALID_CATEGORIES = new Set(['same', 'similar', 'false-friend', 'new']);
+
+function findInvalidCategory(cards) {
+  for (const c of cards) {
+    if (!VALID_CATEGORIES.has(c && c.category)) {
+      return { id: c && c.id, italian: c && c.italian, category: c && c.category };
+    }
+  }
+  return null;
+}
+
 module.exports = async function handler(req, res) {
   if (!requireAuth(req, res)) return;
 
@@ -60,6 +78,18 @@ module.exports = async function handler(req, res) {
 
     if (!Array.isArray(cards)) {
       return res.status(400).json({ error: 'Expected array (or { cards, override })' });
+    }
+
+    // Reject any card outside the 4-value taxonomy — see VALID_CATEGORIES comment.
+    // Not bypassable by override:true: override is for the shrink guard (a
+    // count problem), this is a value problem, and a stale-taxonomy deck is
+    // never a legitimate write regardless of size.
+    const invalid = findInvalidCategory(cards);
+    if (invalid) {
+      console.error(`[flashcards] BLOCKED: invalid category "${invalid.category}" on card ${invalid.id} (${invalid.italian})`);
+      return res.status(409).json({
+        error: `Refusing write — card ${invalid.id} ("${invalid.italian}") has category "${invalid.category}", not one of: ${[...VALID_CATEGORIES].join(', ')}`,
+      });
     }
 
     if (flashcardWriteLock) {
