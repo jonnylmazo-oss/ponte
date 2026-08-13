@@ -8000,6 +8000,12 @@ body.drill-fullscreen .ff-flip-card {
   font-style: italic;
 }
 
+/* Taxonomy-tier word colouring (#70 MVP) — same palette + no rule for "new"
+   as the Reader's .word-same/.word-similar/.word-false-friend. */
+.ap-word-same         { color: var(--same); }
+.ap-word-similar      { color: var(--similar); }
+.ap-word-false-friend { color: var(--false-friend); }
+
 .ap-note {
   margin: 12px 0 0;
   padding: 9px 12px;

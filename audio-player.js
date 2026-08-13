@@ -289,9 +289,58 @@
     if (prevBtn) prevBtn.disabled = qIndex <= 0;
   }
 
+  // ── Taxonomy-tier word colouring (#70 MVP) ─────────────────────────────────
+  // Full word-level *timed* sync (issue's "Core" ask) needs the character-level
+  // alignment data captured at render time — 2.37MB across the deck, per the
+  // backfill script's own accounting, and deliberately NOT fetched by default
+  // for exactly that reason (its own comment: "bundling it into flashcard_audio
+  // would make every audio session pay for it"). This ships the colouring half
+  // of the ask now, without that cost: each segment already IS the currently-
+  // spoken unit (word / meaning / example / one phrase at a time) by
+  // construction — renderSegment already isolates it — so colouring the words
+  // *in* that segment by taxonomy tier delivers the "see the Spanish-leverage
+  // signal at the moment you hear it" goal at phrase granularity, which the
+  // issue itself sanctions as the fallback tier. True per-word timed highlight
+  // within a multi-word segment is a further step, not done here.
+  //
+  // Lookup is built once from the two curated datasets already shipped for
+  // this exact purpose (data/false-friends.js, data/safe-cognates.js) — same
+  // words, same category vocabulary the Reader already colours by.
+  let taxonomyIndex = null;
+  function getTaxonomyIndex() {
+    if (taxonomyIndex) return taxonomyIndex;
+    const idx = {};
+    if (typeof safeCognates !== 'undefined') {
+      safeCognates.forEach((c) => { if (c.italian) idx[c.italian.toLowerCase()] = 'same'; });
+    }
+    if (typeof falseFriends !== 'undefined') {
+      falseFriends.forEach((c) => { if (c.italian) idx[c.italian.toLowerCase()] = c.category || 'false-friend'; });
+    }
+    taxonomyIndex = idx;
+    return idx;
+  }
+
+  const WORD_RE = /([A-Za-zÀ-ɏ]+)/g;
+
+  // The card actually being drilled is the one word this segment is
+  // guaranteed to be relevant for — colour it from card.category even if it
+  // isn't (or contradicts) the curated lists, same trust priority the Reader
+  // gives an article's own AI-tagged wordmap over generic lookups.
+  function highlightHTML(text, cardWord, cardCategory) {
+    const idx = getTaxonomyIndex();
+    const cardKey = cardWord ? String(cardWord).toLowerCase() : null;
+    return String(text).replace(WORD_RE, (word) => {
+      const key = word.toLowerCase();
+      const cat = (cardKey && key === cardKey) ? cardCategory : idx[key];
+      if (!cat) return window.ponteEsc(word);
+      return `<span class="ap-word-${window.ponteEsc(cat)}">${window.ponteEsc(word)}</span>`;
+    });
+  }
+
   function renderSegment(seg) {
     if (apNow) {
-      apNow.textContent = seg.text;
+      const c = (queue[qIndex] && queue[qIndex].card) || {};
+      apNow.innerHTML = highlightHTML(seg.text, c.italian, c.category);
       apNow.className = 'ap-now' + (seg.lang === EN ? ' ap-now-en' : '');
     }
     if (apSegLabel) apSegLabel.textContent = seg.label;
