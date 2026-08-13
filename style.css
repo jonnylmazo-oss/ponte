@@ -5272,9 +5272,17 @@ body.drill-fullscreen .ff-drill-arena {
 body.drill-fullscreen .fc-flip-card,
 body.drill-fullscreen .ff-flip-card {
   max-width: 600px;
+  /* #56: vh includes iOS Safari's dynamic toolbar, so this reflows (and can
+     crop content under the home indicator) as the bar hides/shows mid-drill.
+     dvh tracks the actual visible viewport. vh stays first as the fallback
+     for browsers without dvh support — unsupported values are ignored, so
+     the dvh line below simply overrides in browsers that understand it. */
   height: clamp(300px, 78vh, 700px);
+  height: clamp(300px, 78dvh, 700px);
   margin-top: clamp(20px, 10vh, 72px);
+  margin-top: clamp(20px, 10dvh, 72px);
   margin-bottom: clamp(20px, 10vh, 72px);
+  margin-bottom: clamp(20px, 10dvh, 72px);
   max-height: none;
 }
 
