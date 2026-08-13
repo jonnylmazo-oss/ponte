@@ -1355,7 +1355,12 @@
   // stomping the other's src.
   let oneOffEl = null;
 
-  function playOneOff(url) {
+  // onEnd(status) fires once playback ends, whether normally ('ended') or via
+  // a runtime error ('error') — a dead/unreachable URL must still resolve the
+  // caller's UI state (e.g. a speak button stuck showing "playing"), not just
+  // silently stop. Optional: ponteSpeakCard's existing callers don't pass it
+  // and are unaffected.
+  function playOneOff(url, onEnd) {
     if (!oneOffEl) {
       try { oneOffEl = new Audio(); oneOffEl.preload = 'auto'; }
       catch (_) { return false; }
@@ -1369,11 +1374,20 @@
       oneOffEl.pause();
       oneOffEl.src = url;
       oneOffEl.playbackRate = loadRate();
+      oneOffEl.onended = onEnd ? () => onEnd('ended') : null;
+      oneOffEl.onerror = onEnd ? () => onEnd('error') : null;
       const p = oneOffEl.play();
-      if (p && typeof p.catch === 'function') p.catch(() => {});
+      if (p && typeof p.catch === 'function') p.catch(() => { if (onEnd) onEnd('error'); });
       return true;
     } catch (_) { return false; }
   }
+
+  // Public: stop whatever the shared one-off element is currently playing —
+  // a flashcard word or (#83 follow-up) a Beginner Story. Generic on purpose:
+  // only one thing plays through this element at a time regardless of source.
+  window.ponteStopOneOff = function () {
+    if (oneOffEl) { oneOffEl.onended = null; oneOffEl.onerror = null; oneOffEl.pause(); }
+  };
 
   // Speed setting is shared with the session player so one slider governs both.
   function loadRate() {
@@ -1393,6 +1407,49 @@
       if (hit && hit.url && playOneOff(hit.url)) return;
     } catch (_) { /* fall through to Web Speech */ }
     if (window.ponteSpeak) window.ponteSpeak(t);
+  };
+
+  // ── Story audio (#83 follow-up) ───────────────────────────────────────────
+  // Same shape as the card index above (fetch once, flatten hash -> {url,ms}),
+  // pointed at story_audio instead of flashcard_audio. Kept separate rather
+  // than merged into getAudioIndex(): different Redis key, different content
+  // (one clip per whole story, not per word/example/chunk), and callers must
+  // stay able to tell "no pre-rendered story audio" apart from "no
+  // pre-rendered card audio" for their own fallback decisions.
+  let storyAudioIndex = null;
+
+  async function getStoryAudioIndex() {
+    if (storyAudioIndex) return storyAudioIndex;
+    const resp = await fetch(API_BASE + '/api/flashcards?key=story_audio', { headers: authHeaders() });
+    if (!resp.ok) throw new Error('Story audio unavailable (' + resp.status + ')');
+    const data = await resp.json();
+    const scripts = (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    const idx = {};
+    Object.keys(scripts).forEach((id) => {
+      const a = scripts[id] && scripts[id].audio;
+      if (a) Object.keys(a).forEach((h) => { idx[h] = a[h]; });
+    });
+    storyAudioIndex = idx;
+    return idx;
+  }
+
+  // Public: speak arbitrary text (a Beginner Story's full italian field) via
+  // its pre-rendered clip, if one exists. Unlike ponteSpeakCard this does NOT
+  // fall back to Web Speech itself — the Reader's article-speak button already
+  // has its own single-utterance Web Speech path for dynamically-generated
+  // (Advanced mode) articles, which have no pre-rendered audio at all; the
+  // caller decides what "no pre-rendered clip" means for it. Returns true if
+  // playback started (onEnd will fire), false if there's nothing to play.
+  window.ponteSpeakStory = async function (text, onEnd) {
+    const t = text == null ? '' : String(text).trim();
+    if (!t) return false;
+    try {
+      const idx = await getStoryAudioIndex();
+      const h   = await sha1Hex16(t);
+      const hit = h && idx[h];
+      if (hit && hit.url) return playOneOff(hit.url, onEnd);
+    } catch (_) { /* caller falls back */ }
+    return false;
   };
 
   // Returns [{ card, audioScript, audioUrls }], audioScript being the chunks

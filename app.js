@@ -809,10 +809,17 @@
   if (!speech.supported && articleSpeakBtn) articleSpeakBtn.hidden = true;
   if (!speech.supported && tooltipSpeakBtn) tooltipSpeakBtn.hidden = true;
 
+  // Set only while a Beginner Story's pre-rendered clip is playing (#83
+  // follow-up) — stopArticleSpeech() needs to know whether to stop the
+  // shared one-off <audio> element or cancel Web Speech.
+  let articleUsingPreRendered = false;
+
   function stopArticleSpeech() {
     if (articleSpeaking) {
-      speechSynthesis.cancel();
+      if (articleUsingPreRendered) { if (window.ponteStopOneOff) window.ponteStopOneOff(); }
+      else speechSynthesis.cancel();
       articleSpeaking = false;
+      articleUsingPreRendered = false;
       if (articleSpeakBtn) {
         articleSpeakBtn.textContent = '🔊';
         articleSpeakBtn.classList.remove('speaking');
@@ -842,12 +849,46 @@
     }
   });
 
-  articleSpeakBtn && articleSpeakBtn.addEventListener('click', () => {
-    if (!speech.supported || !state.article) return;
+  // A Beginner Story has a real id (beg01..beg20) matching data/beginner-
+  // stories.js; a dynamically-generated (Advanced mode) article's id is
+  // always the model's own "id": 0, so this never mistakes one for the other.
+  function currentArticleIsStory() {
+    return !!(state.article && typeof beginnerStories !== 'undefined' &&
+      beginnerStories.some((s) => s.id === state.article.id));
+  }
+
+  articleSpeakBtn && articleSpeakBtn.addEventListener('click', async () => {
+    if (!state.article) return;
     if (articleSpeaking) {
       stopArticleSpeech();
       return;
     }
+
+    // Beginner Stories have pre-rendered ElevenLabs audio — prefer it over
+    // Web Speech, which sidesteps bug #84 (~15s Chrome utterance truncation)
+    // for this fixed set specifically. Advanced/dynamic articles have no
+    // pre-rendered audio and always fall through to the Web Speech path below.
+    if (currentArticleIsStory() && window.ponteSpeakStory) {
+      articleSpeaking = true;
+      articleUsingPreRendered = true;
+      articleSpeakBtn.textContent = '⏹';
+      articleSpeakBtn.classList.add('speaking');
+      const started = await window.ponteSpeakStory(state.article.italian, () => {
+        articleSpeaking = false;
+        articleUsingPreRendered = false;
+        articleSpeakBtn.textContent = '🔊';
+        articleSpeakBtn.classList.remove('speaking');
+      });
+      if (started) return;
+      // No pre-rendered clip yet (not rendered, network hiccup) — reset and
+      // fall through to Web Speech, exactly as if this feature didn't exist.
+      articleSpeaking = false;
+      articleUsingPreRendered = false;
+      articleSpeakBtn.textContent = '🔊';
+      articleSpeakBtn.classList.remove('speaking');
+    }
+
+    if (!speech.supported) return;
     articleSpeaking = true;
     articleSpeakBtn.textContent = '⏹';
     articleSpeakBtn.classList.add('speaking');

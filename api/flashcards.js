@@ -19,6 +19,13 @@ const redis = new Redis({
 // wiped by a stale browser tab.
 const AUDIO_KEY = 'flashcard_audio';
 
+// Beginner Stories' pre-rendered audio (#83/#57-follow-up). Piggybacks on
+// this endpoint rather than getting its own file — Vercel Hobby caps at 12
+// serverless functions and this project is already at 9; the ?key= pattern
+// already exists for flashcard_audio, so this is a second branch of it, not
+// a new one. { [storyId]: { sentences, audio: {hash:{url,ms}}, voice, model, at } }.
+const STORY_AUDIO_KEY = 'story_audio';
+
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
 
@@ -56,6 +63,16 @@ module.exports = async function handler(req, res) {
         return res.json(audio);
       } catch (err) {
         console.error('Error reading flashcard_audio:', err.message);
+        return res.json({});
+      }
+    }
+
+    if (req.query && req.query.key === 'story_audio') {
+      try {
+        const audio = (await redis.get(STORY_AUDIO_KEY)) ?? {};
+        return res.json(audio);
+      } catch (err) {
+        console.error('Error reading story_audio:', err.message);
         return res.json({});
       }
     }

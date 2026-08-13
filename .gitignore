@@ -11,3 +11,7 @@ migrate-taxonomy.js
 generated-deck.json
 gen.log
 audio-backfill/
+# Legacy server.js's local file-based flashcard storage (FLASHCARDS_PATH) —
+# populated by running the app against `npm start` locally, never real data.
+data/flashcards.json
+data/flashcards.json.bak
