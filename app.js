@@ -1516,6 +1516,10 @@
       }
     }, 250);
   }
+  // Exposed for More-panel items that open a modal instead of switching tabs
+  // (Share deck, #38) — switchTab() closes it for its own tab-switch items,
+  // but a modal-opener never goes through switchTab so needs this directly.
+  window.ponteCloseMorePanel = closeMorePanel;
 
   function initTabs() {
     const saved = localStorage.getItem(LS_TAB) || 'reader';

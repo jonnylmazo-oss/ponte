@@ -223,6 +223,11 @@
               <span class="nav-icon">🔍</span>
               <span class="nav-label">Deep dive</span>
             </button>
+            <button class="nav-item nav-sub-item" id="nav-share-btn"
+              onclick="window.ponteShareOpen&&window.ponteShareOpen()">
+              <span class="nav-icon">🔗</span>
+              <span class="nav-label">Share deck</span>
+            </button>
           </div></div>
         </div>
 
@@ -1220,6 +1225,12 @@
       <span class="more-panel-icon">🔍</span>
       <span class="more-panel-label">Deep dive</span>
     </button>
+    <button class="more-panel-item" id="more-share-btn"
+      onclick="window.ponteCloseMorePanel&&window.ponteCloseMorePanel();window.ponteShareOpen&&window.ponteShareOpen()"
+      ontouchend="window.ponteCloseMorePanel&&window.ponteCloseMorePanel();window.ponteShareOpen&&window.ponteShareOpen();return false;">
+      <span class="more-panel-icon">🔗</span>
+      <span class="more-panel-label">Share deck</span>
+    </button>
   </div>
 
   <!-- Fullscreen drill header (shown when body.drill-fullscreen) -->
@@ -1297,6 +1308,69 @@
       </div>
       <p class="wl-result-note" id="wl-result-note"></p>
       <button class="wl-save-btn" id="wl-save-btn">Save to Cards ★</button>
+    </div>
+  </div>
+
+  <!-- Deck sharing (#38) — More → Share deck -->
+  <div class="wl-backdrop" id="share-backdrop" hidden
+    onclick="window.ponteShareClose(); return false;"></div>
+  <div class="wl-modal" id="share-modal" hidden role="dialog" aria-modal="true" aria-label="Share deck">
+    <div class="wl-header">
+      <h3 class="wl-title">Share deck</h3>
+      <button class="wl-close" id="share-close" aria-label="Close"
+        onclick="window.ponteShareClose(); return false;"
+        ontouchend="window.ponteShareClose(); return false;">✕</button>
+    </div>
+
+    <!-- Choose -->
+    <div class="share-screen" id="share-screen-choose">
+      <p class="wl-hint">Give another Ponte user a head start with your deck's vocabulary, or add someone else's shared words to yours.</p>
+      <button class="onboard-btn onboard-btn-primary" id="share-export-btn"
+        onclick="window.ponteShareStartExport(); return false;"
+        ontouchend="window.ponteShareStartExport(); return false;">📤 Share my deck</button>
+      <button class="onboard-btn" id="share-import-btn"
+        onclick="window.ponteShareStartImport(); return false;"
+        ontouchend="window.ponteShareStartImport(); return false;">📥 Import a shared deck</button>
+    </div>
+
+    <!-- Export: link result -->
+    <div class="share-screen" id="share-screen-export" hidden>
+      <div class="wl-status" id="share-export-status">Creating your share link…</div>
+      <div class="share-result" id="share-export-result" hidden>
+        <p class="wl-hint" id="share-export-count"></p>
+        <div class="share-link-row">
+          <input type="text" class="wl-input" id="share-link-input" readonly onclick="this.select();" />
+          <button class="wl-search-btn" id="share-copy-btn"
+            onclick="window.ponteShareCopyLink(); return false;"
+            ontouchend="window.ponteShareCopyLink(); return false;">Copy</button>
+        </div>
+        <p class="wl-hint">Only the words, examples, and categories are shared — not your review history or schedule. The link works for 90 days.</p>
+      </div>
+      <button class="shadow-nav-btn" id="share-export-back"
+        onclick="window.ponteShareBack(); return false;"
+        ontouchend="window.ponteShareBack(); return false;">← Back</button>
+    </div>
+
+    <!-- Import: paste + preview + confirm -->
+    <div class="share-screen" id="share-screen-import" hidden>
+      <div class="wl-search-row">
+        <input type="text" id="share-import-input" class="wl-input"
+          placeholder="Paste a share link or code…" autocomplete="off" autocorrect="off"
+          autocapitalize="none" spellcheck="false" />
+        <button class="wl-search-btn" id="share-preview-btn"
+          onclick="window.ponteShareLoadPreview(); return false;"
+          ontouchend="window.ponteShareLoadPreview(); return false;">Preview</button>
+      </div>
+      <div class="wl-status" id="share-import-status" hidden></div>
+      <div class="share-result" id="share-import-preview" hidden>
+        <p class="wl-hint" id="share-import-count"></p>
+        <button class="onboard-btn onboard-btn-primary" id="share-import-confirm-btn"
+          onclick="window.ponteShareConfirmImport(); return false;"
+          ontouchend="window.ponteShareConfirmImport(); return false;">Add to my deck</button>
+      </div>
+      <button class="shadow-nav-btn" id="share-import-back"
+        onclick="window.ponteShareBack(); return false;"
+        ontouchend="window.ponteShareBack(); return false;">← Back</button>
     </div>
   </div>
 

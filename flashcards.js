@@ -2012,6 +2012,223 @@
     if (e.key === 'Escape' && wlModal && !wlModal.hidden) closeWordLookup();
   });
 
+  // ── Deck sharing (#38) ────────────────────────────────────────────────────
+  // Export: POST the current deck (server strips it down to word content only
+  // — see api/flashcards.js's stripForSharing — the recipient starts learning
+  // fresh, not inheriting the sharer's own review history/schedule). Import:
+  // fetch a shared deck by id and merge it into this browser's own deck,
+  // skipping any word already present rather than overwriting it.
+  const shareBackdrop = $('share-backdrop');
+  const shareModal    = $('share-modal');
+  const shareScreens  = {
+    choose: $('share-screen-choose'),
+    export: $('share-screen-export'),
+    import: $('share-screen-import'),
+  };
+
+  function shareShow(name) {
+    Object.keys(shareScreens).forEach((k) => { if (shareScreens[k]) shareScreens[k].hidden = k !== name; });
+  }
+
+  window.ponteShareOpen = function () {
+    if (!shareModal) return false;
+    if (shareBackdrop) shareBackdrop.hidden = false;
+    shareModal.hidden = false;
+    shareShow('choose');
+    return false;
+  };
+
+  window.ponteShareClose = function () {
+    if (!shareModal) return false;
+    shareModal.hidden = true;
+    if (shareBackdrop) shareBackdrop.hidden = true;
+    return false;
+  };
+
+  window.ponteShareBack = function () {
+    shareShow('choose');
+    return false;
+  };
+
+  // Accepts a bare 12-hex share id, or a full URL containing ?import=<id> or
+  // ?share=<id> — whichever someone actually pastes.
+  function parseShareId(raw) {
+    const s = String(raw || '').trim();
+    if (/^[a-f0-9]{12}$/i.test(s)) return s.toLowerCase();
+    try {
+      const u = new URL(s, window.location.origin);
+      const id = u.searchParams.get('import') || u.searchParams.get('share');
+      return id && /^[a-f0-9]{12}$/i.test(id) ? id.toLowerCase() : null;
+    } catch (_) { return null; }
+  }
+
+  window.ponteShareStartExport = async function () {
+    shareShow('export');
+    const statusEl = $('share-export-status');
+    const resultEl = $('share-export-result');
+    if (statusEl) { statusEl.hidden = false; statusEl.textContent = 'Creating your share link…'; }
+    if (resultEl) resultEl.hidden = true;
+
+    const cards = loadCards();
+    if (!cards.length) {
+      if (statusEl) statusEl.textContent = 'Your deck is empty — nothing to share yet.';
+      return false;
+    }
+    try {
+      const resp = await fetch(API_BASE + '/api/flashcards?action=share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ cards }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data && data.error ? data.error : 'Failed to create share link');
+
+      const link = window.location.origin + window.location.pathname + '?import=' + data.id;
+      const linkInput = $('share-link-input');
+      if (linkInput) linkInput.value = link;
+      const countEl = $('share-export-count');
+      if (countEl) countEl.textContent = `${data.count} card${data.count === 1 ? '' : 's'} ready to share.`;
+      if (statusEl) statusEl.hidden = true;
+      if (resultEl) resultEl.hidden = false;
+    } catch (e) {
+      if (statusEl) statusEl.textContent = 'Could not create a share link: ' + (e && e.message ? e.message : 'unknown error');
+    }
+    return false;
+  };
+
+  window.ponteShareCopyLink = function () {
+    const linkInput = $('share-link-input');
+    if (!linkInput || !linkInput.value) return false;
+    linkInput.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(linkInput.value).catch(() => {});
+    } else {
+      try { document.execCommand('copy'); } catch (_) {}
+    }
+    const btn = $('share-copy-btn');
+    if (btn) { const orig = btn.textContent; btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = orig; }, 1500); }
+    return false;
+  };
+
+  let shareImportCards = null; // the previewed (not-yet-merged) shared cards
+
+  window.ponteShareStartImport = function (prefillId) {
+    shareShow('import');
+    shareImportCards = null;
+    const input = $('share-import-input');
+    if (input) input.value = prefillId || '';
+    const statusEl = $('share-import-status');
+    if (statusEl) statusEl.hidden = true;
+    const preview = $('share-import-preview');
+    if (preview) preview.hidden = true;
+    if (prefillId) window.ponteShareLoadPreview();
+    return false;
+  };
+
+  window.ponteShareLoadPreview = async function () {
+    const input = $('share-import-input');
+    const statusEl = $('share-import-status');
+    const preview = $('share-import-preview');
+    const id = parseShareId(input && input.value);
+    if (!id) {
+      if (statusEl) { statusEl.hidden = false; statusEl.textContent = 'That doesn\'t look like a valid share link or code.'; }
+      if (preview) preview.hidden = true;
+      return false;
+    }
+    if (statusEl) { statusEl.hidden = false; statusEl.textContent = 'Loading…'; }
+    if (preview) preview.hidden = true;
+    try {
+      const resp = await fetch(API_BASE + '/api/flashcards?action=share&id=' + encodeURIComponent(id), { headers: authHeaders() });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data && data.error ? data.error : 'Could not load this share link');
+      shareImportCards = Array.isArray(data.cards) ? data.cards : [];
+      if (!shareImportCards.length) throw new Error('This share link has no cards');
+
+      const existing = loadCards();
+      const existingKeys = new Set(existing.map((c) => (c.italian || '').toLowerCase()));
+      const newCount = shareImportCards.filter((c) => !existingKeys.has((c.italian || '').toLowerCase())).length;
+      const dupCount = shareImportCards.length - newCount;
+
+      const countEl = $('share-import-count');
+      if (countEl) {
+        countEl.textContent = `${shareImportCards.length} card${shareImportCards.length === 1 ? '' : 's'} in this share` +
+          (dupCount ? ` — ${newCount} new, ${dupCount} you already have (skipped)` : ' — all new to you');
+      }
+      if (statusEl) statusEl.hidden = true;
+      if (preview) preview.hidden = false;
+      const confirmBtn = $('share-import-confirm-btn');
+      if (confirmBtn) confirmBtn.disabled = newCount === 0;
+      if (confirmBtn) confirmBtn.textContent = newCount === 0 ? 'Nothing new to add' : 'Add to my deck';
+    } catch (e) {
+      shareImportCards = null;
+      if (statusEl) { statusEl.hidden = false; statusEl.textContent = e && e.message ? e.message : 'Could not load this share link'; }
+      if (preview) preview.hidden = true;
+    }
+    return false;
+  };
+
+  window.ponteShareConfirmImport = function () {
+    if (!shareImportCards || !shareImportCards.length) return false;
+    const existing = loadCards();
+    const existingKeys = new Set(existing.map((c) => (c.italian || '').toLowerCase()));
+    const now = Date.now();
+    let added = 0;
+    const merged = existing.slice();
+    shareImportCards.forEach((c, i) => {
+      const key = (c.italian || '').toLowerCase();
+      if (!key || existingKeys.has(key)) return; // never overwrite a card the user already has
+      existingKeys.add(key);
+      merged.push({
+        id:            now + i, // batch import — Date.now() alone would collide across cards
+        italian:       window.ponteNormalizeItalian(c.italian, { wordType: c.wordType, example: c.example }),
+        english:       c.english    || '',
+        spanish:       c.spanish    || '',
+        category:      c.category   || 'new',
+        note:          c.note       || '',
+        wordType:      c.wordType      || 'other',
+        baseForm:      c.baseForm      || '',
+        baseFormEN:    c.baseFormEN    || '',
+        example:       c.example       || '',
+        exampleEN:     c.exampleEN     || '',
+        nounNumber:    c.nounNumber    || null,
+        nounOtherForm: c.nounOtherForm || null,
+        savedAt:       new Date().toISOString(),
+        sourceArticle: 'Shared deck',
+        timesCorrect: 0, timesWrong: 0, lastSeen: null, lastDrilled: null,
+        interval: 0, easeFactor: 2.5, dueDate: null, reviewCount: 0, lastReviewed: null,
+        grammarPatterns: [],
+      });
+      added++;
+    });
+
+    if (!added) { window.ponteShareClose(); return false; }
+
+    saveCards(merged);
+    renderLibrary();
+    updateBadge();
+    window.dispatchEvent(new CustomEvent('ponte:flashcard-saved'));
+
+    const countEl = $('share-import-count');
+    if (countEl) countEl.textContent = `Added ${added} new card${added === 1 ? '' : 's'} to your deck.`;
+    const confirmBtn = $('share-import-confirm-btn');
+    if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Added ✓'; }
+    shareImportCards = null;
+    return false;
+  };
+
+  // A shared link (?import=<id>) opens straight to the import preview,
+  // pre-filled — no need to find the More menu and paste a code by hand.
+  (function checkImportLink() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('import');
+      if (id && /^[a-f0-9]{12}$/i.test(id) && window.ponteShareOpen) {
+        window.ponteShareOpen();
+        window.ponteShareStartImport(id);
+      }
+    } catch (_) { /* malformed URL — ignore */ }
+  })();
+
   // ── Init ─────────────────────────────────────────────────────────────────
   // app.js awaits syncFlashcardsFromServer() before calling _ponteFCRender,
   // so localStorage is guaranteed to have server cards on the first render.
