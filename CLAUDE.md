@@ -63,6 +63,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Practice** — fill-in-the-blank (Multiple Choice / Type It / Sentence Rebuild); saves missed words to flashcards
 - **Conversation** — Scripted Dialogue (MC or Type-it against native speaker) + Free Conversation chat with error feedback
 - **Cards** — SM-2 spaced repetition; bidirectional drill (IT→EN / EN→IT, picked in setup screen, mid-session toggle in topbar); drill subset picker (Due today default + All / word types / Weak words, with live (N) counts respecting active library filters); fullscreen mode; word lookup modal (IT↔EN); cross-device sync; library filter+sort bar (Performance / Word Type / Category / Source / Sort + Clear all)
+- **Deck sharing** (#38, `flashcards.js` — More → Share deck) — export a shareable link (word content only, not the sharer's own SRS/review state) via `/api/flashcards?action=share`; import previews a shared deck and merges it into the recipient's own deck, skipping any word already present rather than overwriting it; a `?import=<id>` URL opens straight to the import preview, no accounts involved (single shared app password, per the issue's own MVP scope)
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 - **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
@@ -78,6 +79,8 @@ Deployed as **9 Vercel serverless functions** (Hobby plan caps at 12). Five endp
 | `conversation.js` | POST | `/api/conversation` | Free conversation reply + feedback |
 | `generate-dialogue.js` | POST | `/api/generate-dialogue` | Scripted dialogue JSON |
 | `flashcards.js` | GET/POST | `/api/flashcards` | Load/save deck (auth required) |
+| " | POST | `/api/flashcards?action=share` | Create a shared-deck link (#38): strips a card list down to word content only (no SRS/personal fields), stores under `shared_deck_<id>` with a 90-day TTL |
+| " | GET | `/api/flashcards?action=share&id=<id>` | Fetch a shared deck by id, for the import preview |
 | `translate-combined.js` | POST | `/api/translate-combined?action=translate-to-italian` | EN→IT translation |
 | " | POST | `/api/translate-combined?action=grammar-examples` | 3 extra grammar card examples |
 | `practice-combined.js` | POST | `/api/practice-combined?action=generate-practice` | 8 practice sentences (auth) |

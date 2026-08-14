@@ -7546,6 +7546,25 @@ body.drill-fullscreen .ff-flip-card {
 }
 .wl-result-note:empty { display: none; }
 
+/* ── Deck sharing (#38) ───────────────────────────────────────────────────
+   Reuses the .wl-* modal shell (same backdrop/panel/header/input/status
+   classes as the Word lookup modal) plus .onboard-btn / .shadow-nav-btn for
+   the generic action buttons — new CSS only for what's actually unique here. */
+
+.share-screen { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.share-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-link-row {
+  display: flex;
+  gap: 8px;
+}
+.share-link-row .wl-input { font-size: 13px; color: var(--text-mid); }
+
 .wl-save-btn {
   width: 100%;
   background: #2E6B3E;

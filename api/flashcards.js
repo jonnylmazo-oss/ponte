@@ -5,6 +5,7 @@
 //   Key 'flashcards_bak'  → last-known-good backup, written before each overwrite
 // Guards preserved from the legacy Express handler: in-memory write lock,
 // empty-overwrite block, and >10% anti-shrink guard (bypassable with override:true).
+const crypto = require('crypto');
 const { Redis } = require('@upstash/redis');
 const { requireAuth } = require('../lib/ponte.js');
 
@@ -47,6 +48,31 @@ function findInvalidCategory(cards) {
   return null;
 }
 
+// ── Deck sharing (#38) ──────────────────────────────────────────────────
+// { ?action=share } — POST creates a share, GET fetches one by id. Separate
+// Redis keyspace (shared_deck_<id>, TTL'd) from the authenticated user's own
+// 'flashcards' key: a share is content for someone ELSE to import, not this
+// user's deck, and must never be reachable through the plain GET/POST above.
+//
+// A shared card carries only the word content, not this user's own SRS
+// state or history — the recipient starts learning it fresh, they don't
+// inherit the sharer's review schedule or accuracy. Field allowlist, not a
+// blocklist, so a future card field defaults to NOT being shared until
+// deliberately added here.
+const SHARE_KEY_PREFIX  = 'shared_deck_';
+const SHARE_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
+const SHARE_MAX_CARDS   = 500;
+const SHARE_FIELDS = [
+  'italian', 'english', 'spanish', 'category', 'note', 'wordType',
+  'baseForm', 'baseFormEN', 'example', 'exampleEN', 'nounNumber', 'nounOtherForm',
+];
+
+function stripForSharing(card) {
+  const out = {};
+  for (const f of SHARE_FIELDS) if (card && card[f] !== undefined) out[f] = card[f];
+  return out;
+}
+
 module.exports = async function handler(req, res) {
   if (!requireAuth(req, res)) return;
 
@@ -77,12 +103,55 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // ?action=share&id=<id> → fetch a shared deck by id, for the Cards page's
+    // import flow. Not the same thing as this user's own deck below, and
+    // intentionally still gated by the same requireAuth() at the top of this
+    // handler — this app is single-password, not multi-tenant (#38's own
+    // spec: "no accounts needed for MVP"), so "sharing" means between people
+    // who already have this app's password, not the general public.
+    if (req.query && req.query.action === 'share') {
+      const id = String(req.query.id || '').trim();
+      if (!/^[a-f0-9]{12}$/.test(id)) {
+        return res.status(400).json({ error: 'Invalid share id' });
+      }
+      try {
+        const shared = await redis.get(SHARE_KEY_PREFIX + id);
+        if (!shared) return res.status(404).json({ error: 'This share link has expired or does not exist' });
+        return res.json(shared);
+      } catch (err) {
+        console.error('Error reading shared deck:', err.message);
+        return res.status(500).json({ error: 'Failed to load shared deck' });
+      }
+    }
+
     try {
       const cards = (await redis.get('flashcards')) ?? [];
       return res.json(cards);
     } catch (err) {
       console.error('Error reading flashcards:', err.message);
       return res.json([]);
+    }
+  }
+
+  if (req.method === 'POST' && req.query && req.query.action === 'share') {
+    const cards = req.body && Array.isArray(req.body.cards) ? req.body.cards : null;
+    if (!cards || !cards.length) {
+      return res.status(400).json({ error: 'Expected { cards: [...] }, non-empty' });
+    }
+    if (cards.length > SHARE_MAX_CARDS) {
+      return res.status(400).json({ error: `A share is capped at ${SHARE_MAX_CARDS} cards (got ${cards.length})` });
+    }
+    const stripped = cards.map(stripForSharing).filter((c) => c.italian && c.english);
+    if (!stripped.length) {
+      return res.status(400).json({ error: 'No valid cards (each needs at least italian + english)' });
+    }
+    const id = crypto.randomBytes(6).toString('hex'); // 12 hex chars
+    try {
+      await redis.set(SHARE_KEY_PREFIX + id, { cards: stripped, count: stripped.length, createdAt: new Date().toISOString() }, { ex: SHARE_TTL_SECONDS });
+      return res.json({ id, count: stripped.length });
+    } catch (err) {
+      console.error('Error creating shared deck:', err.message);
+      return res.status(500).json({ error: 'Failed to create share link' });
     }
   }
 
