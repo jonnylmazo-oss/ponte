@@ -63,9 +63,9 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>100 Italian False Friends for Spanish Speakers | Ponte</title>
-<meta name="description" content="100 Italian words that look like Spanish but mean something completely different — the exact traps Spanish speakers hit learning Italian. Free reference list with examples, sorted by how dangerous the mix-up is.">
-<meta property="og:title" content="100 Italian False Friends for Spanish Speakers">
+<title>98 Italian False Friends for Spanish Speakers | Ponte</title>
+<meta name="description" content="98 Italian words that look like Spanish but mean something completely different — the exact traps Spanish speakers hit learning Italian. Free reference list with examples, sorted by how dangerous the mix-up is.">
+<meta property="og:title" content="98 Italian False Friends for Spanish Speakers">
 <meta property="og:description" content="Italian words that look like Spanish but mean something completely different — free reference list with examples.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -119,7 +119,7 @@ const html = `<!doctype html>
        collide with any header tag on the page regardless of class. -->
   <div class="ff-hero">
     <a class="ff-logo" href="/">Pon<span>te</span></a>
-    <h1>100 Italian False Friends for Spanish Speakers</h1>
+    <h1>98 Italian False Friends for Spanish Speakers</h1>
     <p>
       If you already speak Spanish, most Italian vocabulary is a shortcut — but not all of it.
       These are the Italian words that <em>look</em> like Spanish and will make you confidently say

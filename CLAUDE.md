@@ -52,7 +52,7 @@ data/
   articles.js      fallback article ("Una mattina a Roma")
   wordmap.js       static wordmap for fallback article
   beginner-stories.js  fixed set of 20 A1/A2 stories for Reader "Beginner Stories" mode
-  false-friends.js 100 false friend entries
+  false-friends.js 98 false friend entries
   safe-cognates.js 200 safe cognate entries
   grammar.js       45 grammar cards + 30 pattern drills
 ```
@@ -62,7 +62,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 ## Features
 
 - **Reader** — two modes via a toggle in the generator bar: **Beginner Stories** (default) — fixed set of 20 permanent A1/A2 stories (`data/beginner-stories.js`), rendered instantly client-side, no API call; **Advanced** — the original unbounded free-text/topic SSE generation, unchanged. Both share color-coded words, hover/tap tooltip, dynamic text-select translation, EN column toggle, post-reading quiz. Recent ▾ history and article caching apply only to Advanced-mode (dynamically generated) articles
-- **False Friends** — 100 false friend cards + 200 safe cognates; search/filter/drill per sub-tab
+- **False Friends** — 98 false friend cards + 200 safe cognates; search/filter/drill per sub-tab
 - **Grammar** — 4-stage learning path (45 cards), 30 pattern drills, weak areas panel fed by error tracking
 - **Practice** — fill-in-the-blank (Multiple Choice / Type It / Sentence Rebuild); saves missed words to flashcards
 - **Conversation** — Scripted Dialogue (MC or Type-it against native speaker) + Free Conversation chat with error feedback

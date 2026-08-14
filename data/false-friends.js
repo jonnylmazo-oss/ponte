@@ -1,7 +1,14 @@
-// false-friends.js — 100 Italian false friends for English/Spanish speakers
+// false-friends.js — 98 Italian false friends for English/Spanish speakers
 // Exported as a global for use in Ponte without a build step.
 // Data quality pass: entries verified for Italian-Spanish accuracy.
-// Distribution: 22 high / 48 medium / 30 low
+// Distribution: 22 high / 48 medium / 28 low
+//
+// #66 taxonomy audit (2026-08-14) removed 2 entries (simpatico id 72,
+// spettacolo id 53) that were self-contradicting: both entries' own
+// spanishMeaning/tip text said "same as Italian" / "a safe cognate", i.e.
+// they were never actually Italian-Spanish false friends — their entries
+// only warned about ENGLISH lookalikes (sympathetic, spectacle), out of
+// scope for this dataset. Remaining ids are not renumbered.
 
 const falseFriends = [
   // ── HIGH DANGER (22) ─────────────────────────────────────────────────────
@@ -962,19 +969,6 @@ const falseFriends = [
     tip: "Italian tardi and Spanish tarde both mean 'late' — a shared meaning. The difference is that Spanish tarde also means 'afternoon', which in Italian is pomeriggio."
   },
   {
-    id: 53,
-    italian: "spettacolo",
-    italianMeaning: "show, performance, spectacle",
-    spanishLookalike: "espectáculo",
-    spanishMeaning: "spectacle, show",
-    englishMeaning: "show, performance",
-    category: "false-friend",
-    danger: "low",
-    example: "Lo spettacolo inizia alle otto.",
-    exampleEN: "The show starts at eight.",
-    tip: "Nearly identical to Spanish espectáculo — same root, same meaning. A safe cognate. Italians also use it informally for anything impressive ('che spettacolo!' = wow!)."
-  },
-  {
     id: 56,
     italian: "sensibile",
     italianMeaning: "sensitive",
@@ -1012,19 +1006,6 @@ const falseFriends = [
     example: "Qual è l'orario del treno?",
     exampleEN: "What is the train timetable?",
     tip: "Essentially identical to Spanish horario — a safe cognate. Italians also use orario for store opening hours, which aligns with how Spanish horario works."
-  },
-  {
-    id: 72,
-    italian: "simpatico",
-    italianMeaning: "likable, friendly, nice (personality)",
-    spanishLookalike: "simpático",
-    spanishMeaning: "nice, likable (same as Italian)",
-    englishMeaning: "likable, nice",
-    category: "false-friend",
-    danger: "low",
-    example: "Il professore è molto simpatico.",
-    exampleEN: "The professor is very likable.",
-    tip: "Italian simpatico and Spanish simpático share the same meaning — a safe cognate. The only danger is English 'sympathetic' (= compassionate), which is very different from both."
   },
   {
     id: 73,
