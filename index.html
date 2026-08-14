@@ -38,6 +38,61 @@
     </div>
   </div>
 
+  <!-- Onboarding flow (#11) — first-run only, shown after login. Spanish
+       proficiency + Italian placement, sets a sensible starting difficulty
+       instead of everyone landing on A1 regardless of actual level. -->
+  <div id="onboard-overlay" hidden>
+    <div class="onboard-card">
+      <div class="onboard-dots" id="onboard-dots" aria-hidden="true">
+        <span class="onboard-dot active" data-step="0"></span>
+        <span class="onboard-dot" data-step="1"></span>
+        <span class="onboard-dot" data-step="2"></span>
+        <span class="onboard-dot" data-step="3"></span>
+      </div>
+
+      <!-- Step 0: Welcome -->
+      <div class="onboard-step" id="onboard-step-0">
+        <div class="onboard-logo">Pon<span>te</span></div>
+        <h2 class="onboard-h">Your Spanish is a shortcut to Italian</h2>
+        <p class="onboard-p">Italian and Spanish share a huge amount of vocabulary. Ponte shows you exactly which words you already know, which ones will trick you, and which are genuinely new — so you spend your time where it actually counts.</p>
+        <button class="onboard-btn onboard-btn-primary" id="onboard-start-btn">Let's find your starting point →</button>
+      </div>
+
+      <!-- Step 1: Spanish proficiency -->
+      <div class="onboard-step" id="onboard-step-1" hidden>
+        <h2 class="onboard-h">How's your Spanish?</h2>
+        <p class="onboard-p onboard-p-tight">This is what you'll be leveraging to learn Italian faster.</p>
+        <div class="onboard-options" id="onboard-spanish-options" role="radiogroup" aria-label="Spanish proficiency">
+          <button type="button" class="onboard-option" data-value="native">Native or fluent</button>
+          <button type="button" class="onboard-option" data-value="advanced">Advanced</button>
+          <button type="button" class="onboard-option" data-value="intermediate">Intermediate</button>
+          <button type="button" class="onboard-option" data-value="basic">Basic / a little</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Italian exposure (placement) -->
+      <div class="onboard-step" id="onboard-step-2" hidden>
+        <h2 class="onboard-h">And your Italian?</h2>
+        <p class="onboard-p onboard-p-tight">Be honest — this decides where the Reader starts you off, not how you're graded.</p>
+        <div class="onboard-options" id="onboard-italian-options" role="radiogroup" aria-label="Italian exposure">
+          <button type="button" class="onboard-option" data-value="none">None — total beginner</button>
+          <button type="button" class="onboard-option" data-value="little">A little — some words, maybe a class</button>
+          <button type="button" class="onboard-option" data-value="lots">Quite a bit — I can read simple text</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Recommendation -->
+      <div class="onboard-step" id="onboard-step-3" hidden>
+        <div class="onboard-rec-icon">✓</div>
+        <h2 class="onboard-h">You're set</h2>
+        <p class="onboard-p" id="onboard-rec-text"></p>
+        <button class="onboard-btn onboard-btn-primary" id="onboard-done-btn">Start reading →</button>
+      </div>
+
+      <button class="onboard-skip" id="onboard-skip-btn">Skip for now</button>
+    </div>
+  </div>
+
   <!-- PWA install banner (iOS: shown once, dismissable) -->
   <div class="install-banner" id="install-banner" hidden>
     <span class="install-banner-text">
@@ -1371,6 +1426,7 @@
   <script src="progress.js"></script>
   <script src="deep-dive.js"></script>
   <script src="audio-player.js"></script>
+  <script src="onboarding.js"></script>
 
   <!-- Service worker registration + install banner logic -->
   <script>

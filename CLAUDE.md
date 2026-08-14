@@ -33,6 +33,7 @@ dictionary.js      Translate tab IIFE
 conversation.js    Conversation tab IIFE
 mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
+onboarding.js      First-run flow IIFE (#11) — Spanish/Italian placement quiz
 style.css          Kindle sepia design system
 server.js          Legacy Express API (local dev reference only — prod uses /api)
 api/               9 Vercel serverless functions (Hobby 12-fn cap): 5 standalone
@@ -53,7 +54,7 @@ data/
   grammar.js       45 grammar cards + 30 pattern drills
 ```
 
-Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js`
+Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js` → `audio-player.js` → `onboarding.js`
 
 ## Features
 
@@ -66,6 +67,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 - **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
+- **Onboarding** (`onboarding.js`) — first-run only: Spanish proficiency + Italian-exposure placement quiz, presets the Reader's starting mode/difficulty via `window.ponteApplyStartingLevel(level)` (app.js) instead of everyone landing on A1; auto-skipped (and the flag set retroactively) for any browser already showing signs of prior use
 
 ## API endpoints
 
@@ -137,6 +139,7 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 | `ponte_audio_session` | Audio session length (`'15'`/`'25'`/`'40'`/`'all'`, default `'25'`) |
 | `ponte_reader_mode` | Reader mode toggle (`'stories'`/`'advanced'`, default `'stories'`) |
 | `ponte_last_story` | Last-selected Beginner Story id, restored in the picker on reload |
+| `ponte_onboarding_complete` | First-run flow (#11) shown/dismissed flag — also set retroactively for any browser showing other signs of prior use, so it never surprises an existing session |
 
 ## Flashcard card structure
 

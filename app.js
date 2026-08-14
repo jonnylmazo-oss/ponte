@@ -1254,6 +1254,25 @@
   storyReadBtn    && storyReadBtn.addEventListener('click', () => readStory(storySelect.value));
   storySelect     && storySelect.addEventListener('change', () => readStory(storySelect.value));
 
+  // Public: called once by onboarding.js after the placement quiz, to preset
+  // the Reader to a sensible starting point instead of everyone landing on
+  // the very first A1 story regardless of actual level (#11). Only presets
+  // the picker — doesn't auto-read an article, so the first thing the
+  // learner sees post-onboarding is still their own deliberate tap.
+  window.ponteApplyStartingLevel = function (level) {
+    if (level === 'B1' || level === 'B2') {
+      setReaderMode('advanced', true);
+      if (difficultySelect) difficultySelect.value = level;
+      return;
+    }
+    setReaderMode('stories', true);
+    const match = STORIES.find((s) => s.difficulty === level) || STORIES[0];
+    if (match && storySelect) {
+      storySelect.value = match.id;
+      localStorage.setItem('ponte_last_story', match.id);
+    }
+  };
+
   setReaderMode(localStorage.getItem(LS_READER_MODE) || 'stories', false);
 
   // Generator

@@ -8,6 +8,8 @@ node_modules/
 generate-deck.js
 push-deck.js
 migrate-taxonomy.js
+audit-taxonomy.js
+audit-taxonomy-report.json
 generated-deck.json
 gen.log
 audio-backfill/
