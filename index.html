@@ -277,7 +277,8 @@
               <input type="range" class="article-speed-slider" id="article-speed-slider"
                 min="0.55" max="1.25" step="0.05" value="0.95"
                 aria-label="Playback speed"
-                oninput="window.ponteArticleSetRate && window.ponteArticleSetRate(this.value);" />
+                oninput="window.ponteArticleSetRate && window.ponteArticleSetRate(this.value);"
+                onchange="window.ponteArticleRateSettled && window.ponteArticleRateSettled();" />
               <span class="article-speed-val" id="article-speed-val">0.95×</span>
             </div>
             <div class="column-body" id="italian-text"></div>

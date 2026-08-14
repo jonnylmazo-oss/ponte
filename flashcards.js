@@ -1350,6 +1350,20 @@
     if (oneOffEl) { oneOffEl.onended = null; oneOffEl.onerror = null; oneOffEl.pause(); }
   };
 
+  // Public: live-update the currently-playing one-off element's rate. Unlike
+  // a Web Speech utterance (whose .rate is fixed once speaking starts, no way
+  // to change it mid-utterance), a real <audio> element's playbackRate can be
+  // reassigned at any time and takes effect immediately, no restart needed —
+  // this is what lets the Reader's speed slider change a Beginner Story's
+  // speed while it's actually playing. No-ops (returns false) if nothing is
+  // currently loaded into the shared element.
+  window.ponteSetOneOffRate = function (rate) {
+    const v = parseFloat(rate);
+    if (!Number.isFinite(v) || !oneOffEl) return false;
+    oneOffEl.playbackRate = v;
+    return true;
+  };
+
   // Speed setting is shared with the session player so one slider governs both.
   function loadRate() {
     const v = parseFloat(localStorage.getItem('ponte_audio_rate'));

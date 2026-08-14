@@ -931,10 +931,60 @@
   // Public: the reader's own speed slider writes through audio-player.js's
   // setter (single persist path for ponte_audio_rate) then refreshes this
   // control's own label — renderSettings() over there only touches its own
-  // ap-* elements, not these.
+  // ap-* elements, not these. Fired on every drag tick (oninput).
+  //
+  // If a Beginner Story's pre-rendered clip is currently playing, the new
+  // rate is also applied live, right now, with no restart — a real <audio>
+  // element's playbackRate can be reassigned mid-playback and takes effect
+  // immediately. The Web Speech path (dynamic articles) cannot do this: an
+  // utterance's rate is fixed once speechSynthesis.speak() is called, with
+  // no engine-level way to change it mid-utterance — see
+  // ponteArticleRateSettled below for the closest achievable equivalent.
   window.ponteArticleSetRate = function (value) {
     if (window.ponteAudioSetRate) window.ponteAudioSetRate(value);
     renderArticleSpeed();
+    if (articleSpeaking && articleUsingPreRendered && window.ponteSetOneOffRate) {
+      window.ponteSetOneOffRate(articleSpeedRate());
+    }
+    return false;
+  };
+
+  // Starts (or restarts) the Web Speech path for the current article. speak()
+  // internally cancels whatever utterance is already in flight, which fires
+  // *that* utterance's onend/onerror — without a guard, restarting to apply a
+  // new rate would immediately trip the old utterance's handler and flip
+  // articleSpeaking back off mid-restart. speech.generation() (bumped by
+  // every speak()/cancel()) is the same ownership check audio-player.js's
+  // playSynthesized already uses for this exact race: capture it right after
+  // this call's speak() returns, and only treat a settle as real if the
+  // generation is still ours by the time it fires.
+  function startWebSpeechArticle() {
+    if (!speech.supported) { setArticleSpeaking(false); return; }
+    setArticleSpeaking(true);
+    const utt = speech.speak(state.article.italian, { rate: webSpeechArticleRate() });
+    if (!utt) { setArticleSpeaking(false); return; }
+    const myGen = speech.generation();
+    const settle = () => {
+      if (speech.generation() !== myGen) return; // superseded by our own restart, or by someone else taking the channel
+      setArticleSpeaking(false);
+    };
+    utt.onend   = settle;
+    utt.onerror = settle;
+  }
+
+  // Public: fired once the slider settles (onchange — release, or a single
+  // keyboard step), not on every drag tick. Web Speech has no live-rate
+  // primitive, so the only way to make a rate change actually audible while
+  // it's talking is to restart the utterance right now at the new rate —
+  // restarting on every input tick while dragging would be disruptive, so
+  // this is deliberately separate from ponteArticleSetRate above. Restarts
+  // from the top of the article (Web Speech gives no reliable cross-browser
+  // way to resume from an arbitrary word), which is still strictly better
+  // than the old behavior of silently continuing at the stale rate until the
+  // user manually stopped and restarted it themselves.
+  window.ponteArticleRateSettled = function () {
+    if (!articleSpeaking || articleUsingPreRendered || !state.article) return false;
+    startWebSpeechArticle();
     return false;
   };
 
@@ -1018,15 +1068,7 @@
       setArticleSpeaking(false);
     }
 
-    if (!speech.supported) return;
-    setArticleSpeaking(true);
-    const utt = speech.speak(state.article.italian, { rate: webSpeechArticleRate() });
-    if (utt) {
-      utt.onend  = () => setArticleSpeaking(false);
-      utt.onerror = () => setArticleSpeaking(false);
-    } else {
-      setArticleSpeaking(false);
-    }
+    startWebSpeechArticle();
   });
 
   // ── Events ─────────────────────────────────────────────────────────────
