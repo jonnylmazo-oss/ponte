@@ -949,42 +949,81 @@
     return false;
   };
 
-  // Starts (or restarts) the Web Speech path for the current article. speak()
-  // internally cancels whatever utterance is already in flight, which fires
-  // *that* utterance's onend/onerror — without a guard, restarting to apply a
-  // new rate would immediately trip the old utterance's handler and flip
-  // articleSpeaking back off mid-restart. speech.generation() (bumped by
-  // every speak()/cancel()) is the same ownership check audio-player.js's
-  // playSynthesized already uses for this exact race: capture it right after
-  // this call's speak() returns, and only treat a settle as real if the
-  // generation is still ours by the time it fires.
-  function startWebSpeechArticle() {
-    if (!speech.supported) { setArticleSpeaking(false); return; }
-    setArticleSpeaking(true);
-    const utt = speech.speak(state.article.italian, { rate: webSpeechArticleRate() });
+  // ── Web Speech article playback: sentence-by-sentence, chained (#84) ────
+  // A single SpeechSynthesisUtterance for a whole article silently truncates
+  // around ~15s in Chrome — articles are comfortably past that. Split into
+  // sentences and chain them (same shape audio-player.js already uses for
+  // card audio), which also fixes the button getting stuck in the "playing"
+  // state on truncation, since each sentence's own onend is what advances.
+  //
+  // Splitter copied from backfill-story-audio-script.js's splitSentences —
+  // verified there to exactly reconstruct all 20 Beginner Stories; same
+  // ellipsis-protection trick so "..." doesn't get read as three sentence
+  // boundaries.
+  function splitSentences(text) {
+    const protectedText = String(text || '').replace(/\.\.\./g, '…');
+    const parts = protectedText.match(/[^.!?]+[.!?]+(?:['’"»)]*)/g) || [protectedText];
+    return parts.map((s) => s.trim().replace(/…/g, '...')).filter(Boolean);
+  }
+
+  let articleSentences   = [];
+  let articleSentenceIdx = 0;
+  // Bumped only by OUR OWN deliberate stop/restart actions — separate from
+  // speech.generation(), which bumps on *any* speak()/cancel() call from any
+  // source. Mirrors audio-player.js's runToken/generation split exactly,
+  // and for the same reason: generation alone can't tell "we ourselves moved
+  // on" (state already handled by whichever action did that) apart from
+  // "something else took the channel" (state needs to be reset here). A
+  // pure generation-only guard was tried first and failed exactly this way
+  // in testing — see the fix commit for #84 for the reproduction.
+  let articleRunToken = 0;
+
+  function speakNextArticleSentence() {
+    const myRun = articleRunToken;
+    if (articleSentenceIdx >= articleSentences.length) { setArticleSpeaking(false); return; }
+    const utt = speech.speak(articleSentences[articleSentenceIdx], { rate: webSpeechArticleRate() });
     if (!utt) { setArticleSpeaking(false); return; }
     const myGen = speech.generation();
     const settle = () => {
-      if (speech.generation() !== myGen) return; // superseded by our own restart, or by someone else taking the channel
-      setArticleSpeaking(false);
+      // A cancel() from the very next speak() call (advancing to the next
+      // sentence, or a deliberate stop/restart) can fire *this* utterance's
+      // onerror a second time if the engine still considered it in-flight —
+      // nulling both handlers on first entry makes any later firing for this
+      // same utterance a no-op, rather than re-running settle() with a
+      // stale myGen and misreading our own advance as an external preemption.
+      utt.onend = null;
+      utt.onerror = null;
+      if (myRun !== articleRunToken) return;   // we moved on ourselves (stop/restart) — already handled there
+      if (speech.generation() !== myGen) { setArticleSpeaking(false); return; } // someone else took the channel
+      articleSentenceIdx++;
+      speakNextArticleSentence();
     };
     utt.onend   = settle;
     utt.onerror = settle;
   }
 
+  // Starts (or restarts, from an arbitrary sentence) the Web Speech path for
+  // the current article.
+  function startWebSpeechArticle(fromIndex) {
+    if (!speech.supported) { setArticleSpeaking(false); return; }
+    articleSentences = splitSentences(state.article.italian);
+    if (!articleSentences.length) { setArticleSpeaking(false); return; }
+    articleRunToken++; // a fresh run — invalidates any pending settle from whatever was playing before
+    articleSentenceIdx = typeof fromIndex === 'number' ? fromIndex : 0;
+    setArticleSpeaking(true);
+    speakNextArticleSentence();
+  }
+
   // Public: fired once the slider settles (onchange — release, or a single
   // keyboard step), not on every drag tick. Web Speech has no live-rate
   // primitive, so the only way to make a rate change actually audible while
-  // it's talking is to restart the utterance right now at the new rate —
-  // restarting on every input tick while dragging would be disruptive, so
-  // this is deliberately separate from ponteArticleSetRate above. Restarts
-  // from the top of the article (Web Speech gives no reliable cross-browser
-  // way to resume from an arbitrary word), which is still strictly better
-  // than the old behavior of silently continuing at the stale rate until the
-  // user manually stopped and restarted it themselves.
+  // it's talking is to restart — but now that the article is chained
+  // sentence-by-sentence rather than one long utterance, "restart" only
+  // means re-speaking the CURRENT sentence at the new rate and continuing
+  // the chain from there, not the whole article over again.
   window.ponteArticleRateSettled = function () {
     if (!articleSpeaking || articleUsingPreRendered || !state.article) return false;
-    startWebSpeechArticle();
+    startWebSpeechArticle(articleSentenceIdx);
     return false;
   };
 
@@ -1007,8 +1046,12 @@
   function stopArticleSpeech() {
     if (articleSpeaking) {
       if (articleUsingPreRendered) { if (window.ponteStopOneOff) window.ponteStopOneOff(); }
-      else speechSynthesis.cancel();
+      // Routes through the shared module (bumps its generation counter and
+      // announces the claim) instead of a raw speechSynthesis.cancel() —
+      // this was the last speech path still bypassing it (#84).
+      else { articleRunToken++; speech.cancel(); }
       articleUsingPreRendered = false;
+      articleSentenceIdx = 0;
       setArticleSpeaking(false);
     }
   }
