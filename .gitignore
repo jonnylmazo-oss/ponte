@@ -10,6 +10,8 @@ push-deck.js
 migrate-taxonomy.js
 audit-taxonomy.js
 audit-taxonomy-report.json
+build-word-audio-bank.js
+render-word-audio-missing.js
 generated-deck.json
 gen.log
 audio-backfill/
