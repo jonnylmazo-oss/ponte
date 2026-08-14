@@ -1321,7 +1321,12 @@
   // caller's UI state (e.g. a speak button stuck showing "playing"), not just
   // silently stop. Optional: ponteSpeakCard's existing callers don't pass it
   // and are unaffected.
-  function playOneOff(url, onEnd) {
+  //
+  // onTimeUpdate(currentTime) is optional too (#70 karaoke sync) — fires on
+  // the element's native timeupdate event, letting a caller (the Reader) map
+  // elapsed time to a word position without reaching into this module's
+  // private element. Unused by callers that don't pass it (ponteSpeakCard).
+  function playOneOff(url, onEnd, onTimeUpdate) {
     if (!oneOffEl) {
       try { oneOffEl = new Audio(); oneOffEl.preload = 'auto'; }
       catch (_) { return false; }
@@ -1337,6 +1342,7 @@
       oneOffEl.playbackRate = loadRate();
       oneOffEl.onended = onEnd ? () => onEnd('ended') : null;
       oneOffEl.onerror = onEnd ? () => onEnd('error') : null;
+      oneOffEl.ontimeupdate = onTimeUpdate ? () => onTimeUpdate(oneOffEl.currentTime) : null;
       const p = oneOffEl.play();
       if (p && typeof p.catch === 'function') p.catch(() => { if (onEnd) onEnd('error'); });
       return true;
@@ -1347,7 +1353,10 @@
   // a flashcard word or (#83 follow-up) a Beginner Story. Generic on purpose:
   // only one thing plays through this element at a time regardless of source.
   window.ponteStopOneOff = function () {
-    if (oneOffEl) { oneOffEl.onended = null; oneOffEl.onerror = null; oneOffEl.pause(); }
+    if (oneOffEl) {
+      oneOffEl.onended = null; oneOffEl.onerror = null; oneOffEl.ontimeupdate = null;
+      oneOffEl.pause();
+    }
   };
 
   // Public: live-update the currently-playing one-off element's rate. Unlike
@@ -1415,14 +1424,14 @@
   // (Advanced mode) articles, which have no pre-rendered audio at all; the
   // caller decides what "no pre-rendered clip" means for it. Returns true if
   // playback started (onEnd will fire), false if there's nothing to play.
-  window.ponteSpeakStory = async function (text, onEnd) {
+  window.ponteSpeakStory = async function (text, onEnd, onTimeUpdate) {
     const t = text == null ? '' : String(text).trim();
     if (!t) return false;
     try {
       const idx = await getStoryAudioIndex();
       const h   = await sha1Hex16(t);
       const hit = h && idx[h];
-      if (hit && hit.url) return playOneOff(hit.url, onEnd);
+      if (hit && hit.url) return playOneOff(hit.url, onEnd, onTimeUpdate);
     } catch (_) { /* caller falls back */ }
     return false;
   };

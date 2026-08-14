@@ -27,6 +27,15 @@ const AUDIO_KEY = 'flashcard_audio';
 // a new one. { [storyId]: { sentences, audio: {hash:{url,ms}}, voice, model, at } }.
 const STORY_AUDIO_KEY = 'story_audio';
 
+// Character-level ElevenLabs timestamps for story audio (#70) — same
+// with-timestamps render as STORY_AUDIO_KEY, kept in its own key rather than
+// bundled onto story_audio entries: { [hash]: { characters, character_
+// start_times_seconds, character_end_times_seconds } }. Only 20 entries
+// (one per story), unlike the much larger flashcard-side equivalent
+// (flashcard_audio_align, 5,200 entries) that's deliberately never fetched
+// by default — this one is small enough to just fetch on demand instead.
+const STORY_AUDIO_ALIGN_KEY = 'story_audio_align';
+
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
 
@@ -99,6 +108,16 @@ module.exports = async function handler(req, res) {
         return res.json(audio);
       } catch (err) {
         console.error('Error reading story_audio:', err.message);
+        return res.json({});
+      }
+    }
+
+    if (req.query && req.query.key === 'story_audio_align') {
+      try {
+        const align = (await redis.get(STORY_AUDIO_ALIGN_KEY)) ?? {};
+        return res.json(align);
+      } catch (err) {
+        console.error('Error reading story_audio_align:', err.message);
         return res.json({});
       }
     }

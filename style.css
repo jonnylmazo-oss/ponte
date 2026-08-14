@@ -967,6 +967,14 @@ header {
 .word-false-friend { color: var(--false-friend); }
 .word-similar   { color: var(--similar);   }
 
+/* Karaoke sync during Beginner Story playback (#70) — a background wash
+   rather than a color/weight change, so it layers cleanly over any
+   taxonomy-tier text color above instead of fighting it. */
+.word.reading-now {
+  background: rgba(0, 85, 170, 0.22);
+  transition: background 0.1s ease-out;
+}
+
 
 /* ─── Tooltip ────────────────────────────────────────────────── */
 

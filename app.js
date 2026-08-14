@@ -908,6 +908,95 @@
   // shared one-off <audio> element or cancel Web Speech.
   let articleUsingPreRendered = false;
 
+  // ── Karaoke word sync (#70, story-side) ─────────────────────────────────
+  // Beginner Stories only — story_audio_align has verified character-level
+  // ElevenLabs timestamps for all 20 stories (confirmed character-for-
+  // character identical to the story's own italian text, so word positions
+  // map 1:1 with no fuzzy matching needed). No such alignment exists for
+  // dynamic/Advanced articles (no pre-rendered audio at all) or is fetched
+  // for Cards audio (flashcard_audio_align, 5,200 entries — deliberately
+  // not pulled by default; this is a much smaller, story-scoped fetch).
+  let storyAlignIndex = null; // hash -> alignment, fetched once per page load
+  let storyWordTimeline = null; // [{start,end}] for the currently-playing story, in DOM word order
+  let storyWordEls = null;      // live NodeList snapshot of #italian-text .word spans, same order
+  let storyHighlightIdx = -1;
+
+  async function sha1Hex16(text) {
+    if (!(window.crypto && window.crypto.subtle)) return null;
+    const bytes = new TextEncoder().encode(text);
+    const digest = await window.crypto.subtle.digest('SHA-1', bytes);
+    return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  }
+
+  async function getStoryAlignIndex() {
+    if (storyAlignIndex) return storyAlignIndex;
+    const resp = await fetch(API_BASE + '/api/flashcards?key=story_audio_align', { headers: authHeaders() });
+    if (!resp.ok) throw new Error('story_audio_align unavailable (' + resp.status + ')');
+    storyAlignIndex = await resp.json();
+    return storyAlignIndex;
+  }
+
+  // Splits `text` the same way tokenizeItalian's WORD_RE does, and slices
+  // each word's [start,end) out of the flat character-timestamp arrays —
+  // this only works because the alignment's own character stream is
+  // verified identical to `text` (checked below); if a story's alignment
+  // ever drifts from its text, this bails to null rather than mis-highlight.
+  function buildWordTimeline(text, alignment) {
+    if (!alignment || !Array.isArray(alignment.characters)) return null;
+    if (alignment.characters.join('') !== text) return null;
+    const starts = alignment.character_start_times_seconds;
+    const ends   = alignment.character_end_times_seconds;
+    if (!Array.isArray(starts) || !Array.isArray(ends)) return null;
+    const timeline = [];
+    const re = /([A-Za-zÀ-ɏ]+)/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const from = m.index, to = from + m[0].length - 1;
+      timeline.push({ start: starts[from], end: ends[to] });
+    }
+    return timeline;
+  }
+
+  function clearStoryHighlight() {
+    if (storyHighlightIdx >= 0 && storyWordEls && storyWordEls[storyHighlightIdx]) {
+      storyWordEls[storyHighlightIdx].classList.remove('reading-now');
+    }
+    storyHighlightIdx = -1;
+  }
+
+  // Fetches alignment + builds the timeline for the CURRENT article, then
+  // wires it up for the next timeupdate tick. Runs async, independently of
+  // playback starting — onStoryTimeUpdate below is a no-op until this
+  // resolves, so a slow fetch just means highlighting joins a beat late
+  // rather than blocking or delaying audio.
+  async function prepareStoryHighlight() {
+    storyWordTimeline = null;
+    storyWordEls = null;
+    storyHighlightIdx = -1;
+    if (!state.article) return;
+    try {
+      const align = await getStoryAlignIndex();
+      const h = await sha1Hex16(state.article.italian.trim());
+      const timeline = h && buildWordTimeline(state.article.italian.trim(), align[h]);
+      if (!timeline) return; // no/mismatched alignment for this story — silently no highlight
+      // Only valid if the article is still the same one and still playing —
+      // a fast stop or story-switch during the fetch must not resurrect it.
+      if (!articleSpeaking || !articleUsingPreRendered) return;
+      storyWordTimeline = timeline;
+      storyWordEls = italianText.querySelectorAll('.word');
+      if (storyWordEls.length !== timeline.length) { storyWordTimeline = null; storyWordEls = null; }
+    } catch (_) { /* no alignment available — highlighting just doesn't happen */ }
+  }
+
+  function onStoryTimeUpdate(currentTime) {
+    if (!storyWordTimeline) return;
+    const idx = storyWordTimeline.findIndex((w) => currentTime >= w.start && currentTime < w.end);
+    if (idx === -1 || idx === storyHighlightIdx) return; // between words, or unchanged — leave the last highlight as-is
+    clearStoryHighlight();
+    storyHighlightIdx = idx;
+    if (storyWordEls[idx]) storyWordEls[idx].classList.add('reading-now');
+  }
+
   // ── Article speed control ─────────────────────────────────────────────
   // Shares ponte_audio_rate with the Cards audio session player and one-off
   // card speech (window.ponteAudioSetRate persists it; every reader here — this
@@ -1047,6 +1136,7 @@
       articleSpeedRow.hidden = !on;
       if (on) renderArticleSpeed();
     }
+    if (!on) { clearStoryHighlight(); storyWordTimeline = null; storyWordEls = null; }
   }
 
   function stopArticleSpeech() {
@@ -1106,10 +1196,11 @@
     if (currentArticleIsStory() && window.ponteSpeakStory) {
       articleUsingPreRendered = true;
       setArticleSpeaking(true);
+      prepareStoryHighlight(); // async, independent of playback — fine if it resolves a beat late
       const started = await window.ponteSpeakStory(state.article.italian, () => {
         articleUsingPreRendered = false;
         setArticleSpeaking(false);
-      });
+      }, onStoryTimeUpdate);
       if (started) return;
       // No pre-rendered clip yet (not rendered, network hiccup) — reset and
       // fall through to Web Speech, exactly as if this feature didn't exist.
