@@ -266,6 +266,20 @@
                 <span class="legend-item false-friend">False Friend</span>
               </div>
             </div>
+            <!-- Speed control, shown only while the article is actually playing (mirrors
+                 the Cards audio session player's own play-stage speed row) — hidden the
+                 rest of the time so it doesn't compete with the reading layout. Shares
+                 ponte_audio_rate with the Cards audio session and one-off card speech via
+                 window.ponteAudioSetRate (audio-player.js), so it's one setting everywhere,
+                 not a second independent slider. -->
+            <div class="article-speed-row" id="article-speed-row" hidden>
+              <span class="article-speed-label">Speed</span>
+              <input type="range" class="article-speed-slider" id="article-speed-slider"
+                min="0.55" max="1.25" step="0.05" value="0.95"
+                aria-label="Playback speed"
+                oninput="window.ponteArticleSetRate && window.ponteArticleSetRate(this.value);" />
+              <span class="article-speed-val" id="article-speed-val">0.95×</span>
+            </div>
             <div class="column-body" id="italian-text"></div>
             <div class="cultural-note" id="cultural-note" hidden>
               <button class="cultural-note-toggle" id="cultural-note-toggle" aria-expanded="false"

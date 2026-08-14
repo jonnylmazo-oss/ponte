@@ -254,6 +254,9 @@
   const tooltipSaveBtn   = $('tooltip-save-btn');
   const tooltipSpeakBtn  = $('tooltip-speak-btn');
   const articleSpeakBtn  = $('article-speak-btn');
+  const articleSpeedRow    = $('article-speed-row');
+  const articleSpeedSlider = $('article-speed-slider');
+  const articleSpeedVal    = $('article-speed-val');
   const backdrop         = $('tooltip-backdrop');
 
   const topicInput       = $('topic-input');
@@ -899,16 +902,64 @@
   // shared one-off <audio> element or cancel Web Speech.
   let articleUsingPreRendered = false;
 
+  // ── Article speed control ─────────────────────────────────────────────
+  // Shares ponte_audio_rate with the Cards audio session player and one-off
+  // card speech (window.ponteAudioSetRate persists it; every reader here — this
+  // one included — reads the same key) rather than keeping its own setting.
+  function articleSpeedRate() {
+    const v = parseFloat(localStorage.getItem('ponte_audio_rate'));
+    return Number.isFinite(v) ? Math.min(1.25, Math.max(0.55, v)) : 0.95;
+  }
+
+  function renderArticleSpeed() {
+    const r = articleSpeedRate();
+    if (articleSpeedSlider && String(articleSpeedSlider.value) !== String(r)) articleSpeedSlider.value = r;
+    if (articleSpeedVal) articleSpeedVal.textContent = r.toFixed(2) + '×';
+  }
+
+  // audio-player.js owns the one WEB_SPEECH_RATE_FACTOR calibration (the
+  // slider is tuned for <audio>.playbackRate, where 1.0 = as-recorded; Web
+  // Speech's own "normal" needs rescaling) — reused here instead of a second
+  // copy of that constant. Falls back to the raw rate if that script somehow
+  // isn't loaded yet.
+  function webSpeechArticleRate() {
+    return window.ponteAudioWebSpeechRate
+      ? window.ponteAudioWebSpeechRate(articleSpeedRate())
+      : articleSpeedRate();
+  }
+
+  // Public: the reader's own speed slider writes through audio-player.js's
+  // setter (single persist path for ponte_audio_rate) then refreshes this
+  // control's own label — renderSettings() over there only touches its own
+  // ap-* elements, not these.
+  window.ponteArticleSetRate = function (value) {
+    if (window.ponteAudioSetRate) window.ponteAudioSetRate(value);
+    renderArticleSpeed();
+    return false;
+  };
+
+  // Centralizes the "is the article playing" UI: button glyph/pulse plus the
+  // speed row, which only makes sense to show while something is audible —
+  // mirrors the Cards audio player only showing its speed stepper in the
+  // play stage, not the idle one.
+  function setArticleSpeaking(on) {
+    articleSpeaking = on;
+    if (articleSpeakBtn) {
+      articleSpeakBtn.textContent = on ? '⏹' : '🔊';
+      articleSpeakBtn.classList.toggle('speaking', on);
+    }
+    if (articleSpeedRow) {
+      articleSpeedRow.hidden = !on;
+      if (on) renderArticleSpeed();
+    }
+  }
+
   function stopArticleSpeech() {
     if (articleSpeaking) {
       if (articleUsingPreRendered) { if (window.ponteStopOneOff) window.ponteStopOneOff(); }
       else speechSynthesis.cancel();
-      articleSpeaking = false;
       articleUsingPreRendered = false;
-      if (articleSpeakBtn) {
-        articleSpeakBtn.textContent = '🔊';
-        articleSpeakBtn.classList.remove('speaking');
-      }
+      setArticleSpeaking(false);
     }
   }
 
@@ -954,37 +1005,27 @@
     // for this fixed set specifically. Advanced/dynamic articles have no
     // pre-rendered audio and always fall through to the Web Speech path below.
     if (currentArticleIsStory() && window.ponteSpeakStory) {
-      articleSpeaking = true;
       articleUsingPreRendered = true;
-      articleSpeakBtn.textContent = '⏹';
-      articleSpeakBtn.classList.add('speaking');
+      setArticleSpeaking(true);
       const started = await window.ponteSpeakStory(state.article.italian, () => {
-        articleSpeaking = false;
         articleUsingPreRendered = false;
-        articleSpeakBtn.textContent = '🔊';
-        articleSpeakBtn.classList.remove('speaking');
+        setArticleSpeaking(false);
       });
       if (started) return;
       // No pre-rendered clip yet (not rendered, network hiccup) — reset and
       // fall through to Web Speech, exactly as if this feature didn't exist.
-      articleSpeaking = false;
       articleUsingPreRendered = false;
-      articleSpeakBtn.textContent = '🔊';
-      articleSpeakBtn.classList.remove('speaking');
+      setArticleSpeaking(false);
     }
 
     if (!speech.supported) return;
-    articleSpeaking = true;
-    articleSpeakBtn.textContent = '⏹';
-    articleSpeakBtn.classList.add('speaking');
-    const utt = speech.speak(state.article.italian);
+    setArticleSpeaking(true);
+    const utt = speech.speak(state.article.italian, { rate: webSpeechArticleRate() });
     if (utt) {
-      utt.onend  = () => { articleSpeaking = false; articleSpeakBtn.textContent = '🔊'; articleSpeakBtn.classList.remove('speaking'); };
-      utt.onerror = () => { articleSpeaking = false; articleSpeakBtn.textContent = '🔊'; articleSpeakBtn.classList.remove('speaking'); };
+      utt.onend  = () => setArticleSpeaking(false);
+      utt.onerror = () => setArticleSpeaking(false);
     } else {
-      articleSpeaking = false;
-      articleSpeakBtn.textContent = '🔊';
-      articleSpeakBtn.classList.remove('speaking');
+      setArticleSpeaking(false);
     }
   });
 

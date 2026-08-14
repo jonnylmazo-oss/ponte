@@ -192,6 +192,16 @@
     return Math.max(0.1, rateFor(lang) * WEB_SPEECH_RATE_FACTOR);
   }
 
+  // Public: same calibration, for other Web Speech callers outside this
+  // module (the Reader's dynamic-article path in app.js, which has no
+  // pre-rendered audio to fall back on and so always uses Web Speech
+  // directly) — keeps WEB_SPEECH_RATE_FACTOR defined in exactly one place.
+  window.ponteAudioWebSpeechRate = function (value) {
+    const v = parseFloat(value);
+    const r = Number.isFinite(v) ? clampRate(v) : rate;
+    return Math.max(0.1, r * WEB_SPEECH_RATE_FACTOR);
+  };
+
   // ── Tone ─────────────────────────────────────────────────────────────────
   let audioCtx = null;
 
