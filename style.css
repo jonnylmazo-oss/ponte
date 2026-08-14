@@ -8356,6 +8356,175 @@ body.drill-fullscreen .ff-flip-card {
   background: var(--bg-card);
 }
 
+/* ── Shadowing practice (#7) ─────────────────────────────────────────────── */
+/* Same backdrop/panel/header shell as .ap-* (Cards audio session player) —
+   reused as a distinct class family rather than sharing .ap-* directly,
+   since the two panels' bodies diverge (record/playback controls here vs.
+   a session queue there) and coupling them would make either harder to
+   change independently later. */
+
+.shadow-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+}
+
+.shadow-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 460px);
+  max-height: min(88vh, 620px);
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 301;
+}
+
+.shadow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.shadow-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.shadow-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.shadow-close:hover { color: var(--text); }
+
+.shadow-status {
+  margin: 18px 18px 22px;
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.shadow-body { padding: 18px 18px 22px; }
+
+.shadow-progress {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.shadow-sentence-it {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.shadow-sentence-en {
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  line-height: 1.4;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.shadow-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.shadow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 16px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.shadow-btn:hover { background: var(--bg-italian); }
+.shadow-btn:disabled { opacity: 0.45; cursor: default; }
+
+.shadow-btn-primary {
+  background: #0055AA;
+  border-color: #0055AA;
+  color: #fff;
+}
+.shadow-btn-primary:hover { background: #004489; }
+.shadow-btn-primary.speaking { animation: speak-pulse 0.9s ease-in-out infinite; }
+
+.shadow-btn.shadow-recording {
+  background: rgba(245, 88, 74, 0.12);
+  border-color: rgba(245, 88, 74, 0.5);
+  color: #F5584A;
+  animation: speak-pulse 0.9s ease-in-out infinite;
+}
+
+.shadow-hint {
+  margin: 0 0 18px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.shadow-nav {
+  display: flex;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.shadow-nav-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.shadow-nav-btn:hover { background: var(--bg-italian); color: var(--text); }
+.shadow-nav-btn:disabled { opacity: 0.4; cursor: default; }
+
+.shadow-nav-btn-primary {
+  background: #0055AA;
+  border-color: #0055AA;
+  color: #fff;
+}
+.shadow-nav-btn-primary:hover { background: #004489; }
+
 /* Explains why the drill counter's denominator grows mid-session */
 .fc-requeue-note,
 .drill-fs-note {

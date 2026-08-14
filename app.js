@@ -254,6 +254,7 @@
   const tooltipSaveBtn   = $('tooltip-save-btn');
   const tooltipSpeakBtn  = $('tooltip-speak-btn');
   const articleSpeakBtn  = $('article-speak-btn');
+  const articleShadowBtn = $('article-shadow-btn');
   const articleSpeedRow    = $('article-speed-row');
   const articleSpeedSlider = $('article-speed-slider');
   const articleSpeedVal    = $('article-speed-val');
@@ -380,6 +381,11 @@
     applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
     refreshRecentBtn();
+    // Shadowing (#7) needs a verified per-sentence split, which only exists
+    // for the fixed Beginner Story set (story_audio) — hidden for dynamic
+    // Advanced-mode articles rather than trying to split arbitrary generated
+    // text on the fly for a feature centered on pronunciation accuracy.
+    if (articleShadowBtn) articleShadowBtn.hidden = !currentArticleIsStory();
     // Fire only for real articles, not the fallback (which always passes wordmapOverride)
     if (!wordmapOverride) {
       window.dispatchEvent(new CustomEvent('ponte:article-read'));
@@ -1112,6 +1118,12 @@
     }
 
     startWebSpeechArticle();
+  });
+
+  articleShadowBtn && articleShadowBtn.addEventListener('click', () => {
+    if (!state.article || !window.ponteShadowOpen) return;
+    stopArticleSpeech();
+    window.ponteShadowOpen(state.article.id, state.article.title);
   });
 
   // ── Events ─────────────────────────────────────────────────────────────

@@ -259,7 +259,7 @@
           </div>
           <div class="column column-italian">
             <div class="column-label">
-              <span class="col-label-left">Italiano <button class="speak-btn speak-article-btn" id="article-speak-btn" aria-label="Read article aloud" title="Read aloud">🔊</button></span>
+              <span class="col-label-left">Italiano <button class="speak-btn speak-article-btn" id="article-speak-btn" aria-label="Read article aloud" title="Read aloud">🔊</button><button class="speak-btn speak-article-btn" id="article-shadow-btn" aria-label="Shadowing practice" title="Shadowing practice" hidden>🎙️</button></span>
               <div class="legend">
                 <span class="legend-item same">Same word</span>
                 <span class="legend-item similar">Same/Similar</span>
@@ -1312,6 +1312,54 @@
   </div>
 
 
+  <!-- ── Shadowing practice (Reader → 🎙️ button, Beginner Stories only) ──── -->
+  <!-- #7: sentence-by-sentence native audio + mic recording so a learner can
+       compare their own pronunciation. Web Speech for native audio (not
+       ElevenLabs) — each story's verified per-sentence split already exists
+       in story_audio (built for a future sentence-highlight feature, unused
+       until now), so no new backend/rendering is needed for this. -->
+  <div class="shadow-backdrop" id="shadow-backdrop" hidden
+    onclick="window.ponteShadowClose(); return false;"></div>
+  <div class="shadow-panel" id="shadow-panel" hidden role="dialog" aria-modal="true" aria-label="Shadowing practice">
+    <div class="shadow-header">
+      <h3 class="shadow-title">🎙️ Shadowing practice</h3>
+      <button class="shadow-close" id="shadow-close" aria-label="Close"
+        onclick="window.ponteShadowClose(); return false;"
+        ontouchend="window.ponteShadowClose(); return false;">✕</button>
+    </div>
+
+    <p class="shadow-status" id="shadow-status" hidden></p>
+
+    <div class="shadow-body" id="shadow-body" hidden>
+      <div class="shadow-progress" id="shadow-progress"></div>
+      <div class="shadow-sentence-it" id="shadow-sentence-it"></div>
+      <div class="shadow-sentence-en" id="shadow-sentence-en"></div>
+
+      <div class="shadow-actions">
+        <button class="shadow-btn shadow-btn-primary" id="shadow-play-native-btn"
+          onclick="window.ponteShadowPlayNative(); return false;"
+          ontouchend="window.ponteShadowPlayNative(); return false;">▶ Play native</button>
+        <button class="shadow-btn" id="shadow-record-btn"
+          onclick="window.ponteShadowRecordToggle(); return false;"
+          ontouchend="window.ponteShadowRecordToggle(); return false;">🎙️ Record yourself</button>
+        <button class="shadow-btn" id="shadow-play-mine-btn" disabled
+          onclick="window.ponteShadowPlayRecording(); return false;"
+          ontouchend="window.ponteShadowPlayRecording(); return false;">▶ Play mine</button>
+      </div>
+      <p class="shadow-hint" id="shadow-hint">Play the native sentence, then record yourself saying it — compare pronunciation and rhythm.</p>
+
+      <div class="shadow-nav">
+        <button class="shadow-nav-btn" id="shadow-prev-btn"
+          onclick="window.ponteShadowPrev(); return false;"
+          ontouchend="window.ponteShadowPrev(); return false;">⏮ Prev</button>
+        <button class="shadow-nav-btn shadow-nav-btn-primary" id="shadow-next-btn"
+          onclick="window.ponteShadowNext(); return false;"
+          ontouchend="window.ponteShadowNext(); return false;">Next ⏭</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- ── Quiz Modal ─────────────────────────────────────────────────────── -->
   <div class="quiz-overlay" id="quiz-overlay" hidden>
     <div class="quiz-modal" id="quiz-modal">
@@ -1370,6 +1418,7 @@
   <script src="mission.js"></script>
   <script src="progress.js"></script>
   <script src="deep-dive.js"></script>
+  <script src="shadowing.js"></script>
   <script src="audio-player.js"></script>
 
   <!-- Service worker registration + install banner logic -->
