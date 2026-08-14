@@ -254,6 +254,7 @@
   const tooltipSaveBtn   = $('tooltip-save-btn');
   const tooltipSpeakBtn  = $('tooltip-speak-btn');
   const articleSpeakBtn  = $('article-speak-btn');
+  const articleShadowBtn = $('article-shadow-btn');
   const articleSpeedRow    = $('article-speed-row');
   const articleSpeedSlider = $('article-speed-slider');
   const articleSpeedVal    = $('article-speed-val');
@@ -380,6 +381,11 @@
     applyTranslationState(false, false); // always reset to Italian-only on new article
     quizTriggerBtn.hidden = false;
     refreshRecentBtn();
+    // Shadowing (#7) needs a verified per-sentence split, which only exists
+    // for the fixed Beginner Story set (story_audio) — hidden for dynamic
+    // Advanced-mode articles rather than trying to split arbitrary generated
+    // text on the fly for a feature centered on pronunciation accuracy.
+    if (articleShadowBtn) articleShadowBtn.hidden = !currentArticleIsStory();
     // Fire only for real articles, not the fallback (which always passes wordmapOverride)
     if (!wordmapOverride) {
       window.dispatchEvent(new CustomEvent('ponte:article-read'));
@@ -1114,6 +1120,13 @@
     startWebSpeechArticle();
   });
 
+  articleShadowBtn && articleShadowBtn.addEventListener('click', () => {
+    if (!state.article || !window.ponteShadowLoadStory) return;
+    stopArticleSpeech();
+    switchTab('shadowing');
+    window.ponteShadowLoadStory(state.article.id, state.article.title);
+  });
+
   // ── Events ─────────────────────────────────────────────────────────────
 
   // Click: pins tooltip open; second click on same word unpins and closes
@@ -1444,6 +1457,12 @@
     // Re-render progress dashboard on every switch so it reflects latest data.
     if (tabId === 'progress' && typeof window._ponteProgressRender === 'function') {
       window._ponteProgressRender();
+    }
+
+    // Populate the story picker the first time this tab is reached directly
+    // (sidebar/More, not via the Reader's 🎙️ shortcut) — idempotent.
+    if (tabId === 'shadowing' && typeof window._ponteShadowingTabInit === 'function') {
+      window._ponteShadowingTabInit();
     }
 
     // Close More panel if open
