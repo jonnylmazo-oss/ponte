@@ -1519,6 +1519,23 @@
   };
 
   function switchTab(tabId) {
+    // Leaving fullscreen Cards drill mode (body.drill-fullscreen) is a
+    // prerequisite for switching to ANY other tab, not just a courtesy for
+    // one caller. Nothing in flashcards.js's own fullscreen code ever calls
+    // switchTab() itself, so there's no legitimate case where this class
+    // should survive a tab switch — without this, a caller that reaches
+    // switchTab() while still fullscreen (e.g. the flip-card's Deep-dive
+    // button) leaves body's overflow:hidden (and the hidden sidebar/
+    // bottom-nav, both scoped to this same class) stuck in place under
+    // whatever tab it just switched to, with no way to scroll or navigate
+    // back out. Only clears the visual state, not the drill's own queue/
+    // progress — the existing Resume-drill banner still picks it back up.
+    if (document.body.classList.contains('drill-fullscreen')) {
+      document.body.classList.remove('drill-fullscreen');
+      const fsHeader = $('drill-fullscreen-header');
+      if (fsHeader) fsHeader.hidden = true;
+    }
+
     // Route shorthand IDs used by inline bottom-nav handlers
     if (tabId === 'learn') {
       tabId = localStorage.getItem(LS_LAST_LEARN) || 'grammar';
