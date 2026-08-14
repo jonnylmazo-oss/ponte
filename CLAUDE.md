@@ -66,6 +66,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Translate** — bidirectional IT↔EN lookup + Usage Checker (AI grammar feedback)
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 - **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
+- **Shadowing** (#7, `shadowing.js`) — standalone tab (sidebar/More → Shadowing) with its own Beginner Story picker; also reachable from the Reader's 🎙️ button (Beginner Stories only) via `window.ponteShadowLoadStory(storyId, title)`, which switches tabs and pre-loads that story rather than duplicating a second entry point. Sentence-by-sentence Web Speech playback (not ElevenLabs — reuses each story's verified `story_audio.sentences` split) plus in-browser mic recording (`getUserMedia`/`MediaRecorder`) to compare pronunciation; recordings are ephemeral, never uploaded
 
 ## API endpoints
 

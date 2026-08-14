@@ -1121,9 +1121,10 @@
   });
 
   articleShadowBtn && articleShadowBtn.addEventListener('click', () => {
-    if (!state.article || !window.ponteShadowOpen) return;
+    if (!state.article || !window.ponteShadowLoadStory) return;
     stopArticleSpeech();
-    window.ponteShadowOpen(state.article.id, state.article.title);
+    switchTab('shadowing');
+    window.ponteShadowLoadStory(state.article.id, state.article.title);
   });
 
   // ── Events ─────────────────────────────────────────────────────────────
@@ -1456,6 +1457,12 @@
     // Re-render progress dashboard on every switch so it reflects latest data.
     if (tabId === 'progress' && typeof window._ponteProgressRender === 'function') {
       window._ponteProgressRender();
+    }
+
+    // Populate the story picker the first time this tab is reached directly
+    // (sidebar/More, not via the Reader's 🎙️ shortcut) — idempotent.
+    if (tabId === 'shadowing' && typeof window._ponteShadowingTabInit === 'function') {
+      window._ponteShadowingTabInit();
     }
 
     // Close More panel if open

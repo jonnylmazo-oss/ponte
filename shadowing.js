@@ -1,4 +1,7 @@
-// Shadowing practice (#7) — Reader → 🎙️ button, Beginner Stories only.
+// Shadowing practice (#7) — dedicated tab (sidebar/More → Shadowing), fully
+// usable standalone via its own story picker; the Reader's 🎙️ button
+// (Beginner Stories only) is a shortcut into this same tab with that story
+// pre-loaded, not a separate feature.
 //
 // Plays a story's sentences one at a time via Web Speech (not ElevenLabs —
 // this needs no pre-rendered audio, so it works for all 20 stories with zero
@@ -22,26 +25,28 @@
     return token ? { Authorization: 'Bearer ' + token } : {};
   }
 
-  const backdrop = $('shadow-backdrop');
-  const panel    = $('shadow-panel');
-  if (!panel) return; // panel not in the DOM
+  const bodyEl = $('shadow-body');
+  if (!bodyEl) return; // tab markup not in the DOM
 
+  const storySelect   = $('shadow-story-select');
+  const storyStartBtn = $('shadow-story-start-btn');
   const statusEl   = $('shadow-status');
-  const bodyEl     = $('shadow-body');
   const progressEl = $('shadow-progress');
   const itEl       = $('shadow-sentence-it');
   const enEl       = $('shadow-sentence-en');
   const playNativeBtn = $('shadow-play-native-btn');
   const recordBtn      = $('shadow-record-btn');
   const playMineBtn    = $('shadow-play-mine-btn');
-  const hintEl     = $('shadow-hint');
   const prevBtn    = $('shadow-prev-btn');
   const nextBtn    = $('shadow-next-btn');
 
+  const STORIES = (typeof beginnerStories !== 'undefined') ? beginnerStories : [];
+  const LS_LAST = 'ponte_shadow_last_story';
+
   // ── State ────────────────────────────────────────────────────────────────
-  let sentences = [];   // [{it, en}], for the currently-open story
+  let sentences = [];   // [{it, en}], for the currently-loaded story
   let idx       = 0;
-  let storyAudioCache = null; // whole story_audio blob, fetched once per open
+  let storyAudioCache = null; // whole story_audio blob, fetched once per page load
 
   let mediaStream   = null;
   let recorder      = null;
@@ -60,6 +65,29 @@
   function mediaSupported() {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
   }
+
+  // ── Story picker ─────────────────────────────────────────────────────────
+  let pickerPopulated = false;
+  function populateStoryPicker() {
+    if (pickerPopulated || !storySelect || !STORIES.length) return;
+    pickerPopulated = true;
+    const groups = { A1: [], A2: [] };
+    STORIES.forEach((s) => { (groups[s.difficulty] || (groups[s.difficulty] = [])).push(s); });
+    storySelect.innerHTML = Object.keys(groups).map((level) => {
+      const opts = groups[level].map((s) =>
+        `<option value="${window.ponteEsc(s.id)}">${window.ponteEsc(s.title)}</option>`).join('');
+      return `<optgroup label="${window.ponteEsc(level)}">${opts}</optgroup>`;
+    }).join('');
+    const last = localStorage.getItem(LS_LAST);
+    if (last && STORIES.some((s) => s.id === last)) storySelect.value = last;
+  }
+
+  // Called by app.js's switchTab on every navigation to this tab — idempotent,
+  // only the first call actually does anything (matches the window._ponteXxx
+  // lazy-render hook pattern progress.js already uses).
+  window._ponteShadowingTabInit = function () {
+    populateStoryPicker();
+  };
 
   // ── Fetch the verified per-sentence split for one story ────────────────
   async function fetchStorySentences(storyId) {
@@ -184,40 +212,49 @@
     return false;
   };
 
-  // ── Open / close ─────────────────────────────────────────────────────────
-  window.ponteShadowOpen = async function (storyId, storyTitle) {
-    if (backdrop) backdrop.hidden = false;
-    panel.hidden = false;
-    bodyEl && (bodyEl.hidden = true);
+  // ── Loading a story into the tab ────────────────────────────────────────
+  async function loadStory(storyId, storyTitle) {
+    if (recording && recorder && recorder.state !== 'inactive') recorder.stop();
+    const api = speechAPI();
+    if (api && api.cancel) api.cancel();
     resetRecordingState();
+    bodyEl.hidden = true;
     setStatus('Loading “' + (storyTitle || 'story') + '”…');
 
     try {
       sentences = await fetchStorySentences(storyId);
     } catch (e) {
       setStatus('Could not load shadowing sentences: ' + (e && e.message ? e.message : 'unknown error'));
-      return false;
+      return;
     }
     if (!sentences.length) {
       setStatus('No sentence data available for this story yet.');
-      return false;
+      return;
     }
     idx = 0;
     setStatus('');
-    bodyEl && (bodyEl.hidden = false);
+    bodyEl.hidden = false;
+    localStorage.setItem(LS_LAST, storyId);
     render();
-    return false;
-  };
+  }
 
-  window.ponteShadowClose = function () {
-    if (recording && recorder && recorder.state !== 'inactive') recorder.stop();
-    if (mediaStream) { mediaStream.getTracks().forEach((t) => t.stop()); mediaStream = null; }
-    const api = speechAPI();
-    if (api && api.cancel) api.cancel();
-    resetRecordingState();
-    panel.hidden = true;
-    if (backdrop) backdrop.hidden = true;
-    return false;
+  storyStartBtn && storyStartBtn.addEventListener('click', () => {
+    if (!storySelect || !storySelect.value) return;
+    const story = STORIES.find((s) => s.id === storySelect.value);
+    loadStory(storySelect.value, story && story.title);
+  });
+  storySelect && storySelect.addEventListener('change', () => {
+    const story = STORIES.find((s) => s.id === storySelect.value);
+    loadStory(storySelect.value, story && story.title);
+  });
+
+  // Public: called from the Reader's 🎙️ button (app.js) — switches to this
+  // tab (app.js owns switchTab) and pre-loads the story currently open there,
+  // rather than duplicating a second entry point outside the tab system.
+  window.ponteShadowLoadStory = function (storyId, storyTitle) {
+    populateStoryPicker();
+    if (storySelect) storySelect.value = storyId;
+    loadStory(storyId, storyTitle);
   };
 
   if (!mediaSupported() && recordBtn) {

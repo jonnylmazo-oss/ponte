@@ -1020,14 +1020,53 @@
         </div>
       </div><!-- #tab-flashcards -->
 
-      <!-- Tab: Shadowing -->
+      <!-- Tab: Shadowing (#7) — sentence-by-sentence native audio + mic
+           recording, so a learner can compare their own pronunciation.
+           Web Speech for native audio (not ElevenLabs) — each story's
+           verified per-sentence split already exists in story_audio (built
+           for a future sentence-highlight feature, unused until now), so no
+           new backend/rendering is needed. Reader's 🎙️ button (Beginner
+           Stories only) jumps here with that story pre-loaded; this tab is
+           also fully usable standalone via its own story picker. -->
       <div class="tab-panel" id="tab-shadowing">
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
-        <div class="coming-soon">
-          <div class="coming-soon-icon">🎙️</div>
-          <h2 class="coming-soon-title">Shadowing</h2>
-          <p class="coming-soon-desc">Listen to native Italian audio and shadow the speaker — train your ear and pronunciation simultaneously.</p>
-          <span class="coming-soon-tag">On the roadmap</span>
+        <div class="shadow-tab-body">
+          <h2 class="shadow-tab-h">🎙️ Shadowing practice</h2>
+          <p class="shadow-tab-sub">Listen to a sentence, then record yourself saying it — compare pronunciation and rhythm.</p>
+
+          <div class="shadow-picker-row">
+            <select id="shadow-story-select" class="topic-input story-select"></select>
+            <button id="shadow-story-start-btn" class="gen-btn primary">Start</button>
+          </div>
+
+          <p class="shadow-status" id="shadow-status" hidden></p>
+
+          <div class="shadow-body" id="shadow-body" hidden>
+            <div class="shadow-progress" id="shadow-progress"></div>
+            <div class="shadow-sentence-it" id="shadow-sentence-it"></div>
+            <div class="shadow-sentence-en" id="shadow-sentence-en"></div>
+
+            <div class="shadow-actions">
+              <button class="shadow-btn shadow-btn-primary" id="shadow-play-native-btn"
+                onclick="window.ponteShadowPlayNative(); return false;"
+                ontouchend="window.ponteShadowPlayNative(); return false;">▶ Play native</button>
+              <button class="shadow-btn" id="shadow-record-btn"
+                onclick="window.ponteShadowRecordToggle(); return false;"
+                ontouchend="window.ponteShadowRecordToggle(); return false;">🎙️ Record yourself</button>
+              <button class="shadow-btn" id="shadow-play-mine-btn" disabled
+                onclick="window.ponteShadowPlayRecording(); return false;"
+                ontouchend="window.ponteShadowPlayRecording(); return false;">▶ Play mine</button>
+            </div>
+
+            <div class="shadow-nav">
+              <button class="shadow-nav-btn" id="shadow-prev-btn"
+                onclick="window.ponteShadowPrev(); return false;"
+                ontouchend="window.ponteShadowPrev(); return false;">⏮ Prev</button>
+              <button class="shadow-nav-btn shadow-nav-btn-primary" id="shadow-next-btn"
+                onclick="window.ponteShadowNext(); return false;"
+                ontouchend="window.ponteShadowNext(); return false;">Next ⏭</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1307,54 +1346,6 @@
         <button class="ap-ctrl ap-ctrl-quiet" id="ap-done-close"
           onclick="window.ponteAudioClose(); return false;"
           ontouchend="window.ponteAudioClose(); return false;">Done</button>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ── Shadowing practice (Reader → 🎙️ button, Beginner Stories only) ──── -->
-  <!-- #7: sentence-by-sentence native audio + mic recording so a learner can
-       compare their own pronunciation. Web Speech for native audio (not
-       ElevenLabs) — each story's verified per-sentence split already exists
-       in story_audio (built for a future sentence-highlight feature, unused
-       until now), so no new backend/rendering is needed for this. -->
-  <div class="shadow-backdrop" id="shadow-backdrop" hidden
-    onclick="window.ponteShadowClose(); return false;"></div>
-  <div class="shadow-panel" id="shadow-panel" hidden role="dialog" aria-modal="true" aria-label="Shadowing practice">
-    <div class="shadow-header">
-      <h3 class="shadow-title">🎙️ Shadowing practice</h3>
-      <button class="shadow-close" id="shadow-close" aria-label="Close"
-        onclick="window.ponteShadowClose(); return false;"
-        ontouchend="window.ponteShadowClose(); return false;">✕</button>
-    </div>
-
-    <p class="shadow-status" id="shadow-status" hidden></p>
-
-    <div class="shadow-body" id="shadow-body" hidden>
-      <div class="shadow-progress" id="shadow-progress"></div>
-      <div class="shadow-sentence-it" id="shadow-sentence-it"></div>
-      <div class="shadow-sentence-en" id="shadow-sentence-en"></div>
-
-      <div class="shadow-actions">
-        <button class="shadow-btn shadow-btn-primary" id="shadow-play-native-btn"
-          onclick="window.ponteShadowPlayNative(); return false;"
-          ontouchend="window.ponteShadowPlayNative(); return false;">▶ Play native</button>
-        <button class="shadow-btn" id="shadow-record-btn"
-          onclick="window.ponteShadowRecordToggle(); return false;"
-          ontouchend="window.ponteShadowRecordToggle(); return false;">🎙️ Record yourself</button>
-        <button class="shadow-btn" id="shadow-play-mine-btn" disabled
-          onclick="window.ponteShadowPlayRecording(); return false;"
-          ontouchend="window.ponteShadowPlayRecording(); return false;">▶ Play mine</button>
-      </div>
-      <p class="shadow-hint" id="shadow-hint">Play the native sentence, then record yourself saying it — compare pronunciation and rhythm.</p>
-
-      <div class="shadow-nav">
-        <button class="shadow-nav-btn" id="shadow-prev-btn"
-          onclick="window.ponteShadowPrev(); return false;"
-          ontouchend="window.ponteShadowPrev(); return false;">⏮ Prev</button>
-        <button class="shadow-nav-btn shadow-nav-btn-primary" id="shadow-next-btn"
-          onclick="window.ponteShadowNext(); return false;"
-          ontouchend="window.ponteShadowNext(); return false;">Next ⏭</button>
       </div>
     </div>
   </div>

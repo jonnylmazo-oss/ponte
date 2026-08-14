@@ -8357,69 +8357,50 @@ body.drill-fullscreen .ff-flip-card {
 }
 
 /* ── Shadowing practice (#7) ─────────────────────────────────────────────── */
-/* Same backdrop/panel/header shell as .ap-* (Cards audio session player) —
-   reused as a distinct class family rather than sharing .ap-* directly,
-   since the two panels' bodies diverge (record/playback controls here vs.
-   a session queue there) and coupling them would make either harder to
-   change independently later. */
+/* Standalone tab content (sidebar/More → Shadowing) — same "centered,
+   max-width column" shape as .dd-screen (Deep dive), not a modal; the
+   Reader's 🎙️ button jumps here via switchTab rather than opening
+   anything of its own. */
 
-.shadow-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 300;
-}
+.shadow-tab-body { max-width: 520px; margin: 0 auto; padding: 20px 16px 96px; }
 
-.shadow-panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(92vw, 460px);
-  max-height: min(88vh, 620px);
-  overflow-y: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  z-index: 301;
-}
-
-.shadow-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.shadow-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+.shadow-tab-h {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+  font-weight: 700;
   color: var(--text);
+  text-align: center;
 }
 
-.shadow-close {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  color: var(--text-dim);
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
+.shadow-tab-sub {
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  text-align: center;
+  line-height: 1.5;
 }
-.shadow-close:hover { color: var(--text); }
+
+.shadow-picker-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.shadow-picker-row .story-select { flex: 1; }
 
 .shadow-status {
-  margin: 18px 18px 22px;
+  margin: 18px 0;
   font-size: 0.88rem;
   color: var(--text-mid);
   text-align: center;
   line-height: 1.5;
 }
 
-.shadow-body { padding: 18px 18px 22px; }
+.shadow-body {
+  padding: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
 
 .shadow-progress {
   font-size: 0.75rem;
