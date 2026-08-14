@@ -178,22 +178,35 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 
 ## Open issues
 
+Kept in sync with `gh issue list` by hand — re-check before trusting this table if it's been a while.
+
 | # | Title | Priority |
 |---|-------|----------|
-| #3 | Article difficulty filter | P2 |
-| #7 | Shadowing mode (blocked by #36) | P2 |
-| #8 | Weak word tracker (reader-tap) | P2 |
+| #7 | Shadowing mode | P2 |
 | #11 | Onboarding flow | P3 |
-| #13 | Mobile layout polish | P3 |
-| #14 | Public false friend SEO page | P3 |
-| #17 | HTTPS + domain for full PWA installability | P2 |
+| #17 | Mobile setup and iPhone testing | P2 |
 | #18 | Flashcard images via Unsplash | P2 |
-| #26 | Classic literature content category | P1 |
-| #34 | Cultural context layer in Reader | P2 |
-| #36 | Native audio per article | P2 |
-| #37 | Pronunciation lab (blocked by #36) | P3 |
+| #37 | Pronunciation lab | P3 |
 | #38 | Collaborative deck sharing | P3 |
-| #55 | Mobile touch targets below 44px | P2 |
-| #56 | 100vh → 100dvh for fullscreen drill | P2 |
 | #57 | Wire up PATTERN_TO_GRAMMAR map | P3 |
 | #58 | Mission 4 double-counts re-saves | P3 |
+| #64 | Word-type badges / Deep-dive missing on iPhone after deploy | P1 |
+| #66 | Taxonomy audit: re-verify all card categorizations | P2 |
+| #67 | "sacco" card: idiom example vs. literal definition | P2 |
+| #68 | Taxonomy decision: Latin-root-shared words (vetro/vidrio) | P2 |
+| #69 | 8 cards missing example sentences | P2 |
+| #70 | Audio Phase 2 — full karaoke-style visual sync (MVP tier shipped) | P1 |
+| #71 | Word-exploration library | P2 |
+| #72 | Single-word deep-drill audio mode | P3 |
+| #73 | Short-story / comprehensible-input audio mode | P2 |
+| #74 | Engagement: identity-based re-languaging across app copy | P3 |
+| #75 | Engagement: "known Italian words" mastery counter | P2 |
+| #76 | Engagement: forgetting-curve reminders + if-then planning | P2 |
+| #77 | Engagement (later): curiosity gaps, Wrapped-style reflection | P3 |
+| #78 | Housekeeping: custom domain DNS setup | P2 |
+| #79 | Housekeeping: rename "Safe Cognates" tab — conflicts with the taxonomy-naming rule above, needs a decision | P3 |
+| #80 | Housekeeping: PWA install polish and testing | P2 |
+| #82 | Engagement: "Complete the Picture" collection/puzzle mechanic | P3 |
+| #84 | Reader read-aloud truncates at ~15s (Web Speech, dynamic articles only) | P2 |
+| #85 | "bursa" card: typo'd headword, mistagged category | P2 |
+| #86 | 209 cards have no ElevenLabs audio — blocked on #69, then on audio-spend approval | P2 |
