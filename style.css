@@ -2027,6 +2027,157 @@ header {
 .login-btn:hover { background: #0044AA; }
 .login-btn:active { background: #003388; }
 
+/* ── Onboarding flow (#11) ────────────────────────────────────────────────
+   Same full-screen-overlay shell as #login-overlay, one z-index step below
+   it (9998 vs 9999) — if a token ever turns out to be stale mid-onboarding
+   and a 401 brings the login overlay back, it must win. */
+
+#onboard-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  padding: 24px 16px;
+}
+#onboard-overlay[hidden] { display: none !important; }
+
+.onboard-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 32px;
+  width: min(420px, 92vw);
+  max-height: min(90vh, 560px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 24px rgba(59, 45, 31, 0.12);
+  text-align: center;
+  position: relative;
+}
+
+.onboard-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.onboard-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.onboard-dot.active { background: #0055AA; }
+
+.onboard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.onboard-logo {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.onboard-logo span { color: #0055AA; }
+
+.onboard-h {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.onboard-p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-mid);
+}
+.onboard-p-tight { margin-top: -8px; }
+
+.onboard-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.onboard-option {
+  min-height: 48px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: left;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.onboard-option:hover { background: var(--bg-italian); }
+.onboard-option.selected {
+  background: #0055AA;
+  border-color: #0055AA;
+  color: #fff;
+  font-weight: 600;
+}
+
+.onboard-btn {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.onboard-btn-primary { background: #0055AA; color: #fff; }
+.onboard-btn-primary:hover { background: #0044AA; }
+
+.onboard-rec-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--same, #2E6B3E);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.onboard-skip {
+  margin-top: 18px;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-decoration: underline;
+  min-height: 44px;
+}
+.onboard-skip:hover { color: var(--text-mid); }
+
 .login-error {
   color: var(--false-friend);
   font-size: 0.875rem;
