@@ -1129,6 +1129,25 @@
     return audioScriptCache;
   }
 
+  // Word-level audio bank (new-card save flow, this session) — a derived
+  // view of flashcard_audio's per-card Word segments, keyed by lowercase
+  // word instead of by card, so ponteSpeakCard below can resolve a brand
+  // new card's headword instantly if ANY other card has ever had that exact
+  // word rendered, without waiting for this specific card's own
+  // flashcard_audio entry (audio backfill runs periodically, not per-save).
+  let wordAudioCache = null;
+
+  async function fetchWordAudio(refresh) {
+    if (wordAudioCache && !refresh) return wordAudioCache;
+    const resp = await fetch(API_BASE + '/api/flashcards?key=word_audio', {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Word audio unavailable (' + resp.status + ')');
+    const data = await resp.json();
+    wordAudioCache = (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+    return wordAudioCache;
+  }
+
   // Cards to interleave for variety: reviewed at least once and not currently
   // due — words answered well enough to have been pushed to a future date.
   //
@@ -1381,6 +1400,13 @@
 
   // Public: speak a card's Italian, preferring the pre-rendered render.
   // Async, but callers can fire and forget — fallback is handled internally.
+  // Two-tier lookup before Web Speech: this card's OWN flashcard_audio entry
+  // first (unchanged — carries this exact card's chunk-aligned Word render),
+  // then the word-level bank keyed by lowercase text. The second tier is
+  // what makes a just-saved card (word-lookup, reader-tap, any save path —
+  // they all end up here whenever the word is played) sound right away
+  // instead of Web Speech, as long as SOME other card has ever had that
+  // exact word rendered — no need to wait for this card's own audio backfill.
   window.ponteSpeakCard = async function (text) {
     const t = text == null ? '' : String(text).trim();
     if (!t) return;
@@ -1388,6 +1414,11 @@
       const idx = await getAudioIndex();
       const h   = await sha1Hex16(t);
       const hit = h && idx[h];
+      if (hit && hit.url && playOneOff(hit.url)) return;
+    } catch (_) { /* fall through */ }
+    try {
+      const words = await fetchWordAudio();
+      const hit = words[t.toLowerCase()];
       if (hit && hit.url && playOneOff(hit.url)) return;
     } catch (_) { /* fall through to Web Speech */ }
     if (window.ponteSpeak) window.ponteSpeak(t);

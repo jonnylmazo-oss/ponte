@@ -36,6 +36,15 @@ const STORY_AUDIO_KEY = 'story_audio';
 // by default — this one is small enough to just fetch on demand instead.
 const STORY_AUDIO_ALIGN_KEY = 'story_audio_align';
 
+// Word-level audio bank: { [lowercase(italian)]: { url, ms, voice, model, at } }.
+// A derived/cached view of flashcard_audio's per-card Word segments (built by
+// the local build-word-audio-bank.js script), keyed by word instead of by
+// card — so any card whose headword has EVER been rendered on ANY other card
+// resolves instantly, without needing its own flashcard_audio entry yet
+// (audio backfill only runs periodically, not on every save). Small (~700
+// entries), fetched eagerly rather than gated like flashcard_audio_align.
+const WORD_AUDIO_KEY = 'word_audio';
+
 // In-memory write lock — best-effort within a single warm instance.
 let flashcardWriteLock = false;
 
@@ -118,6 +127,16 @@ module.exports = async function handler(req, res) {
         return res.json(align);
       } catch (err) {
         console.error('Error reading story_audio_align:', err.message);
+        return res.json({});
+      }
+    }
+
+    if (req.query && req.query.key === 'word_audio') {
+      try {
+        const words = (await redis.get(WORD_AUDIO_KEY)) ?? {};
+        return res.json(words);
+      } catch (err) {
+        console.error('Error reading word_audio:', err.message);
         return res.json({});
       }
     }
