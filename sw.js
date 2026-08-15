@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'ponte-v105';
+const CACHE_NAME = 'ponte-v106';
 
 const PRECACHE = [
   '/',
@@ -17,6 +17,7 @@ const PRECACHE = [
   '/mission.js', // was missing from this list — noticed in passing, unrelated to #7
   '/progress.js',
   '/deep-dive.js',
+  '/visual-cards.js',
   '/audio-player.js',
   '/shadowing.js',
   '/onboarding.js',
@@ -29,6 +30,7 @@ const PRECACHE = [
   '/data/false-friends.js',
   '/data/safe-cognates.js',
   '/data/grammar.js',
+  '/data/visual-deck.js',
 ];
 
 // Install: pre-cache all static assets, bypassing browser HTTP cache.

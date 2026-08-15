@@ -223,6 +223,11 @@
               <span class="nav-icon">🔍</span>
               <span class="nav-label">Deep dive</span>
             </button>
+            <button class="nav-item nav-sub-item" data-tab="visual-cards"
+              onclick="window.switchTab('visual-cards')">
+              <span class="nav-icon">🖼️</span>
+              <span class="nav-label">Visual cards</span>
+            </button>
             <button class="nav-item nav-sub-item" id="nav-share-btn"
               onclick="window.ponteShareOpen&&window.ponteShareOpen()">
               <span class="nav-icon">🔗</span>
@@ -1154,6 +1159,72 @@
         </div>
       </div>
 
+      <!-- Tab: Visual cards (#88) — picture → Italian recall on a curated
+           standalone deck (data/visual-deck.js). Fronts are labeled text
+           placeholders until the one-time illustration pass; backs reuse
+           ponteSpeakCard's audio tiering and flashcards.js's SM-2. -->
+      <div class="tab-panel" id="tab-visual-cards">
+        <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
+
+        <!-- Start screen -->
+        <div class="vc-screen" id="vc-start">
+          <h1 class="vc-title">🖼️ Visual cards</h1>
+          <p class="vc-subtitle">See a picture, recall the Italian word directly — no English detour. A curated deck of concrete, everyday nouns.</p>
+          <p class="vc-placeholder-notice">Illustrations are coming — for now each card shows a labeled placeholder where the picture will go.</p>
+          <div class="vc-start-stats" id="vc-start-stats"></div>
+          <div class="vc-groups" id="vc-groups"></div>
+          <button class="vc-start-btn" id="vc-start-btn">Start session</button>
+        </div>
+
+        <!-- Drill -->
+        <div class="vc-drill" id="vc-drill" hidden>
+          <div class="vc-drill-topbar">
+            <span class="vc-drill-status" id="vc-drill-status"></span>
+            <span class="vc-requeue-note" id="vc-requeue-note" hidden>↩ Missed cards return later in this session</span>
+            <button class="vc-exit-btn" id="vc-exit-btn">Exit</button>
+          </div>
+          <div class="vc-drill-arena">
+            <div class="vc-flip-card" id="vc-flip-card">
+              <div class="vc-flip-inner" id="vc-flip-inner">
+                <div class="vc-flip-face vc-flip-front">
+                  <div class="vc-placeholder-frame">
+                    <span class="vc-placeholder-icon">🖼️</span>
+                    <span class="vc-placeholder-label" id="vc-placeholder-label"></span>
+                  </div>
+                  <span class="vc-front-group" id="vc-front-group"></span>
+                  <p class="vc-flip-prompt">What is this in Italian?</p>
+                  <button class="vc-flip-btn" id="vc-flip-btn">Flip</button>
+                </div>
+                <div class="vc-flip-face vc-flip-back">
+                  <div class="vc-back-content">
+                    <div class="vc-back-word-row">
+                      <div class="vc-back-word" id="vc-back-word"></div>
+                      <button class="speak-btn" id="vc-back-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
+                    </div>
+                    <p class="vc-back-gloss" id="vc-back-gloss"></p>
+                  </div>
+                  <div class="vc-rating-buttons">
+                    <button class="fc-again-btn" id="vc-again-btn">Again</button>
+                    <button class="fc-hard-btn"  id="vc-hard-btn">Hard</button>
+                    <button class="fc-easy-btn"  id="vc-easy-btn">Easy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session complete -->
+        <div class="vc-done" id="vc-done" hidden>
+          <div class="vc-done-icon">🎉</div>
+          <h2 class="vc-done-title">Session complete!</h2>
+          <p class="vc-done-score" id="vc-done-score"></p>
+          <div class="vc-done-missed" id="vc-done-missed" hidden></div>
+          <button class="vc-done-again-btn" id="vc-done-again-btn">New session</button>
+          <button class="vc-done-back-btn" id="vc-done-back-btn">Back</button>
+        </div>
+      </div><!-- #tab-visual-cards -->
+
     </div><!-- .main-area -->
   </div><!-- .app-wrapper -->
 
@@ -1224,6 +1295,12 @@
       ontouchend="window.switchTab&&window.switchTab('deep-dive');return false;">
       <span class="more-panel-icon">🔍</span>
       <span class="more-panel-label">Deep dive</span>
+    </button>
+    <button class="more-panel-item" data-tab="visual-cards"
+      onclick="window.switchTab&&window.switchTab('visual-cards')"
+      ontouchend="window.switchTab&&window.switchTab('visual-cards');return false;">
+      <span class="more-panel-icon">🖼️</span>
+      <span class="more-panel-label">Visual cards</span>
     </button>
     <button class="more-panel-item" id="more-share-btn"
       onclick="window.ponteCloseMorePanel&&window.ponteCloseMorePanel();window.ponteShareOpen&&window.ponteShareOpen()"
@@ -1528,6 +1605,7 @@
   <script src="data/false-friends.js"></script>
   <script src="data/safe-cognates.js"></script>
   <script src="data/grammar.js"></script>
+  <script src="data/visual-deck.js"></script>
   <script src="app.js"></script>
   <script src="false-friends.js"></script>
   <script src="grammar.js"></script>
@@ -1538,6 +1616,7 @@
   <script src="mission.js"></script>
   <script src="progress.js"></script>
   <script src="deep-dive.js"></script>
+  <script src="visual-cards.js"></script>
   <script src="shadowing.js"></script>
   <script src="audio-player.js"></script>
   <script src="onboarding.js"></script>

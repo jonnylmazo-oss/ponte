@@ -189,6 +189,12 @@
     card.reviewCount  = rc + 1;
     card.lastReviewed = new Date().toISOString();
   }
+  // Shared with visual-cards.js (#88) so the visual deck schedules with the
+  // exact same SM-2 curve instead of a parallel implementation. Takes any
+  // object carrying the SRS fields (interval/easeFactor/dueDate/reviewCount/
+  // lastReviewed) — visual cards pass their own per-entry state records, not
+  // main-deck cards, so the two systems share the algorithm but never the data.
+  window.ponteApplySmTwo = applySmTwo;
 
   // ── Backfill: set dueDate = now for any card missing it ──────────────────
   // silent=true: only write localStorage, skip server POST (safe before initial sync)

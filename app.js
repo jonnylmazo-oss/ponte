@@ -1443,7 +1443,7 @@
 
   const LEARN_TABS    = ['false-friends', 'grammar'];
   const PRACTICE_TABS = ['practice', 'conversation'];
-  const MORE_TABS     = ['dictionary', 'shadowing', 'progress', 'deep-dive'];
+  const MORE_TABS     = ['dictionary', 'shadowing', 'progress', 'deep-dive', 'visual-cards'];
 
   const LS_LAST_LEARN    = 'ponte_last_learn';
   const LS_LAST_PRACTICE = 'ponte_last_practice';
@@ -1590,6 +1590,11 @@
     // (sidebar/More, not via the Reader's 🎙️ shortcut) — idempotent.
     if (tabId === 'shadowing' && typeof window._ponteShadowingTabInit === 'function') {
       window._ponteShadowingTabInit();
+    }
+
+    // Refresh Visual cards due-counts on every visit (no-op mid-drill).
+    if (tabId === 'visual-cards' && typeof window._ponteVCRender === 'function') {
+      window._ponteVCRender();
     }
 
     // Close More panel if open

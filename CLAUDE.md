@@ -34,6 +34,7 @@ conversation.js    Conversation tab IIFE
 mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
 deep-dive.js       Deep dive tab IIFE
+visual-cards.js    Visual cards tab IIFE (#88) — picture→Italian recall drill
 audio-player.js    Cards audio session player IIFE
 shadowing.js       Shadowing tab IIFE (#7) — sentence playback + mic recording
 onboarding.js      First-run flow IIFE (#11) — Spanish/Italian placement quiz
@@ -55,9 +56,10 @@ data/
   false-friends.js 98 false friend entries
   safe-cognates.js 200 safe cognate entries
   grammar.js       45 grammar cards + 30 pattern drills
+  visual-deck.js   107 curated concrete nouns for the Visual cards deck (#88)
 ```
 
-Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js` → `audio-player.js` → `shadowing.js` → `onboarding.js`
+Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js` → `visual-cards.js` → `shadowing.js` → `audio-player.js` → `onboarding.js` (`visual-cards.js` must load after `flashcards.js` — it uses `window.ponteApplySmTwo` + `window.ponteSpeakCard`)
 
 ## Features
 
@@ -72,6 +74,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Progress** — stats overview, card breakdown by category/status, weak areas, 7-day activity chart, quiz trend, weekly learning mission
 - **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
 - **Shadowing** (#7, `shadowing.js`) — standalone tab (sidebar/More → Shadowing) with its own Beginner Story picker; also reachable from the Reader's 🎙️ button (Beginner Stories only) via `window.ponteShadowLoadStory(storyId, title)`, which switches tabs and pre-loads that story rather than duplicating a second entry point. Sentence-by-sentence Web Speech playback (not ElevenLabs — reuses each story's verified `story_audio.sentences` split) plus in-browser mic recording (`getUserMedia`/`MediaRecorder`) to compare pronunciation; recordings are ephemeral, never uploaded
+- **Visual cards** (#88, `visual-cards.js` — More → Visual cards) — picture→Italian recall drill on a **standalone curated deck** (`data/visual-deck.js`, 107 concrete nouns in 6 groups), deliberately separate from the user's main deck; SRS state lives client-only in `ponte_visual_srs` and **never touches** `ponte_flashcards` or the server `flashcards` key. Scheduling reuses the main drill's SM-2 via `window.ponteApplySmTwo` (exposed by `flashcards.js`); audio reuses `window.ponteSpeakCard`'s tiering (54/107 words hit the `word_audio` bank, rest fall back to Web Speech). Card fronts are labeled text placeholders (`[image: <english gloss>]` — English, never Italian, so the front can't reveal the answer) until the one-time illustration pass decided in #88
 - **Onboarding** (`onboarding.js`) — first-run only: Spanish proficiency + Italian-exposure placement quiz, presets the Reader's starting mode/difficulty via `window.ponteApplyStartingLevel(level)` (app.js) instead of everyone landing on A1; auto-skipped (and the flag set retroactively) for any browser already showing signs of prior use
 
 ## API endpoints
@@ -146,6 +149,8 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 | `ponte_audio_session` | Audio session length (`'15'`/`'25'`/`'40'`/`'all'`, default `'25'`) |
 | `ponte_reader_mode` | Reader mode toggle (`'stories'`/`'advanced'`, default `'stories'`) |
 | `ponte_last_story` | Last-selected Beginner Story id, restored in the picker on reload |
+| `ponte_visual_srs` | Visual cards (#88) SRS state map `{ [entryId]: {interval, easeFactor, dueDate, …} }` — client-only, standalone from the main deck |
+| `ponte_visual_srs_bak` | Pre-write backup of the above, refreshed once per session |
 | `ponte_onboarding_complete` | First-run flow (#11) shown/dismissed flag — also set retroactively for any browser showing other signs of prior use, so it never surprises an existing session |
 
 ## Flashcard card structure
@@ -178,7 +183,7 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v91`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v106`)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates
