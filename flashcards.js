@@ -189,6 +189,10 @@
     card.reviewCount  = rc + 1;
     card.lastReviewed = new Date().toISOString();
   }
+  // Shared with visual-cards.js (#88) so its card back can render the same
+  // category badge as the standard drill without duplicating these maps.
+  window.ponteCategoryMeta = { labels: CATEGORY_LABELS, colors: CATEGORY_COLORS };
+
   // Shared with visual-cards.js (#88) so the visual deck schedules with the
   // exact same SM-2 curve instead of a parallel implementation. Takes any
   // object carrying the SRS fields (interval/easeFactor/dueDate/reviewCount/

@@ -1195,15 +1195,27 @@
                   <p class="vc-flip-prompt">What is this in Italian?</p>
                   <button class="vc-flip-btn" id="vc-flip-btn">Flip</button>
                 </div>
+                <!-- Back: mirrors the standard drill flip-card back exactly
+                     (same classes/structure as #fc-flip-card's .fc-flip-back)
+                     so the two drills read identically. Fields the visual
+                     entry lacks (base form, example, note) stay hidden the
+                     same way the standard card hides them when absent. -->
                 <div class="vc-flip-face vc-flip-back">
-                  <div class="vc-back-content">
-                    <div class="vc-back-word-row">
-                      <div class="vc-back-word" id="vc-back-word"></div>
+                  <div class="drill-card-content">
+                    <div class="fc-flip-word-row">
+                      <div class="fc-flip-word" id="vc-back-word"></div>
                       <button class="speak-btn" id="vc-back-speak-btn" aria-label="Pronounce" title="Pronounce">🔊</button>
                     </div>
-                    <p class="vc-back-gloss" id="vc-back-gloss"></p>
+                    <p class="fc-flip-base" id="vc-back-base" hidden></p>
+                    <div class="fc-flip-answer" id="vc-back-answer"></div>
+                    <div class="fc-flip-example" id="vc-back-example" hidden>
+                      <span class="fc-flip-example-it" id="vc-back-example-it"></span>
+                      <span class="fc-flip-example-en" id="vc-back-example-en"></span>
+                    </div>
+                    <p class="fc-flip-note" id="vc-back-note"></p>
+                    <button class="fc-deep-dive-btn" id="vc-deep-dive-btn">🔍 Deep dive</button>
                   </div>
-                  <div class="vc-rating-buttons">
+                  <div class="drill-card-buttons">
                     <button class="fc-again-btn" id="vc-again-btn">Again</button>
                     <button class="fc-hard-btn"  id="vc-hard-btn">Hard</button>
                     <button class="fc-easy-btn"  id="vc-easy-btn">Easy</button>

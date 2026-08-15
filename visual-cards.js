@@ -23,12 +23,19 @@
   const esc = window.ponteEsc || ((s) => String(s));
 
   const GROUP_LABELS = {
-    body:     'Body',
-    animals:  'Animals',
-    food:     'Food',
-    home:     'Household',
-    city:     'City & outdoors',
-    clothing: 'Clothing',
+    body:      'Body',
+    animals:   'Animals',
+    food:      'Food & drink',
+    kitchen:   'Kitchen',
+    home:      'Home & bath',
+    city:      'City & buildings',
+    nature:    'Nature & weather',
+    clothing:  'Clothing',
+    transport: 'Transport',
+    people:    'People & figures',
+    school:    'School & office',
+    tools:     'Tools',
+    sport:     'Sport & play',
   };
 
   function deck() { return Array.isArray(window.VISUAL_DECK) ? window.VISUAL_DECK : []; }
@@ -141,15 +148,54 @@
     const status = $('vc-drill-status');
     if (status) status.textContent = `${done + 1} / ${sessionTotal}`;
 
+    // The placeholder shows the curated imagePrompt phrase — the literal
+    // description of the picture that will eventually sit here — never the
+    // Italian, and not the display gloss (which for deck-overlap entries can
+    // be a multi-sense string like "staircase / ladder / scale" that no
+    // single image will depict).
     const front = $('vc-placeholder-label');
-    if (front) front.textContent = `[image: ${entry.english}]`;
+    if (front) front.textContent = `[image: ${entry.imagePrompt || entry.english}]`;
     const groupChip = $('vc-front-group');
     if (groupChip) groupChip.textContent = GROUP_LABELS[entry.group] || entry.group;
 
+    // ── Back: same layout as the standard drill flip-card (flashcards.js
+    // renderDrillCard, forward direction) — word row, answer block with
+    // English/Spanish/category badge, example, note; absent fields hidden
+    // exactly the way the standard card hides them.
     const word = $('vc-back-word');
     if (word) word.textContent = entry.italian;
-    const gloss = $('vc-back-gloss');
-    if (gloss) gloss.textContent = entry.english;
+
+    const answer = $('vc-back-answer');
+    if (answer) {
+      const meta = window.ponteCategoryMeta;
+      const color = meta && meta.colors[entry.cat];
+      const label = meta && meta.labels[entry.cat];
+      answer.innerHTML =
+        `<div class="fc-flip-en">${esc(entry.english)}</div>` +
+        (entry.spanish ? `<div class="fc-flip-es">${esc(entry.spanish)}</div>` : '') +
+        // Badge only for deck-overlap entries: category is real data carried
+        // from the main deck, not something we'd fabricate for new words.
+        (color && label ? `<span class="fc-cat-badge" style="border-color:${color};color:${color}">${esc(label)}</span>` : '');
+    }
+
+    const exampleWrap = $('vc-back-example');
+    if (exampleWrap) {
+      if (entry.example) {
+        $('vc-back-example-it').textContent = entry.example;
+        const exEn = $('vc-back-example-en');
+        exEn.textContent = entry.exampleEN || '';
+        exEn.hidden = !entry.exampleEN;
+        exampleWrap.hidden = false;
+      } else {
+        exampleWrap.hidden = true;
+      }
+    }
+
+    const noteEl = $('vc-back-note');
+    if (noteEl) {
+      noteEl.textContent = entry.note || '';
+      noteEl.hidden = !entry.note;
+    }
 
     const note = $('vc-requeue-note');
     if (note) note.hidden = !missedIds.size;
@@ -258,6 +304,11 @@
   bind('vc-hard-btn',  () => grade('hard'));
   bind('vc-easy-btn',  () => grade('easy'));
   bind('vc-back-speak-btn', () => { if (queue.length && window.ponteSpeakCard) window.ponteSpeakCard(queue[0].italian); });
+  // Same wiring as the standard drill's Deep-dive button (flashcards.js):
+  // opens the shared Deep-dive screen on the current card's Italian word.
+  bind('vc-deep-dive-btn', () => {
+    if (queue.length && window.ponteDeepDive) window.ponteDeepDive(queue[0].italian);
+  });
   bind('vc-exit-btn', () => { if (window.ponteStopOneOff) window.ponteStopOneOff(); renderStart(); });
   bind('vc-done-again-btn', startSession);
   bind('vc-done-back-btn', renderStart);
