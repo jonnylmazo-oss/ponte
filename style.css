@@ -8877,3 +8877,20 @@ body.drill-fullscreen .ff-flip-card {
 }
 .vc-done-again-btn { border: none; background: var(--accent, #0055AA); color: #fff; }
 .vc-done-back-btn { border: 1px solid var(--border); background: var(--bg-card); color: var(--text-mid); }
+
+/* Real illustration inside the front frame (#88 image backfill): the dashed
+   placeholder chrome drops away once a card has its picture. */
+.vc-placeholder-frame.has-img {
+  border-style: solid;
+  border-color: var(--border);
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
+}
+.vc-front-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  display: block;
+}

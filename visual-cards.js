@@ -108,6 +108,11 @@
     if (!startEl) return;
     startEl.hidden = false; drillEl.hidden = true; doneEl.hidden = true;
 
+    // The "illustrations coming" notice only applies while cards still lack
+    // real images (kept as the fallback message if any regeneration gap opens).
+    const notice = document.querySelector('.vc-placeholder-notice');
+    if (notice) notice.hidden = deck().some((e) => e.img);
+
     const all = counts('');
     const statsEl = $('vc-start-stats');
     if (statsEl) {
@@ -148,13 +153,34 @@
     const status = $('vc-drill-status');
     if (status) status.textContent = `${done + 1} / ${sessionTotal}`;
 
-    // The placeholder shows the curated imagePrompt phrase — the literal
-    // description of the picture that will eventually sit here — never the
-    // Italian, and not the display gloss (which for deck-overlap entries can
-    // be a multi-sense string like "staircase / ladder / scale" that no
-    // single image will depict).
+    // Front: the real illustration when the entry has one; otherwise the
+    // labeled placeholder showing the curated imagePrompt phrase — the
+    // literal description of the picture — never the Italian, and not the
+    // display gloss (which for deck-overlap entries can be a multi-sense
+    // string like "staircase / ladder / scale" that no single image depicts).
+    const img = $('vc-front-img');
+    const icon = $('vc-placeholder-icon');
     const front = $('vc-placeholder-label');
-    if (front) front.textContent = `[image: ${entry.imagePrompt || entry.english}]`;
+    const frame = $('vc-image-frame');
+    if (entry.img && img) {
+      img.src = entry.img;
+      img.alt = ''; // decorative on purpose: alt text would name the answer
+      img.hidden = false;
+      if (icon) icon.hidden = true;
+      if (front) front.hidden = true;
+      if (frame) frame.classList.add('has-img');
+      // Preload the next card's image during think time so the flip-forward
+      // never shows a blank frame on slow connections.
+      if (queue[1] && queue[1].img) { const pre = new Image(); pre.src = queue[1].img; }
+    } else {
+      if (img) img.hidden = true;
+      if (icon) icon.hidden = false;
+      if (front) {
+        front.hidden = false;
+        front.textContent = `[image: ${entry.imagePrompt || entry.english}]`;
+      }
+      if (frame) frame.classList.remove('has-img');
+    }
     const groupChip = $('vc-front-group');
     if (groupChip) groupChip.textContent = GROUP_LABELS[entry.group] || entry.group;
 
