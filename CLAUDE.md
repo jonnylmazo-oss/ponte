@@ -64,7 +64,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 ## Features
 
 - **Reader** — two modes via a toggle in the generator bar: **Beginner Stories** (default) — fixed set of 20 permanent A1/A2 stories (`data/beginner-stories.js`), rendered instantly client-side, no API call; **Advanced** — the original unbounded free-text/topic SSE generation, unchanged. Both share color-coded words, hover/tap tooltip, dynamic text-select translation, EN column toggle, post-reading quiz. Recent ▾ history and article caching apply only to Advanced-mode (dynamically generated) articles. Beginner Story playback also does live karaoke-style word highlighting (#70) against `story_audio_align`'s character-level ElevenLabs timestamps (`/api/flashcards?key=story_audio_align`) — Beginner Stories only, silently skipped if alignment data is missing or doesn't match the story text
-- **False Friends** — 98 false friend cards + 200 safe cognates; search/filter/drill per sub-tab
+- **False Friends** — two lenses on the transfer layer: "⚠️ False Friends" (98 curated trap words) and "✅ Same & Similar" (200 curated safe words, formerly the "Safe Cognates" sub-tab — renamed per #79); search/filter/drill per lens
 - **Grammar** — 4-stage learning path (45 cards), 30 pattern drills, weak areas panel fed by error tracking
 - **Practice** — fill-in-the-blank (Multiple Choice / Type It / Sentence Rebuild); saves missed words to flashcards
 - **Conversation** — Scripted Dialogue (MC or Type-it against native speaker) + Free Conversation chat with error feedback
@@ -172,7 +172,7 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 ```
 
 Category values (taxonomy): `same` | `similar` | `false-friend` | `new`
-UI labels: same → "Same word", similar → "Same/Similar", false-friend → "False Friend", new → "No Spanish link". Never use the word "cognate" in taxonomy UI (the separate "Safe Cognates" curated tab is unrelated and keeps its name). The grammar-error-pattern keys (`divergence`, `false-friend`, …) are a **separate** namespace — not renamed.
+UI labels: same → "Same word", similar → "Same/Similar", false-friend → "False Friend", new → "No Spanish link". Never use the word "cognate" anywhere in the UI (#79 resolved: the curated safe-words list now surfaces as the "✅ Same & Similar" lens inside the False Friends tab; internal names — `data/safe-cognates.js`, `sc-*` ids, `ponte_sc_drill` — keep the historical name, and the public SEO page `false-friends-spanish.html` may say "cognate" as plain English). The grammar-error-pattern keys (`divergence`, `false-friend`, …) are a **separate** namespace — not renamed.
 
 ## Theme (Kindle sepia)
 
@@ -190,6 +190,16 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 - **IIFE globals:** expose needed functions on `window` (e.g. `window.switchTab`, `window.ponteSpeak`, `window._ponteFCRender`, `window._ponteProgressRender`, `window.toggleNavGroup`)
 - **Translation column:** always collapsed on page load and on each new article — state never restored from localStorage
 - **Fallback article:** `articles[0]` loads only on generation error, not on init
+
+## Parked features (pre-launch, 2026-08-16)
+
+Per the product-strategy evaluation, three features are **hidden, not removed** — all code, data, and backend paths stay fully functional; restoring each is a one-line revert:
+
+| Feature | Hidden entry points | How to restore |
+|---|---|---|
+| Deck sharing (#38) | Sidebar + More-panel "Share deck" buttons (`hidden` attr) | Remove the two `hidden` attributes. `?import=<id>` links still work meanwhile |
+| Shadowing (#7) | Sidebar + More-panel nav items (`hidden` attr); Reader 🎙️ button pinned hidden in `app.js` | Remove the two `hidden` attrs; revert the `articleShadowBtn.hidden = true` line |
+| Weekly Mission (#35) | Mission card on Progress tab (`MISSION_PARKED` flag in `mission.js`) | Flip `MISSION_PARKED` to `false` — tracking never stopped, so the current week's mission reappears with live progress |
 
 ## Open issues
 

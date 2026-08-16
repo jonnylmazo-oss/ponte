@@ -385,7 +385,10 @@
     // for the fixed Beginner Story set (story_audio) — hidden for dynamic
     // Advanced-mode articles rather than trying to split arbitrary generated
     // text on the fly for a feature centered on pronunciation accuracy.
-    if (articleShadowBtn) articleShadowBtn.hidden = !currentArticleIsStory();
+    // Shadowing parked pre-launch (#7): keep the button permanently hidden
+    // instead of un-hiding it for Beginner Stories. Restore by reverting to:
+    //   articleShadowBtn.hidden = !currentArticleIsStory();
+    if (articleShadowBtn) articleShadowBtn.hidden = true;
     // Fire only for real articles, not the fallback (which always passes wordmapOverride)
     if (!wordmapOverride) {
       window.dispatchEvent(new CustomEvent('ponte:article-read'));

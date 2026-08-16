@@ -110,7 +110,13 @@
   }
 
   // ── Mission card HTML ─────────────────────────────────────────────────────
+  // Parked pre-launch: the card is the feature's only visible surface, so
+  // returning '' hides it while every tracking listener below keeps writing
+  // ponte_weekly_mission — flip to false and the current week's mission
+  // reappears live, with correct progress. See product-strategy eval.
+  const MISSION_PARKED = true;
   function missionCardHTML() {
+    if (MISSION_PARKED) return '';
     const { mission, progress, completed } = getOrInit();
     const pct = Math.min(Math.round((progress / mission.target) * 100), 100);
     const left = daysLeft();

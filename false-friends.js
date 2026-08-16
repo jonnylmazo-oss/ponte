@@ -379,7 +379,8 @@
 
   function scRenderCards() {
     const cards = scGetFiltered();
-    scCount.textContent = `${cards.length} cognate${cards.length !== 1 ? 's' : ''}`;
+    // "word", not "cognate" — taxonomy UI never uses that term (#79)
+    scCount.textContent = `${cards.length} word${cards.length !== 1 ? 's' : ''}`;
 
     if (cards.length === 0) {
       scGrid.innerHTML = '<p class="ff-empty">No matches. Try a different search.</p>';

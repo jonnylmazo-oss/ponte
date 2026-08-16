@@ -208,7 +208,9 @@
               <span class="nav-icon">🔄</span>
               <span class="nav-label">Translate</span>
             </button>
-            <button class="nav-item nav-sub-item" data-tab="shadowing"
+            <!-- Parked pre-launch (feature intact, entry point hidden — remove
+                 `hidden` to restore; see #7) -->
+            <button class="nav-item nav-sub-item" data-tab="shadowing" hidden
               onclick="window.switchTab('shadowing')">
               <span class="nav-icon">🎙️</span>
               <span class="nav-label">Shadowing</span>
@@ -228,7 +230,9 @@
               <span class="nav-icon">🖼️</span>
               <span class="nav-label">Visual cards</span>
             </button>
-            <button class="nav-item nav-sub-item" id="nav-share-btn"
+            <!-- Parked pre-launch (share/import logic + ?import= links intact,
+                 entry point hidden — remove `hidden` to restore; see #38) -->
+            <button class="nav-item nav-sub-item" id="nav-share-btn" hidden
               onclick="window.ponteShareOpen&&window.ponteShareOpen()">
               <span class="nav-icon">🔗</span>
               <span class="nav-label">Share deck</span>
@@ -365,9 +369,12 @@
         <div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>
 
         <!-- Sub-tab bar -->
+        <!-- Two lenses on the transfer layer, named in taxonomy vocabulary
+             (#79): the trap words and the safe ones. Internal ids/data keep
+             the historical sc-/cognates names — not user-facing. -->
         <div class="ff-subtabs">
-          <button class="ff-subtab active" data-ff-panel="friends">False Friends</button>
-          <button class="ff-subtab" data-ff-panel="cognates">Safe Cognates</button>
+          <button class="ff-subtab active" data-ff-panel="friends">⚠️ False Friends</button>
+          <button class="ff-subtab" data-ff-panel="cognates">✅ Same &amp; Similar</button>
         </div>
 
         <!-- ── FALSE FRIENDS PANEL ── -->
@@ -1291,7 +1298,8 @@
       <span class="more-panel-icon">🔄</span>
       <span class="more-panel-label">Translate</span>
     </button>
-    <button class="more-panel-item" data-tab="shadowing"
+    <!-- Parked pre-launch — remove `hidden` to restore (see #7) -->
+    <button class="more-panel-item" data-tab="shadowing" hidden
       onclick="window.switchTab&&window.switchTab('shadowing')"
       ontouchend="window.switchTab&&window.switchTab('shadowing');return false;">
       <span class="more-panel-icon">🎙️</span>
@@ -1315,7 +1323,8 @@
       <span class="more-panel-icon">🖼️</span>
       <span class="more-panel-label">Visual cards</span>
     </button>
-    <button class="more-panel-item" id="more-share-btn"
+    <!-- Parked pre-launch — remove `hidden` to restore (see #38) -->
+    <button class="more-panel-item" id="more-share-btn" hidden
       onclick="window.ponteCloseMorePanel&&window.ponteCloseMorePanel();window.ponteShareOpen&&window.ponteShareOpen()"
       ontouchend="window.ponteCloseMorePanel&&window.ponteCloseMorePanel();window.ponteShareOpen&&window.ponteShareOpen();return false;">
       <span class="more-panel-icon">🔗</span>
