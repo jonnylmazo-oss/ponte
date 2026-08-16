@@ -8894,3 +8894,77 @@ body.drill-fullscreen .ff-flip-card {
   border-radius: 10px;
   display: block;
 }
+
+/* ═══ Puzzle collections (#82) — Progress-tab card + earn moments ═════════ */
+/* Occupies the Weekly Mission's vacated top slot; same card language. */
+.puzzle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent, #0055AA);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.puzzle-label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+.puzzle-title { font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.puzzle-title-en { color: var(--text-dim); font-weight: 400; font-size: 0.85em; margin-left: 6px; }
+.puzzle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  aspect-ratio: 3 / 2;
+  max-width: 420px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.puzzle-tile { background-repeat: no-repeat; }
+.puzzle-tile--hidden {
+  background: var(--bg-italian);
+  position: relative;
+}
+.puzzle-tile--hidden::after {
+  content: '🧩';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0.25;
+}
+.puzzle-meta { color: var(--text-mid); font-size: 0.88rem; margin-top: 10px; }
+.puzzle-shelf { margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.puzzle-shelf-label { color: var(--text-dim); font-size: 0.8rem; }
+.puzzle-shelf-img {
+  width: 66px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: block;
+}
+
+/* Earn moment on the drill done screens */
+.puzzle-earned {
+  display: inline-block;
+  margin: 6px auto 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.92rem;
+  animation: puzzle-pop 0.35s ease-out;
+}
+.puzzle-earned--complete { border-color: var(--same); color: var(--same); }
+@keyframes puzzle-pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .puzzle-earned { animation: none; }
+}

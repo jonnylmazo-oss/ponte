@@ -512,6 +512,10 @@
     if (total === 0) return null;
     return (card.timesCorrect || 0) / total;
   }
+  // Shared with puzzle.js (#82) so its "strong tier crossed" trigger uses the
+  // exact accuracy definition above — including the null-for-zero-answers
+  // rule — rather than a drifting local copy.
+  window.ponteCardAccuracy = cardAccuracy;
 
   // Rank for worst-first ordering. Cards with no answers yet are not known
   // failures, but they are the ones we most need data on, so they sort

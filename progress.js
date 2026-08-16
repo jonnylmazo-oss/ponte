@@ -401,8 +401,13 @@
     const missionHTML = (typeof window._ponteMissionCardHTML === 'function')
       ? window._ponteMissionCardHTML()
       : '';
+    // Puzzle collection card (#82) takes the top slot the parked Weekly
+    // Mission vacated — a collection IS progress made visible.
+    const puzzleHTML = (typeof window._pontePuzzleCardHTML === 'function')
+      ? window._pontePuzzleCardHTML()
+      : '';
     const topbar = `<div class="tab-topbar"><div class="logo">Pon<span>te</span></div></div>`;
-    const container = `<div class="prog-container">${missionHTML}${overviewHTML}${breakdownHTML}${weakHTML}${weakWordsHTML}${activityHTML}${trendHTML}</div>`;
+    const container = `<div class="prog-container">${puzzleHTML}${missionHTML}${overviewHTML}${breakdownHTML}${weakHTML}${weakWordsHTML}${activityHTML}${trendHTML}</div>`;
 
     panel.innerHTML = topbar + container;
   }
@@ -418,6 +423,7 @@
   window.addEventListener('ponte:flashcards-synced',       render);
   window.addEventListener('ponte:error-patterns-updated',  render);
   window.addEventListener('ponte:mission-updated',         render);
+  window.addEventListener('ponte:puzzle-updated',          render);
 
   // Initial render
   render();

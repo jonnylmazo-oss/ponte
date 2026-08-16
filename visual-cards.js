@@ -228,6 +228,9 @@
   }
 
   function renderDone() {
+    // Mirrors the main drill's session-ended event (its own name, so parked
+    // mission counting is untouched) — puzzle.js (#82) listens for both.
+    window.dispatchEvent(new CustomEvent('ponte:vc-session-ended'));
     const startEl = $('vc-start'); const drillEl = $('vc-drill'); const doneEl = $('vc-done');
     if (drillEl) drillEl.hidden = true;
     if (startEl) startEl.hidden = true;

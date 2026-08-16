@@ -34,6 +34,8 @@ conversation.js    Conversation tab IIFE
 mission.js         Weekly Mission IIFE (must load before progress.js)
 progress.js        Progress Dashboard IIFE
 deep-dive.js       Deep dive tab IIFE
+puzzle.js          "Complete the Picture" collections IIFE (#82) — loads
+                   between mission.js and progress.js
 visual-cards.js    Visual cards tab IIFE (#88) — picture→Italian recall drill
 audio-player.js    Cards audio session player IIFE
 shadowing.js       Shadowing tab IIFE (#7) — sentence playback + mic recording
@@ -57,6 +59,7 @@ data/
   safe-cognates.js 200 safe cognate entries
   grammar.js       45 grammar cards + 30 pattern drills
   visual-deck.js   788 curated concrete nouns for the Visual cards deck (#88)
+  collections.js   8 named puzzle collections (#82) — Italian landmarks, blob-hosted art
 ```
 
 Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js` → `grammar.js` → `flashcards.js` → `practice.js` → `dictionary.js` → `conversation.js` → `mission.js` → `progress.js` → `deep-dive.js` → `visual-cards.js` → `shadowing.js` → `audio-player.js` → `onboarding.js` (`visual-cards.js` must load after `flashcards.js` — it uses `window.ponteApplySmTwo` + `window.ponteSpeakCard`)
@@ -75,6 +78,7 @@ Script load order: `utils.js` → `data/*.js` → `app.js` → `false-friends.js
 - **Deep dive** (`deep-dive.js`) — explore any Italian word: all senses first, then per-sense example sentences, then optional etymology; opened standalone (More → Deep dive) or from a flashcard's drill flip-card back (`window.ponteDeepDive(word)`); "Save to Cards" saves the primary sense only (keeps the card lean)
 - **Shadowing** (#7, `shadowing.js`) — standalone tab (sidebar/More → Shadowing) with its own Beginner Story picker; also reachable from the Reader's 🎙️ button (Beginner Stories only) via `window.ponteShadowLoadStory(storyId, title)`, which switches tabs and pre-loads that story rather than duplicating a second entry point. Sentence-by-sentence Web Speech playback (not ElevenLabs — reuses each story's verified `story_audio.sentences` split) plus in-browser mic recording (`getUserMedia`/`MediaRecorder`) to compare pronunciation; recordings are ephemeral, never uploaded
 - **Visual cards** (#88, `visual-cards.js` — More → Visual cards) — picture→Italian recall drill on a **standalone curated deck** (`data/visual-deck.js`, 788 concrete nouns in 13 groups, each with a curated `imagePrompt` phrase for the future illustration pass), deliberately separate from the user's main deck; SRS state lives client-only in `ponte_visual_srs` and **never touches** `ponte_flashcards` or the server `flashcards` key. Scheduling reuses the main drill's SM-2 via `window.ponteApplySmTwo` (exposed by `flashcards.js`); audio reuses `window.ponteSpeakCard`'s tiering (110/788 words hit the `word_audio` bank, rest fall back to Web Speech). Card **backs mirror the standard drill flip-card exactly** (same fc-* classes: word row + 🔊, EN/ES answer + category badge, example, note, Deep-dive button via `window.ponteDeepDive`; category badge and example/note render only for the 110 deck-overlap entries, which carry that data from the main deck — absent fields hide the same way the standard card hides them). Card fronts show the real illustrations — all 788 generated one-time via Replicate `flux-schnell` (fixed flat-cartoon style template + per-word `imagePrompt`, 512×512 webp, ~6MB total) and stored in **Vercel Blob** at `visual-deck/<id>.webp` (`img` field on each entry); the labeled-placeholder front remains as the fallback for any entry whose `img` is null
+- **Puzzle collections** (#82, `puzzle.js` — card at the top of the Progress tab, in the parked Weekly Mission's slot) — drilling earns puzzle pieces that reveal tiles (4×3 grid) of named Italian-landmark art (`data/collections.js`, 8 collections, renewable by appending; flux-schnell flat-cartoon style, blob-hosted at **content-hashed paths** — Blob's CDN serves stale bytes for overwritten pathnames, so regenerated images must land at new paths). Dual triggers evaluated by a session-end scan (listens to `ponte:drill-session-ended` + `ponte:vc-session-ended`, no drill internals touched): (1) a word crossing the strong tier (`ponteCardAccuracy ≥ 0.8`, exposed from flashcards.js) with **≥ 4 graded answers**, first time only (permanent awarded set); (2) every **5** first-reviews (`reviewCount` 0→1), remainder banked. Both drills count; audio sessions don't (no stats). **First-run baseline**: existing strong/learned words are seeded without awarding pieces. State client-only in `ponte_puzzle` (+`_bak`), union-merge saves; never reads/writes the server deck
 - **Onboarding** (`onboarding.js`) — first-run only: Spanish proficiency + Italian-exposure placement quiz, presets the Reader's starting mode/difficulty via `window.ponteApplyStartingLevel(level)` (app.js) instead of everyone landing on A1; auto-skipped (and the flag set retroactively) for any browser already showing signs of prior use
 
 ## API endpoints
@@ -151,6 +155,8 @@ Note: the old non-streaming `/api/generate-article-full` fallback was removed (n
 | `ponte_last_story` | Last-selected Beginner Story id, restored in the picker on reload |
 | `ponte_visual_srs` | Visual cards (#88) SRS state map `{ [entryId]: {interval, easeFactor, dueDate, …} }` — client-only, standalone from the main deck |
 | `ponte_visual_srs_bak` | Pre-write backup of the above, refreshed once per session |
+| `ponte_puzzle` | Puzzle collections (#82) state `{ tiles, completed, awardedStrong, bank, learnedWatermark }` — client-only |
+| `ponte_puzzle_bak` | Pre-write backup of the above, refreshed once per session |
 | `ponte_onboarding_complete` | First-run flow (#11) shown/dismissed flag — also set retroactively for any browser showing other signs of prior use, so it never surprises an existing session |
 
 ## Flashcard card structure
