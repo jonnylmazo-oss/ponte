@@ -189,7 +189,7 @@ Category colors: same `#2E6B3E` (green), similar `#0E7490` (teal), false-friend 
 
 - **No frameworks, no build step** — vanilla HTML/CSS/JS only
 - **iOS Safari nav:** use inline `onclick`/`ontouchend` on nav/modal buttons — `addEventListener` unreliable on fixed-position elements; `ontouchend` returns `false` to suppress the subsequent click event
-- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v106`)
+- **Service worker:** bump `CACHE_NAME` in `sw.js` after every frontend change (current: `ponte-v111`). Delivery to devices (#64): registration uses `updateViaCache:'none'` and the page calls `reg.update()` on every foreground resume (`visibilitychange`/`focus`, 60s throttle, 30-min interval) — without this an iOS home-screen PWA resumed from the app switcher never re-checks `sw.js` and can sit on stale code indefinitely. Mid-session takeovers surface the `#update-banner` (tap-to-refresh)
 - **Cards library filters:** all single-select (5 dropdowns), AND-combined; `cardAccuracy()` returns `null` for never-drilled cards (sorted last); `getCardSource()` maps `sourceArticle` strings → `starter`/`reader`/`practice`/`scripted`/`conversation`/`manual`; "Mastered" filter uses `interval > 21`
 - **Flashcard save guard:** never POST empty array — triple-guarded (app.js + flashcards.js + server.js returns 409)
 - **HTML escaping:** use `window.ponteEsc` everywhere — no local duplicates
@@ -209,35 +209,23 @@ Per the product-strategy evaluation, three features are **hidden, not removed** 
 
 ## Open issues
 
-Kept in sync with `gh issue list` by hand — re-check before trusting this table if it's been a while.
+Kept in sync with `gh issue list` by hand — re-check before trusting this table if it's been a while. (Synced 2026-08-16.)
 
 | # | Title | Priority |
 |---|-------|----------|
-| #7 | Shadowing mode | P2 |
-| #11 | Onboarding flow | P3 |
 | #17 | Mobile setup and iPhone testing | P2 |
-| #18 | Flashcard images via Unsplash | P2 |
-| #37 | Pronunciation lab | P3 |
-| #38 | Collaborative deck sharing | P3 |
-| #57 | Wire up PATTERN_TO_GRAMMAR map | P3 |
-| #58 | Mission 4 double-counts re-saves | P3 |
-| #64 | Word-type badges / Deep-dive missing on iPhone after deploy | P1 |
-| #66 | Taxonomy audit: re-verify all card categorizations | P2 |
-| #67 | "sacco" card: idiom example vs. literal definition | P2 |
+| #37 | Pronunciation lab (natural follow-on to parked Shadowing) | P3 |
 | #68 | Taxonomy decision: Latin-root-shared words (vetro/vidrio) | P2 |
-| #69 | 8 cards missing example sentences | P2 |
-| #70 | Audio Phase 2 — full karaoke-style visual sync (MVP tier shipped) | P1 |
+| #70 | Audio Phase 2 — full karaoke-style visual sync (story-side MVP shipped; flashcards + interactivity remain) | P1 |
 | #71 | Word-exploration library | P2 |
 | #72 | Single-word deep-drill audio mode | P3 |
 | #73 | Short-story / comprehensible-input audio mode | P2 |
 | #74 | Engagement: identity-based re-languaging across app copy | P3 |
-| #75 | Engagement: "known Italian words" mastery counter | P2 |
+| #75 | Engagement: "known Italian words" mastery counter (per strategy eval: the transfer layer's scoreboard — high value) | P2 |
 | #76 | Engagement: forgetting-curve reminders + if-then planning | P2 |
 | #77 | Engagement (later): curiosity gaps, Wrapped-style reflection | P3 |
 | #78 | Housekeeping: custom domain DNS setup | P2 |
-| #79 | Housekeeping: rename "Safe Cognates" tab — conflicts with the taxonomy-naming rule above, needs a decision | P3 |
 | #80 | Housekeeping: PWA install polish and testing | P2 |
-| #82 | Engagement: "Complete the Picture" collection/puzzle mechanic | P3 |
-| #84 | Reader read-aloud truncates at ~15s (Web Speech, dynamic articles only) | P2 |
-| #85 | "bursa" card: typo'd headword, mistagged category | P2 |
-| #86 | 209 cards have no ElevenLabs audio — blocked on #69, then on audio-spend approval | P2 |
+| #86 | 209 cards have no ElevenLabs audio — unblocked, needs cost approval (~37k chars) | P2 |
+
+Recently closed (2026-08-15/16): #79 (Same & Similar lens rename), #82 (puzzle collections — shipped), #88 (visual flashcards — full arc shipped), #64 (iOS stale-SW delivery — resume update checks), #18 (superseded: visual deck shipped with generated illustrations instead of Unsplash). Parked, hidden not removed: #7 Shadowing, #38 Deck sharing, #35 Weekly Mission — see "Parked features" above.

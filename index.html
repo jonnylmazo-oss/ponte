@@ -1659,9 +1659,33 @@
         // via skipWaiting(), but there is nothing stale to refresh from then).
         const hadController = !!navigator.serviceWorker.controller;
 
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
-          console.warn('SW registration failed:', err);
+        // #64 root cause: the browser only checks for a new sw.js at
+        // registration/navigation — and an iOS home-screen PWA resumed from
+        // the app switcher performs NEITHER, so a device could sit on stale
+        // code indefinitely (features live on the server, missing on the
+        // phone). Fix: explicitly reg.update() whenever the app comes back
+        // to the foreground (the resume path), plus a slow interval while
+        // open. updateViaCache:'none' keeps the sw.js fetch itself out of
+        // the HTTP cache regardless of future header changes.
+        let swReg = null;
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+          .then((reg) => { swReg = reg; })
+          .catch((err) => { console.warn('SW registration failed:', err); });
+
+        let lastCheck = 0;
+        window.ponteCheckForUpdate = function () {
+          if (!swReg) return false;
+          const now = Date.now();
+          if (now - lastCheck < 60000) return false; // throttle focus/visibility double-fires
+          lastCheck = now;
+          swReg.update().catch(() => { /* offline — next resume retries */ });
+          return true;
+        };
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') window.ponteCheckForUpdate();
         });
+        window.addEventListener('focus', () => window.ponteCheckForUpdate());
+        setInterval(() => window.ponteCheckForUpdate(), 30 * 60 * 1000);
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (!hadController) return; // first-ever install — nothing stale to refresh from
