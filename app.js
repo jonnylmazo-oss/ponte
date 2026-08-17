@@ -1446,7 +1446,9 @@
 
   const LEARN_TABS    = ['false-friends', 'grammar'];
   const PRACTICE_TABS = ['practice', 'conversation'];
-  const MORE_TABS     = ['dictionary', 'shadowing', 'progress', 'deep-dive', 'visual-cards'];
+  // 'deep-dive' removed: consolidated into the Translate tab as an
+  // expand-in-place section (window.ponteDeepDive now routes there).
+  const MORE_TABS     = ['dictionary', 'shadowing', 'progress', 'visual-cards'];
 
   const LS_LAST_LEARN    = 'ponte_last_learn';
   const LS_LAST_PRACTICE = 'ponte_last_practice';
@@ -1638,7 +1640,12 @@
   window.ponteCloseMorePanel = closeMorePanel;
 
   function initTabs() {
-    const saved = localStorage.getItem(LS_TAB) || 'reader';
+    let saved = localStorage.getItem(LS_TAB) || 'reader';
+    // Stale-tab guard: a device whose saved tab no longer exists (e.g.
+    // 'deep-dive' after the Translate consolidation, or a parked tab id in
+    // some future pass) must fall back to the Reader — without this, the
+    // restore below activates NO panel and the app opens blank.
+    if (!$(`tab-${saved}`)) saved = 'reader';
 
     // Set initial panel
     document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));

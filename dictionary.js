@@ -204,6 +204,7 @@
 
     updateSaveBtn();
     dictResult.hidden = false;
+    resetDeep(); // new word — collapse and clear the depth section
   }
 
   // ── Save to Flashcards ──────────────────────────────────────────────────────
@@ -232,6 +233,13 @@
     if (idx !== -1) {
       cards.splice(idx, 1);
     } else {
+      // Enrichment from the deep-dive section (consolidated tab): when the
+      // depth data for this word has been fetched, carry the primary sense's
+      // example sentence onto the card — the one thing the former Deep-dive
+      // save contributed that the fast lookup lacks.
+      const deep = deepCache[(italian || '').toLowerCase()];
+      const s0ex = deep && deep.senses && deep.senses[0] &&
+        deep.senses[0].examples && deep.senses[0].examples[0];
       cards.push({
         id:            Date.now(),
         italian:       window.ponteNormalizeItalian(italian, {
@@ -243,6 +251,8 @@
         category:      currentEntry.category      || 'new',
         note:          currentEntry.note          || '',
         pronunciation: currentEntry.pronunciation || '',
+        example:       currentEntry.example       || (s0ex && s0ex.italian) || '',
+        exampleEN:     currentEntry.exampleEN     || (s0ex && s0ex.english) || '',
         savedAt:       new Date().toISOString(),
         sourceArticle: 'Translate lookup',
         wordType:      currentEntry.wordType      || 'other',
@@ -361,6 +371,136 @@
     dictUsageResult.innerHTML = html;
     dictUsageResult.hidden = false;
   }
+
+  // ── Deep-dive expand-in-place ──────────────────────────────────────────────
+  // Consolidated from the former Deep-dive tab (#62): the slow, expensive
+  // senses/examples/etymology call is fetched only on first expand, cached
+  // per lowercase word for the session. The renderer is the old tab's,
+  // minus its own word header (the result card above already shows the
+  // word + 🔊) and its own save button (the card's single Save ★ handles
+  // it, enriched with the primary sense's example — see the save handler).
+  const WORD_TYPE_LABELS = {
+    noun: 'Noun', verb: 'Verb', adjective: 'Adjective',
+    adverb: 'Adverb', phrase: 'Phrase', other: 'Other',
+  };
+  const dictDeepToggle  = $('dict-deep-toggle');
+  const dictDeepWrap    = $('dict-deep-wrap');
+  const dictDeepLoading = $('dict-deep-loading');
+  const dictDeepResults = $('dict-deep-results');
+  const deepCache = {}; // lowercase word → deep-dive response
+
+  function resetDeep() {
+    if (!dictDeepWrap) return;
+    dictDeepWrap.hidden = true;
+    dictDeepResults.innerHTML = '';
+    dictDeepToggle.setAttribute('aria-expanded', 'false');
+    dictDeepToggle.classList.remove('open');
+  }
+
+  function renderDeep(data) {
+    const senses = Array.isArray(data.senses) ? data.senses : [];
+    if (!senses.length) {
+      dictDeepResults.innerHTML = '<p class="dd-error">No deeper entry found for this word.</p>';
+      return;
+    }
+    // STRICT ORDER preserved from the old tab: all definitions, then all
+    // examples grouped per sense, then etymology.
+    let html = '<section class="dd-section"><h3 class="dd-section-title">Meanings</h3>';
+    senses.forEach((s, i) => {
+      const cat   = s.category || 'new';
+      const color = CATEGORY_COLORS[cat] || CATEGORY_COLORS['new'];
+      const catLabel = CATEGORY_LABELS[cat] || cat;
+      const wtLabel  = s.wordType && WORD_TYPE_LABELS[s.wordType];
+      html += `
+        <div class="dd-sense">
+          <div class="dd-sense-head">
+            <span class="dd-sense-num">${i + 1}.</span>
+            <span class="dd-sense-def">${escapeHTML(s.definition || '')}</span>
+          </div>
+          <div class="dd-sense-badges">
+            ${wtLabel ? `<span class="fc-wordtype-badge">${escapeHTML(wtLabel)}</span>` : ''}
+            <span class="fc-cat-badge" style="border-color:${color};color:${color}">${escapeHTML(catLabel)}</span>
+          </div>
+          ${s.spanishNote ? `<p class="dd-sense-note">${escapeHTML(s.spanishNote)}</p>` : ''}
+        </div>`;
+    });
+    html += '</section>';
+
+    html += '<section class="dd-section"><h3 class="dd-section-title">Examples</h3>';
+    senses.forEach((s, i) => {
+      const examples = Array.isArray(s.examples) ? s.examples : [];
+      if (!examples.length) return;
+      html += `<div class="dd-ex-group">
+        <p class="dd-ex-sense">Sense ${i + 1} — ${escapeHTML(s.definition || '')}</p>`;
+      examples.forEach((ex) => {
+        html += `<div class="dd-ex">
+          <span class="dd-ex-it">${escapeHTML(ex.italian || '')}</span>
+          <span class="dd-ex-en">${escapeHTML(ex.english || '')}</span>
+        </div>`;
+      });
+      html += '</div>';
+    });
+    html += '</section>';
+
+    if (data.etymology) {
+      html += `<section class="dd-section dd-etymology">
+        <h3 class="dd-section-title">Etymology</h3>
+        <p class="dd-etym-note">${escapeHTML(data.etymology)}</p>
+      </section>`;
+    }
+    dictDeepResults.innerHTML = html;
+    updateSaveBtn(); // depth may add the example the save button will carry
+  }
+
+  async function openDeep() {
+    if (!currentEntry || !currentEntry.italian || !dictDeepWrap) return;
+    const word = currentEntry.italian;
+    const key  = word.toLowerCase();
+    dictDeepWrap.hidden = false;
+    dictDeepToggle.setAttribute('aria-expanded', 'true');
+    dictDeepToggle.classList.add('open');
+    if (deepCache[key]) { renderDeep(deepCache[key]); return; }
+
+    dictDeepLoading.hidden = false;
+    dictDeepResults.innerHTML = '';
+    try {
+      const res = await fetch(API_BASE + '/api/feedback-combined?action=deep-dive', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ word }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      deepCache[key] = data;
+      // Only render if the user is still on this word (a new lookup resets)
+      if (currentEntry && currentEntry.italian === word) renderDeep(data);
+    } catch (err) {
+      console.error('Deep dive failed:', err.message);
+      dictDeepResults.innerHTML = '<p class="dd-error">Couldn\'t load the deep dive — please try again.</p>';
+    } finally {
+      dictDeepLoading.hidden = true;
+    }
+  }
+
+  if (dictDeepToggle) {
+    dictDeepToggle.addEventListener('click', () => {
+      if (dictDeepWrap.hidden) openDeep();
+      else resetDeep();
+    });
+  }
+
+  // ── Public entry point (drill flip-card backs, both decks) ────────────────
+  // Same contract the old Deep-dive tab exposed: switch to the (now merged)
+  // screen, look the word up, and AUTO-EXPAND the depth section — a drill
+  // user tapping "🔍 Deep dive" asked for depth, not just the gloss.
+  window.ponteDeepDive = function (word) {
+    if (window.switchTab) window.switchTab('dictionary');
+    if (!word) { dictItInput.focus(); return; }
+    dictItInput.value = word;
+    dictEnInput.value = '';
+    direction = 'it';
+    doLookup().then(() => openDeep());
+  };
 
   // ── Init ───────────────────────────────────────────────────────────────────
   renderHistory();
